@@ -1,0 +1,76 @@
+[
+    {
+    "id": 2045,
+    "code": "coupon_xaqx0uyw",
+    "amount": "5.00",
+    "date_created": "2019-03-09T16:38:20",
+    "date_created_gmt": "2019-03-09T16:38:20",
+    "date_modified": "2019-03-09T16:38:20",
+    "date_modified_gmt": "2019-03-09T16:38:20",
+    "discount_type": "percent",
+    "description": "",
+    "date_expires": "2020-03-08T00:00:00",
+    "date_expires_gmt": "2020-03-08T00:00:00",
+    "usage_count": 0,
+    "individual_use": true,
+    "product_ids": [],
+    "excluded_product_ids": [],
+    "usage_limit": 1,
+    "usage_limit_per_user": null,
+    "limit_usage_to_x_items": null,
+    "free_shipping": false,
+    "product_categories": [],
+    "excluded_product_categories": [],
+    "exclude_sale_items": true,
+    "minimum_amount": "100.00",
+    "maximum_amount": "0.00",
+    "email_restrictions": [
+        "email@gmail.com"
+    ],
+    "used_by": [],
+    "meta_data": [
+        {
+            "id": 8482,
+            "key": "coupon_user_id",
+            "value": "7"
+        },
+        {
+            "id": 8487,
+            "key": "sumo_coupon",
+            "value": "yes"
+        },
+        {
+            "id": 8488,
+            "key": "expire_status",
+            "value": "1"
+        },
+        {
+            "id": 8493,
+            "key": "action_type",
+            "value": "signup"
+        },
+        {
+            "id": 8495,
+            "key": "sumo_coupon_check",
+            "value": "yes"
+        },
+        {
+            "id": 8496,
+            "key": "sumo_coupon_code_sc",
+            "value": "INONE_xaqx0uyw"
+        }
+    ],
+    "_links": {
+        "self": [
+            {
+                "href": "https://www.example.com/wp-json/wc/v2/coupons/2045"
+            }
+        ],
+        "collection": [
+            {
+                "href": "https://www.example.com/wp-json/wc/v2/coupons"
+            }
+        ]
+    }
+}
+]
