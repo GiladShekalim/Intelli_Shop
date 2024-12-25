@@ -1,10 +1,15 @@
 Software Engineering Final Project.
 
-Scope:
+- *Scope*
 
-How to Clone Repo:
+- *prerequisites*
+Github
+Mongo server - https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.4-signed.msi
+pip install pymongo
 
-How to Install Requrments:
 
-How to Run Application:
+- *How to Clone Repo*
 
+
+
+- *How to Run Application*
