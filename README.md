@@ -27,6 +27,13 @@ git clone https://github.com/GiladShkalim/Intelli-Shop.git
    git commit -m "Add short detail on waht is being commited here"
    ```
 4. **Pushing Changes to the Remote Repository**
+   Do once: 
+   ```bash
+   ssh-keygen -t rsa -b 4096 -C "giladshkalim@gmail.com"
+   cat ~/.ssh/id_rsa.pub
+   # Copy string to GitHub > Setting > SSH > New SSH Key
+   ```
+
    ```bash
    git push -u origin new-feature-branch
    ```
