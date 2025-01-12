@@ -3,42 +3,42 @@
 Simple Python script for getting JSON responses from Groq's AI API.
 
 
-##Working with GIT - Clonning, Branching, Commiting
-```bash
-cd C:\Users\YourUsername\Desktop\YourNewFolder
-git clone https://github.com/GiladShkalim/Intelli-Shop.git
-```
-1. **Creating a New Branch**
+   # Working with GIT - Clonning, Branching, Commiting
    ```bash
-   # Create and switch to a new branch:
-   git checkout -b new-feature-branch
+   cd C:\Users\YourUsername\Desktop\YourNewFolder
+   git clone https://github.com/GiladShkalim/Intelli-Shop.git
    ```
-
-2. **Making Changes**
-   Make your desired changes to the project files.
-
-3. **Committing Changes**
-   ```bash
-   # Stage your changes:
-   git add .
-   ```
-   ```bash
-   # Commit your changes:
-   git commit -m "Add short detail on waht is being commited here"
-   ```
-4. **Pushing Changes to the Remote Repository**
-   Do once: 
-   ```bash
-   ssh-keygen -t rsa -b 4096 -C "giladshkalim@gmail.com"
-   cat ~/.ssh/id_rsa.pub
-   # Copy string to GitHub > Setting > SSH > New SSH Key
-   ```
-
-   ```bash
-   git push -u origin new-feature-branch
-   ```
-
-
+   1. **Creating a New Branch**
+      ```bash
+      # Create and switch to a new branch:
+      git checkout -b new-feature-branch
+      ```
+   
+   2. **Making Changes**
+      Make your desired changes to the project files.
+   
+   3. **Committing Changes**
+      ```bash
+      # Stage your changes:
+      git add .
+      ```
+      ```bash
+      # Commit your changes:
+      git commit -m "Add short detail on waht is being commited here"
+      ```
+   4. **Pushing Changes to the Remote Repository**
+      Do once: 
+      ```bash
+      ssh-keygen -t rsa -b 4096 -C "giladshkalim@gmail.com"
+      cat ~/.ssh/id_rsa.pub
+      # Copy string to GitHub > Setting > SSH > New SSH Key
+      ```
+   
+      ```bash
+      git push -u origin new-feature-branch
+      ```
+   
+   
 ## Quick Start
 
 1. **Setup Environment**
