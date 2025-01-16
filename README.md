@@ -30,8 +30,8 @@ Simple Python script for getting JSON responses from Groq's AI API.
    ```
 
 2. **Add API Key**
-   Address to your Groq's Admin user to receive API key.
-Create `.env` file:
+   # Address to your Groq's Admin user to receive API key.
+   # Create `.env` file:
    ```bash
    GROQ_API_KEY=<your_api_key_here>
    ```
