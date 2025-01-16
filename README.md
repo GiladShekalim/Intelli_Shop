@@ -33,6 +33,7 @@ Simple Python script for getting JSON responses from Groq's AI API.
 Address to your Groq's Admin user to receive API key.
 Create `.env` file:
 
+
    ```bash
    GROQ_API_KEY=<your_api_key_here>
    ```
@@ -60,6 +61,7 @@ Create `.env` file:
    2. **Making Changes**
    Make your desired changes to the project files.
 
+
    4. **Committing Changes**
       ```bash
       # Stage your changes:
@@ -71,6 +73,7 @@ Create `.env` file:
       ```
    5. **Pushing Changes to the Remote Repository**
    Do once:
+
  
       ```bash
       ssh-keygen -t rsa -b 4096 -C "giladshkalim@gmail.com"
