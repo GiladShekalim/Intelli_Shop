@@ -30,8 +30,9 @@ Simple Python script for getting JSON responses from Groq's AI API.
    ```
 
 2. **Add API Key**
-   # Address to your Groq's Admin user to receive API key.
-   # Create `.env` file:
+Address to your Groq's Admin user to receive API key.
+Create `.env` file:
+
    ```bash
    GROQ_API_KEY=<your_api_key_here>
    ```
@@ -57,9 +58,9 @@ Simple Python script for getting JSON responses from Groq's AI API.
       ```
    
    2. **Making Changes**
-      Make your desired changes to the project files.
-   
-   3. **Committing Changes**
+   Make your desired changes to the project files.
+
+   4. **Committing Changes**
       ```bash
       # Stage your changes:
       git add .
@@ -68,8 +69,9 @@ Simple Python script for getting JSON responses from Groq's AI API.
       # Commit your changes:
       git commit -m "Add short detail on waht is being commited here"
       ```
-   4. **Pushing Changes to the Remote Repository**
-      Do once: 
+   5. **Pushing Changes to the Remote Repository**
+   Do once:
+ 
       ```bash
       ssh-keygen -t rsa -b 4096 -C "giladshkalim@gmail.com"
       cat ~/.ssh/id_rsa.pub
