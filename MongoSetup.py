@@ -1,31 +1,91 @@
 import pymongo
 import json
+import jsonschema
+from scheme_definitions import coupon_schema
 
-# Step 1: Connect to MongoDB
-client = pymongo.MongoClient("mongodb://localhost:27018/")
+def connect_to_mongodb(uri):
+    """Establish connection to MongoDB server"""
+    try:
+        client = pymongo.MongoClient(uri)
+        return client
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
+        return None
 
-# Step 2: Create or access a database
-db = client["my_database"]
+def get_collection(client, database_name, collection_name):
+    """Get or create a collection in specified database"""
+    if not client:
+        return None
+    db = client[database_name]
+    return db[collection_name]
 
-# Step 3: Create a new collection
-collection = db["my_collection"]
+def load_json_file(file_path):
+    """Load data from JSON file"""
+    try:
+        with open(file_path, "r") as file:
+            return json.load(file)
+    except Exception as e:
+        print(f"Error loading JSON file: {e}")
+        return None
 
-# Step 4: Load JSON data from a file
-with open("OfferList.json", "r") as file:
-    json_data = json.load(file)
+def insert_documents(collection, documents):
+    """Insert multiple documents into collection"""
+    if not documents:
+        return None
+    try:
+        result = collection.insert_many(documents)
+        print(f"Inserted {len(result.inserted_ids)} documents")
+        return result
+    except Exception as e:
+        print(f"Error inserting documents: {e}")
+        return None
 
-# Step 5: Insert the JSON data into the collection
-result = collection.insert_many(json_data)
-
-print(f"Inserted {len(result.inserted_ids)} documents")
-
-# Step 6: Read a JSON field into a variable
-document = collection.find_one()
-if document:
-    field_value = document.get("date_expires")
-    print(f"Value of 'date_expires': {field_value}")
-else:
+def get_field_value(collection, field_name):
+    """Get value of specified field from first document"""
+    document = collection.find_one()
+    if document:
+        value = document.get(field_name)
+        print(f"Value of '{field_name}': {value}")
+        return value
     print("No documents found in the collection")
+    return None
 
-# Step 7: Close the connection
-client.close()
+def close_connection(client):
+    """Close MongoDB connection"""
+    if client:
+        client.close()
+
+def validate_coupon_data(json_data):
+    """Validate coupon data against schema"""
+    try:
+        for coupon in json_data:
+            jsonschema.validate(instance=coupon, schema=coupon_schema)
+        print("JSON data validation successful")
+        return True
+    except jsonschema.exceptions.ValidationError as e:
+        print(f"JSON validation error: {e.message}")
+        return False
+    except jsonschema.exceptions.SchemaError as e:
+        print(f"Schema error: {e.message}")
+        return False
+
+# Example usage
+if __name__ == "__main__":
+    # Configuration
+    MONGO_URI = "mongodb://localhost:27018/"
+    DATABASE_NAME = "my_database"
+    COLLECTION_NAME = "my_collection"
+    JSON_FILE_PATH = "OfferList.json"
+    TARGET_FIELD = "date_expires"
+
+    # Execute workflow
+    client = connect_to_mongodb(MONGO_URI)
+    if client:
+        collection = get_collection(client, DATABASE_NAME, COLLECTION_NAME)
+
+        json_data = load_json_file(JSON_FILE_PATH)
+        if json_data:
+            if validate_coupon_data(json_data):
+                insert_documents(collection, json_data)
+            get_field_value(collection, TARGET_FIELD)
+        close_connection(client)

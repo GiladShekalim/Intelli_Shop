@@ -2,7 +2,7 @@
     {
     "id": 2045,
     "code": "coupon_xaqx0uyw",
-    "amount": "5.00",
+    "amount": 5,
     "date_created": "2019-03-09T16:38:20",
     "date_created_gmt": "2019-03-09T16:38:20",
     "date_modified": "2019-03-09T16:38:20",
@@ -22,8 +22,8 @@
     "product_categories": [],
     "excluded_product_categories": [],
     "exclude_sale_items": true,
-    "minimum_amount": "100.00",
-    "maximum_amount": "0.00",
+    "minimum_amount": 100.00,
+    "maximum_amount": 0.00,
     "email_restrictions": [
         "email@gmail.com"
     ],
@@ -33,26 +33,6 @@
             "id": 8482,
             "key": "coupon_user_id",
             "value": "7"
-        },
-        {
-            "id": 8487,
-            "key": "sumo_coupon",
-            "value": "yes"
-        },
-        {
-            "id": 8488,
-            "key": "expire_status",
-            "value": "1"
-        },
-        {
-            "id": 8493,
-            "key": "action_type",
-            "value": "signup"
-        },
-        {
-            "id": 8495,
-            "key": "sumo_coupon_check",
-            "value": "yes"
         },
         {
             "id": 8496,
