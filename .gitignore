@@ -1,0 +1,45 @@
+# Python virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Database
+*.sqlite3
+*.db
+
+# MongoDB specific
+data/db/
+dump/
+mongod.lock
+
+# Environment variables and secrets
+.env
+.env.local
+*.env
+.flaskenv
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Jupyter Notebook
+.ipynb_checkpoints

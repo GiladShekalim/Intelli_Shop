@@ -1,3 +1,4 @@
+import os
 import pymongo
 import json
 import jsonschema
@@ -72,7 +73,7 @@ def validate_coupon_data(json_data):
 # Example usage
 if __name__ == "__main__":
     # Configuration
-    MONGO_URI = "mongodb://localhost:27018/"
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb://<username>:<password>@localhost:27017/<database_name>")
     DATABASE_NAME = "my_database"
     COLLECTION_NAME = "my_collection"
     JSON_FILE_PATH = "OfferList.json"

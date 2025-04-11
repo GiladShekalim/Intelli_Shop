@@ -3,7 +3,7 @@ import jsonschema
 # Define the coupon schema
 coupon_schema = {
     "type": "object",
-    "properties": {
+    "properties": { #user status
         "id": {
             "type": "integer",
             "description": "Unique identifier for the coupon."

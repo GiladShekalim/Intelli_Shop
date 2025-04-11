@@ -11,7 +11,7 @@ def initialize_app():
     # Initialize database connection
     db_connection = DatabaseConnection()
     db_connection.initialize(
-        connection_string="mongodb://localhost:27018",
+        connection_string="mongodb://<username>:<password>@<remote_host>:<port>/<database_name>",
         db_name="my_database"
     )
 
