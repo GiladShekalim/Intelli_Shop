@@ -130,3 +130,33 @@ Feel free to fork this repository and submit pull requests for any enhancements.
 ---
 
 For questions or support, please open an issue in the repository.
+
+# IntelliShop Web Application
+
+A Django-based e-commerce web application for online shopping.
+
+## Setup
+
+1. Clone the repository
+2. Navigate to the project directory: `cd WebpageTest`
+3. Run the build script: `./build.sh`
+
+## Features
+
+- Product browsing and searching
+- User accounts and authentication
+- Shopping cart functionality
+- Order processing
+
+## Technologies
+
+- Django
+- Python
+- HTML/CSS
+- JavaScript
+
+## Development
+
+The application runs on `http://localhost:8000` by default.
+
+Press `Ctrl+C` to properly shut down the server.
