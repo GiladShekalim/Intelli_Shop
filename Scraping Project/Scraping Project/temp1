@@ -1,0 +1,51 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+import json
+
+# Setup Chrome WebDriver
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+
+# Create a list to store data
+discount_list = []
+
+# Open the website
+driver.get("https://www.hot.co.il/%D7%9B%D7%9C_%D7%94%D7%94%D7%98%D7%91%D7%95%D7%AA")  
+
+# Wait for the content to load
+time.sleep(5)  # Adjust this if needed
+
+# Locate the elements with the discounts
+discounts = driver.find_elements(By.CSS_SELECTOR, "a.benefit-wrapper.benefit-wrapper_small-version")
+
+# Iterate and extract the data
+for discount in discounts[:5]:  # Limit to 5
+    title = discount.find_element(By.CSS_SELECTOR, "div.bottom div.title").text
+    
+    try:
+        price = discount.find_element(By.CSS_SELECTOR, "div.deal-wrapper div.price").text
+    except:
+        price = "N/A"  # If no price is found, set as "N/A"
+
+    # Extract link (relative href) and convert to absolute URL
+    relative_link = discount.get_attribute("href")
+    full_link = f"https://www.hot.co.il{relative_link}" if relative_link.startswith("/") else relative_link
+    
+    # Store the collected data
+    discount_list.append({
+        "title": title,
+        "price": price,
+        "link": full_link
+    })
+
+# Save to JSON file
+with open("discounts.json", "w", encoding="utf-8") as f:
+    json.dump(discount_list, f, ensure_ascii=False, indent=4)
+
+print("Data saved to discounts.json")
+
+# Close the browser
+driver.quit()

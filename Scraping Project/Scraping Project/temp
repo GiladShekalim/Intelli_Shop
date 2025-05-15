@@ -1,0 +1,151 @@
+import uuid
+import time
+import json
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException
+
+# --- Configuration ---
+CATEGORIES = [
+    {"name": "Consumerism", "url": "https://www.hot.co.il/%D7%A7%D7%98%D7%92%D7%95%D7%A8%D7%99%D7%94/688/%D7%A6%D7%A8%D7%9B%D7%A0%D7%95%D7%AA"},
+    {"name": "Travel and Vacation", "url": "https://www.hot.co.il/%D7%A7%D7%98%D7%92%D7%95%D7%A8%D7%99%D7%94/96/%D7%AA%D7%99%D7%99%D7%A8%D7%95%D7%AA_%D7%95%D7%A0%D7%95%D7%A4%D7%A9"},
+    {"name": "Culture and Leisure", "url": "https://www.hot.co.il/%D7%A7%D7%98%D7%92%D7%95%D7%A8%D7%99%D7%94/817/%D7%AA%D7%A8%D7%91%D7%95%D7%AA_%D7%95%D7%A4%D7%A0%D7%90%D7%99"},
+    {"name": "Cars", "url": "https://www.hot.co.il/%D7%A7%D7%98%D7%92%D7%95%D7%A8%D7%99%D7%94/877/%D7%A8%D7%9B%D7%91"},
+    {"name": "Insurance", "url": "https://www.hot.co.il/%D7%A7%D7%98%D7%92%D7%95%D7%A8%D7%99%D7%94/818/%D7%91%D7%99%D7%98%D7%95%D7%97"},
+    {"name": "Finance and Banking", "url": "https://www.hot.co.il/%D7%A7%D7%98%D7%92%D7%95%D7%A8%D7%99%D7%94/777/%D7%A4%D7%99%D7%A0%D7%A0%D7%A1%D7%99%D7%9D_%D7%95%D7%91%D7%A0%D7%A7%D7%90%D7%95%D7%AA"}
+]
+HEADLESS = True
+BASE_URL = "https://www.hot.co.il"
+def setup_driver():
+    options = Options()
+    if HEADLESS:
+        options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument('--no-sandbox')
+    return webdriver.Chrome(options=options)
+
+# Discount Extraction Function:
+def extract_discount(driver, category_url, category_name):
+    print(f"[*] Opening '{category_name}' page...")
+    driver.get(category_url)
+    time.sleep(2)
+
+    # Getting discount's link:
+    try:
+        discount_elem = driver.find_element(By.CSS_SELECTOR, 'a.benefit-wrapper')
+        href = discount_elem.get_attribute('href')
+        discount_link = href if href.startswith("http") else BASE_URL + href
+        print(f"[+] Discount link Found")
+    except NoSuchElementException:
+        print("[-] Discount not found")
+        return None
+
+    # Get into a discount:
+    driver.get(discount_link)
+    time.sleep(2)
+
+    # ID counter handling:
+    discount_id = str(extract_discount.counter)
+    extract_discount.counter += 1
+
+    # Get the Title:
+    try:
+        title = driver.find_element(By.CSS_SELECTOR, 'h1.head-span').text.strip()
+        print(f"[+] Title Found")
+    except NoSuchElementException:
+        title = "N/A"
+        print("[-] Title not found")
+
+    # Get the Price:
+    try:
+        # This will find the first <span> whose class starts with 'price-span'
+        price_elem = driver.find_element(By.XPATH, "//span[starts-with(@class, 'price-span')]")
+        price = price_elem.text.strip()
+        print(f"[+] Price Found")
+    except NoSuchElementException:
+        price = "N/A"
+        print("[-] Price not found")
+
+    # Get the Description:
+    try:
+        description_parts = []
+        info_wrappers = driver.find_elements(By.CSS_SELECTOR, '.extra-info .info-wrapper')
+
+        for wrapper in info_wrappers:
+            try:
+                des_title = wrapper.find_element(By.CLASS_NAME, 'title').text.strip()
+            except NoSuchElementException:
+                des_title = "N/A"
+
+            try:
+                desc = wrapper.find_element(By.CLASS_NAME, 'description').text.strip()
+            except NoSuchElementException:
+                desc = "N/A"
+
+            paragraph = f"{des_title}: {desc}"
+            description_parts.append(paragraph)
+
+        description = "\n\n".join(description_parts)
+        print(f"[+] Description extracted")
+    except Exception as e:
+        description = "N/A"
+        print(f"[-] Failed to extract full description: {e}")
+
+    # Get the Image Link:
+    try:
+        img_tag = driver.find_element(By.CSS_SELECTOR, '.gallery-wrapper .selected-image-wrapper img')
+        image_link = img_tag.get_attribute('src')
+        print(f"[+] Image-link: {image_link}")
+    except NoSuchElementException:
+        image_link = "N/A"
+        print("[-] Image-Link not found")
+
+    # Get the Terms&Conditions:
+    try:
+        terms_block = driver.find_element(By.CSS_SELECTOR, '.details-wrapper .content')
+        paragraphs = terms_block.find_elements(By.TAG_NAME, 'p')
+        terms_and_conditions = "\n".join(p.text.strip() for p in paragraphs if p.text.strip())
+        print(f"[+] Terms & Conditions extracted.")
+    except NoSuchElementException:
+        terms_and_conditions = "N/A"
+        print("[-] Terms & Conditions not found.")
+
+
+    # Return Extracted Fields:
+    return {
+        "discount_id": discount_id,
+        "title": title,
+        "price": price,
+        "description": description,
+        "discount_link": discount_link,
+        "image_link": image_link,
+        "terms&conditions": terms_and_conditions
+    }
+
+# Counter for manual IDs
+extract_discount.counter = 1
+
+# Main:
+if __name__ == "__main__":
+    driver = setup_driver()
+    all_discounts = []
+
+    # Loop All Discounts:
+    for category in CATEGORIES:
+        result = extract_discount(driver, category["url"], category["name"])
+        if result:
+            all_discounts.append({
+                "category_name": category["name"],
+                "discounts": [result]
+            })
+        print("---")
+
+    driver.quit()
+
+    # Insert Into JSON:
+    with open("hot_discounts.json", "w", encoding="utf-8") as f:
+        json.dump(all_discounts, f, ensure_ascii=False, indent=2)
+
+    print("\n[✔] Scraping complete. Results saved to hot_discounts.json")
