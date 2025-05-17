@@ -4,11 +4,10 @@ from groq import Groq
 import json
 import logging
 
-TITLE = """FLASH50: Half-Price Frenzy!"""
-DESCRIPTION = """Grab your favorite items at unbeatable prices! For the next 24 hours, enjoy a whopping 50% off on all products storewide. Whether you're eyeing that stylish jacket or the latest tech gadget, now's your chance to snag it for half the price. But hurry, this offer vanishes at midnight! Use code FLASH50 at checkout to unlock your savings. Don't miss out on this lightning-fast deal – shop now before time runs out!"""    
-CATEGORIES = """["Home & Furniture","Electronics & Gadgets","Fashion & Apparel","Beauty & Personal Care","Groceries & Food","Health & Wellness","Sports & Outdoors","Toys & Games","Books & Media","Automotive & Tools","Pet Supplies","Office & School Supplies","Jewelry & Accessories","Baby & Kids","Garden & Outdoor Living"]"""
-CONSUMER_STATUS = """["Student","Parent","Retiree","Professional","Homeowner","Renter","Newlywed","Single","Military/Veteran","Entrepreneur","Unemployed","Caregiver","Digital Nomad","First-time Buyer","Empty Nester"]"""
-MESSAGE_TO_SEND = f"""Instructions: You are an AI tool connected via API to my project. Your task is to process the attached coupon JSON object according to the following precise requirements. For each field, handle, organize, and validate as instructed below. Return the edited coupon object in JSON format, perfectly adhering to the schema and requirements. All data must be either as requested or set to the specified default value for each field-no omissions or errors are allowed, as this data will go directly into validation and a database.
+CATEGORIES = """{Consumerism, Travel and Vacation, Culture and Leisure, Cars, Insurance, Finance and Banking}"""
+CONSUMER_STATUS = """{Young, Senior, Homeowner, Traveler, Tech, Pets, Fitness, Student, Remote, Family}"""
+DISCOUNT_TYPE = """{fixed_amount, percentage, buy_one_get_one, Cost}"""
+MESSAGE_TEMPLATE = """Instructions: You are an AI tool connected via API to my project. Your task is to process the attached coupon JSON object according to the following precise requirements. For each field, handle, organize, and validate as instructed below. Return the edited coupon object in JSON format, perfectly adhering to the schema and requirements. All data must be either as requested or set to the specified default value for each field-no omissions or errors are allowed, as this data will go directly into validation and a database.
 Field-by-Field Instructions
 discount_id:
 No change required.
@@ -25,7 +24,7 @@ buy_one_get_one: Must be 1
 Cost: Must be > 0
 discount_type:
 Extract from the description field.
-Assign one value only from: {fixed_amount, percentage, buy_one_get_one, Cost}
+Assign one value only from: {DISCOUNT_TYPE}
 description:
 No change required.
 If value is "N\A", set to empty string.
@@ -43,13 +42,11 @@ No change required.
 If value is "N\A", set to an empty array.
 category:
 Analyze the title and description.
-Select all relevant categories from:
-{Consumerism, Travel and Vacation, Culture and Leisure, Cars, Insurance, Finance and Banking}
+Select all relevant categories from:{CATEGORIES}
 Use exact names, and include as many relevant categories as possible.
 consumer_statuses:
 Analyze the title and description.
-Select all applicable statuses from:
-{Young, Senior, Homeowner, Traveler, Tech, Pets, Fitness, Student, Remote, Family}
+Select all applicable statuses from:{CONSUMER_STATUS}
 Use exact names, and include all that apply.
 valid_until:
 No change required.
@@ -91,10 +88,8 @@ Coupon Object JSON Schema
 }
 
 Please process the following coupon object according to the instructions above and return the validated, edited JSON object:
-{json.dumps(discount, ensure_ascii=False, indent=2)}
+{json_object}
 """
-
-
 
 
 
@@ -139,11 +134,10 @@ def main():
 
     # Process each discount object
     for discount in discount_objects:
-        # Replace the hardcoded message with the current discount object
-        message_to_send = f"""Please process the following coupon object according to the instructions above and return the validated, edited JSON object:
-        {json.dumps(discount, ensure_ascii=False, indent=2)}"""
+        # Format the message with the current discount object
+        message_to_send = MESSAGE_TEMPLATE.format(json_object=json.dumps(discount, ensure_ascii=False, indent=2))
 
-        # The rest of your code to send the request to Groq API
+        # Send the request to Groq API
         response = send_chat_message(message_to_send)
         if response:
             print("\nAI's API Response:")
