@@ -69,6 +69,8 @@ Instructions for processing fields:
 # Load environment variables
 load_dotenv()
 
+current_model_index = 0
+
 def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -> Dict[str, Any]:
     """
     Send a discount object to Groq API using JSON Mode and get back an edited version.
@@ -80,6 +82,13 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
     Returns:
         The edited discount object from Groq
     """
+    global current_model_index  # Use the global variable
+    
+    # List of available models to cycle through when hitting rate limits
+    models = ["llama3-70b-8192", "llama3-8b-8192", "llama-3.1-8b-instant", 
+              "llama-3.3-70b-versatile", "gemma2-9b-it"]
+    # current_model_index now defined globally instead of here
+    
     # System message with schema description and instructions
     system_message = MESSAGE_TEMPLATE
 
@@ -90,12 +99,14 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
     while retry_count <= max_retries:
         try:
             client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+            current_model = models[current_model_index]
+            
             chat_completion = client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_message}
                 ],
-                model="llama3-70b-8192",
+                model=current_model,
                 max_tokens=2048,
                 # Enable JSON Mode by setting the response format
                 response_format={"type": "json_object"}
@@ -107,6 +118,15 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
                 
         except Exception as e:
             error_message = f"Error processing discount with ID {discount.get('discount_id')}: {str(e)}"
+            error_str = str(e)
+            
+            # Check if it's a rate limit error (429)
+            if "429" in error_str and "rate_limit_exceeded" in error_str:
+                # Move to the next model in the list
+                current_model_index = (current_model_index + 1) % len(models)
+                print(f"{error_message}\nSwitching to model: {models[current_model_index]}")
+                time.sleep(1)  # Brief pause before trying the next model
+                continue
             
             if retry_count < max_retries:
                 retry_count += 1
