@@ -3,10 +3,31 @@ import os
 from groq import Groq
 import json
 import logging
+import time
+from typing import Dict, List, Any
+
+JSON_SCHEMA = """{{
+  "discount_id": "string",
+  "title": "string",
+  "price": "integer",
+  "discount_type": "enum",
+  "description": "string",
+  "image_link": "string",
+  "discount_link": "string",
+  "terms_and_conditions": "string",
+  "club_name": ["string"],
+  "category": ["string"],
+  "valid_until": "string",
+  "usage_limit": "integer",
+  "coupon_code": "string",
+  "provider_link": "string",
+  "consumer_statuses": ["string"]
+}}"""
 
 CATEGORIES = """{Consumerism, Travel and Vacation, Culture and Leisure, Cars, Insurance, Finance and Banking}"""
 CONSUMER_STATUS = """{Young, Senior, Homeowner, Traveler, Tech, Pets, Fitness, Student, Remote, Family}"""
 DISCOUNT_TYPE = """{fixed_amount, percentage, buy_one_get_one, Cost}"""
+
 MESSAGE_TEMPLATE = """Instructions: You are an AI tool connected via API to my project. Your task is to process the attached coupon JSON object according to the following precise requirements. For each field, handle, organize, and validate as instructed below. Return the edited coupon object in JSON format, perfectly adhering to the schema and requirements. All data must be either as requested or set to the specified default value for each field-no omissions or errors are allowed, as this data will go directly into validation and a database.
 Field-by-Field Instructions
 discount_id:
@@ -68,89 +89,135 @@ The "category" and "consumer_statuses" fields must use only values from their re
 The "price" field must be an integer, and "discount_type" must be a single value from the enum.
 Unchanged fields must retain their original values unless "N/A", in which case use the specified default.
 
-Coupon Object JSON Schema
-{{
-  "discount_id": "string",
-  "title": "string",
-  "price": "integer",
-  "discount_type": "enum",
-  "description": "string",
-  "image_link": "string",
-  "discount_link": "string",
-  "terms_and_conditions": "string",
-  "club_name": ["string"],
-  "category": ["string"],
-  "valid_until": "string",
-  "usage_limit": "integer",
-  "coupon_code": "string",
-  "provider_link": "string",
-  "consumer_statuses": ["string"]
-}}
+Coupon Object:
+{JSON_SCHEMA}
+
 
 Please process the following coupon object according to the instructions above and return the validated, edited JSON object:
 {json_object}
 """
 
-
 # Load environment variables
 load_dotenv()
 
-
-def send_chat_message(message: str) -> dict | None:
+def process_discount_with_groq(discount: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Send a message to Groq API and receive JSON response.
-
+    Send a discount object to Groq API and get back an edited version.
+    
     Args:
-        message (str): The message to send to the AI
-
+        discount: A discount object from the JSON file
+        
     Returns:
-        dict | None: Parsed JSON response from the API, or None if error occurs
+        The edited discount object from Groq
     """
+    # Format the message template with the JSON object and required schema/categories
+    formatted_message = MESSAGE_TEMPLATE.format(
+        JSON_SCHEMA=JSON_SCHEMA,
+        CATEGORIES=CATEGORIES,
+        CONSUMER_STATUS=CONSUMER_STATUS,
+        DISCOUNT_TYPE=DISCOUNT_TYPE,
+        json_object=json.dumps(discount, indent=2, ensure_ascii=False)
+    )
+    
     try:
-        client = Groq(api_key=os.getenv('GROQ_API_KEY'))
-        
-        completion = client.chat.completions.create(
-            messages=[{
-                "role": "user",
-                "content": message
-            }],
-            model="llama-3.3-70b-versatile",
-            response_format={"type": "json_object"}
+        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": formatted_message
+                }
+            ],
+            model="llama3-70b-8192",
+            max_tokens=2048,
         )
         
-        return json.loads(completion.choices[0].message.content)
+        # Extract the response content
+        response_content = chat_completion.choices[0].message.content
         
+        # Handle potential JSON formatting issues by extracting only the JSON part
+        try:
+            # Try to parse directly first
+            edited_discount = json.loads(response_content)
+            return edited_discount
+        except json.JSONDecodeError:
+            # If direct parsing fails, try to extract JSON from potential code blocks or explanations
+            if "```json" in response_content:
+                json_content = response_content.split("```json")[1].split("```")[0].strip()
+            elif "```" in response_content:
+                json_content = response_content.split("```")[1].split("```")[0].strip()
+            else:
+                # Try to find JSON object between curly braces
+                start_idx = response_content.find('{')
+                end_idx = response_content.rfind('}') + 1
+                if start_idx >= 0 and end_idx > start_idx:
+                    json_content = response_content[start_idx:end_idx]
+                else:
+                    print(f"Could not find valid JSON in response for discount ID {discount.get('discount_id')}")
+                    return discount
+                    
+            try:
+                edited_discount = json.loads(json_content)
+                return edited_discount
+            except json.JSONDecodeError as e:
+                print(f"Warrning: extracted JSON: {e}")
+                return discount
+            
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return None
+        print(f"Error processing discount with ID {discount.get('discount_id')}: {e}")
+        return discount  # Return the original discount if processing fails
 
-def main():
-    # Load the discounts data
-    with open('hot_discounts.json', 'r', encoding='utf-8') as f:
-        discount_objects = json.load(f)
-
-    results = []
-
-    # Process each discount object
-    for discount in discount_objects:
-        # Format the message with the current discount object
-        message_to_send = MESSAGE_TEMPLATE.format(
-            json_object=json.dumps(discount, ensure_ascii=False, indent=2),
-            DISCOUNT_TYPE=DISCOUNT_TYPE,
-            CATEGORIES=CATEGORIES,
-            CONSUMER_STATUS=CONSUMER_STATUS
-        )
-
-        # Send the request to Groq API
-        response = send_chat_message(message_to_send)
-        if response:
-            print("\nAI's API Response:")
-            print(json.dumps(response, indent=2))
-            results.append(response)
-
-    # Save all results to a single file
-    with open('processed_discounts.json', 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
+    """
+    Process each discount in the JSON file with Groq and create a new file with updated discounts.
+    
+    Args:
+        input_file_path: Path to the original hot_discounts.json file
+        output_file_path: Path to the new Inhanced_discounts.json file
+    """
+    # Load the original JSON file
+    with open(input_file_path, 'r', encoding='utf-8') as f:
+        discounts = json.load(f)
+    
+    # Create a deep copy of the discounts for our enhanced version
+    enhanced_discounts = json.loads(json.dumps(discounts))
+    
+    total_discounts = len(discounts)
+    print(f"Processing {total_discounts} discounts...")
+    
+    # Process each discount one by one
+    for i, discount in enumerate(enhanced_discounts):
+        discount_id = discount.get('discount_id', 'unknown')
+        print(f"Processing discount {i+1}/{total_discounts} (ID: {discount_id})...")
+        
+        # Process with Groq
+        edited_discount = process_discount_with_groq(discount)
+        
+        # Update only specific fields in the discount
+        fields_to_update = [
+            'price', 
+            'discount_type', 
+            'category', 
+            'consumer_statuses'
+        ]
+        
+        for field in fields_to_update:
+            if field in edited_discount:
+                discount[field] = edited_discount[field]
+        
+        # Add a small delay to avoid rate limits
+        time.sleep(1)
+    
+    # Save the enhanced discounts to the new file
+    with open(output_file_path, 'w', encoding='utf-8') as f:
+        json.dump(enhanced_discounts, f, ensure_ascii=False, indent=2)
+    
+    print(f"All {total_discounts} discounts have been processed and saved to {output_file_path}!")
 
 if __name__ == "__main__":
-    main() 
+    # Set the paths to your input and output files
+    input_file_path = "hot_discounts.json"
+    output_file_path = "Inhanced_discounts.json"
+    
+    # Process and create the enhanced file
+    update_discounts_file(input_file_path, output_file_path) 
