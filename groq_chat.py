@@ -5,6 +5,7 @@ import json
 import logging
 import time
 from typing import Dict, List, Any
+import re
 
 JSON_SCHEMA = """{{
   "discount_id": "string",
@@ -135,34 +136,18 @@ def process_discount_with_groq(discount: Dict[str, Any]) -> Dict[str, Any]:
         # Extract the response content
         response_content = chat_completion.choices[0].message.content
         
-        # Handle potential JSON formatting issues by extracting only the JSON part
-        try:
-            # Try to parse directly first
-            edited_discount = json.loads(response_content)
-            return edited_discount
-        except json.JSONDecodeError:
-            # If direct parsing fails, try to extract JSON from potential code blocks or explanations
-            if "```json" in response_content:
-                json_content = response_content.split("```json")[1].split("```")[0].strip()
-            elif "```" in response_content:
-                json_content = response_content.split("```")[1].split("```")[0].strip()
-            else:
-                # Try to find JSON object between curly braces
-                start_idx = response_content.find('{')
-                end_idx = response_content.rfind('}') + 1
-                if start_idx >= 0 and end_idx > start_idx:
-                    json_content = response_content[start_idx:end_idx]
-                else:
-                    print(f"Could not find valid JSON in response for discount ID {discount.get('discount_id')}")
-                    return discount
-                    
-            try:
-                edited_discount = json.loads(json_content)
-                return edited_discount
-            except json.JSONDecodeError as e:
-                print(f"Warrning: extracted JSON: {e}")
-                return discount
+        # Extract JSON content between triple backticks
+        json_match = re.search(r'```(?:\w+)?\s*\n([\s\S]*?)\n```', response_content)
+        if json_match:
+            json_text = json_match.group(1)
+            json_data = json.loads(json_text)
+        else:
+            # Handle case where no JSON block is found
+            print("No JSON found in response")
+            return discount
             
+        return json_data
+        
     except Exception as e:
         print(f"Error processing discount with ID {discount.get('discount_id')}: {e}")
         return discount  # Return the original discount if processing fails
