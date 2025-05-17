@@ -11,10 +11,10 @@ MESSAGE_TEMPLATE = """Instructions: You are an AI tool connected via API to my p
 Field-by-Field Instructions
 discount_id:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 title:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 price:
 Extract the discount amount from the description field.
 Assign an integer value according to the discount type:
@@ -27,49 +27,49 @@ Extract from the description field.
 Assign one value only from: {DISCOUNT_TYPE}
 description:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 image_link:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 discount_link:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 terms_and_conditions:
 No change required.
-If value is "N\A", set to "See provider website for details".
+If value is "N/A", set to "See provider website for details".
 club_name:
 No change required.
-If value is "N\A", set to an empty array.
+If value is "N/A", set to an empty array.
 category:
 Analyze the title and description.
-Select all relevant categories from:{CATEGORIES}
+Select all relevant categories from: {CATEGORIES}
 Use exact names, and include as many relevant categories as possible.
 consumer_statuses:
 Analyze the title and description.
-Select all applicable statuses from:{CONSUMER_STATUS}
+Select all applicable statuses from: {CONSUMER_STATUS}
 Use exact names, and include all that apply.
 valid_until:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 usage_limit:
 No change required.
-If value is "N\A", set to null.
+If value is "N/A", set to null.
 coupon_code:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 provider_link:
 No change required.
-If value is "N\A", set to empty string.
+If value is "N/A", set to empty string.
 
 Output Requirements
 Return the edited coupon object in valid JSON format.
 Ensure all fields are present and correctly set as per above.
 The "category" and "consumer_statuses" fields must use only values from their respective lists, and include all that apply.
 The "price" field must be an integer, and "discount_type" must be a single value from the enum.
-Unchanged fields must retain their original values unless "N\A", in which case use the specified default.
+Unchanged fields must retain their original values unless "N/A", in which case use the specified default.
 
 Coupon Object JSON Schema
-{
+{{
   "discount_id": "string",
   "title": "string",
   "price": "integer",
@@ -85,12 +85,11 @@ Coupon Object JSON Schema
   "coupon_code": "string",
   "provider_link": "string",
   "consumer_statuses": ["string"]
-}
+}}
 
 Please process the following coupon object according to the instructions above and return the validated, edited JSON object:
 {json_object}
 """
-
 
 
 # Load environment variables
@@ -135,7 +134,12 @@ def main():
     # Process each discount object
     for discount in discount_objects:
         # Format the message with the current discount object
-        message_to_send = MESSAGE_TEMPLATE.format(json_object=json.dumps(discount, ensure_ascii=False, indent=2))
+        message_to_send = MESSAGE_TEMPLATE.format(
+            json_object=json.dumps(discount, ensure_ascii=False, indent=2),
+            DISCOUNT_TYPE=DISCOUNT_TYPE,
+            CATEGORIES=CATEGORIES,
+            CONSUMER_STATUS=CONSUMER_STATUS
+        )
 
         # Send the request to Groq API
         response = send_chat_message(message_to_send)
