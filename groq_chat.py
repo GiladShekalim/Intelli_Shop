@@ -6,28 +6,17 @@ import logging
 import time
 from typing import Dict, List, Any
 import re
+from constants import (
+    JSON_SCHEMA, 
+    get_categories_string,
+    get_consumer_status_string,
+    get_discount_type_string
+)
 
-JSON_SCHEMA = """{{
-  "discount_id": "string",
-  "title": "string",
-  "price": "integer",
-  "discount_type": "enum",
-  "description": "string",
-  "image_link": "string",
-  "discount_link": "string",
-  "terms_and_conditions": "string",
-  "club_name": ["string"],
-  "category": ["string"],
-  "valid_until": "string",
-  "usage_limit": "integer",
-  "coupon_code": "string",
-  "provider_link": "string",
-  "consumer_statuses": ["string"]
-}}"""
-
-CATEGORIES = """{Consumerism, Travel and Vacation, Culture and Leisure, Cars, Insurance, Finance and Banking}"""
-CONSUMER_STATUS = """{Young, Senior, Homeowner, Traveler, Tech, Pets, Fitness, Student, Remote, Family}"""
-DISCOUNT_TYPE = """{fixed_amount, percentage, buy_one_get_one, Cost}"""
+# Use the imported constants and helper functions
+CATEGORIES = get_categories_string()
+CONSUMER_STATUS = get_consumer_status_string()
+DISCOUNT_TYPE = get_discount_type_string()
 
 MESSAGE_TEMPLATE = f"""You are a data processing API that enhances discount objects.
 You must return a valid JSON object that follows this schema:
