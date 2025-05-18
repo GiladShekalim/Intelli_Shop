@@ -1,6 +1,6 @@
 # Core dependencies
 asgiref==3.8.1
-Django==5.2
+Django
 sqlparse==0.5.3
 
 # Database
@@ -26,7 +26,7 @@ mccabe==0.7.0
 mypy-extensions==1.0.0
 packaging==24.2
 pathspec==0.12.1
-platformdirs==4.3.7
+platformdirs==4.3.6
 pycodestyle==2.11.1
 pyflakes==3.2.0
 
