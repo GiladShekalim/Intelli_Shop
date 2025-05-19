@@ -224,6 +224,10 @@ def dashboard(request):
                 }
                 users_list.append(user_data)
         
+        # Debug: Print hobby values for each user
+        for user_data in users_list:
+            print(f"User {user_data.get('username')}: Hobbies = {user_data.get('hobbies')}")
+
         return render(request, 'intellishop/dashboard.html', {'users': users_list})
         
     except Exception as e:
@@ -377,4 +381,18 @@ def coupon_code_view(request, code):
     
     # If we get here, redirect to home instead of showing error
     return redirect('index_home')
+
+def favorites_view(request):
+    # Check if user is logged in
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+
+    # This is a placeholder view for the favorites page.
+    # In a real application, you would fetch the user's favorite items
+    # from the database and pass them to the template context.
+    context = {
+        'favorite_items': [] # Replace with actual favorite items
+    }
+    return render(request, 'intellishop/favorites.html', context)
 

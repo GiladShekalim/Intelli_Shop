@@ -42,7 +42,19 @@
                     <td>{{ user.location }}</td>
                     <td>
                         {% for hobby in user.hobbies %}
-                            <span class="badge hobby-badge {% if hobby == 'lifestyle' %}bg-lifestyle{% elif hobby == 'electronics' %}bg-electronics{% elif hobby == 'home' %}bg-home{% elif hobby == 'books' %}bg-books{% elif hobby == 'Consumerism' %}bg-consumerism{% elif hobby == 'Travel and Vacation' %}bg-travel{% elif hobby == 'Culture and Leisure' %}bg-culture{% elif hobby == 'Cars' %}bg-cars{% elif hobby == 'Insurance' %}bg-insurance{% elif hobby == 'Finance and Banking' %}bg-finance{% else %}bg-info{% endif %}>">
+                            <span class="badge" style="background-color: 
+                                {% if hobby == 'lifestyle' %}#1a237e /* Deep Indigo */
+                                {% elif hobby == 'electronics' %}#004d40 /* Dark Teal */
+                                {% elif hobby == 'home' %}#e65100 /* Deep Orange */
+                                {% elif hobby == 'books' %}#33691e /* Dark Lime Green */
+                                {% elif hobby == 'Consumerism' %}#880e4f /* Dark Pink */
+                                {% elif hobby == 'Travel and Vacation' %}#01579b /* Dark Cyan */
+                                {% elif hobby == 'Culture and Leisure' %}#4a148c /* Dark Purple */
+                                {% elif hobby == 'Cars' %}#b71c1c /* Dark Red */
+                                {% elif hobby == 'Insurance' %}#0d47a1 /* Dark Blue */
+                                {% elif hobby == 'Finance and Banking' %}#f57f17 /* Dark Yellow */
+                                {% else %}#6c757d /* Defaulting to a neutral color */
+                                {% endif %} !important; color: white !important;">
                                 {{ hobby }}
                             </span>
                         {% endfor %}
@@ -88,22 +100,53 @@
 
 /* Custom colors for hobbies */
 .bg-lifestyle {
-    background-color: #20b2aa; /* LightSeaGreen */
+    background-color: #1a237e; /* Deep Indigo */
     color: white;
 }
 
 .bg-electronics {
-    background-color: #0dcaf0; /* Light Blue */
+    background-color: #004d40; /* Dark Teal */
     color: white;
 }
 
 .bg-home {
-    background-color: #ff6347; /* Tomato */
+    background-color: #e65100; /* Deep Orange */
     color: white;
 }
 
 .bg-books {
-    background-color: #4682b4; /* Steel Blue */
+    background-color: #33691e; /* Dark Lime Green */
+    color: white;
+}
+
+/* Adding colors for new hobbies */
+.bg-consumerism {
+    background-color: #880e4f; /* Dark Pink */
+    color: white;
+}
+
+.bg-travel {
+    background-color: #01579b; /* Dark Cyan */
+    color: white;
+}
+
+.bg-culture {
+    background-color: #4a148c; /* Dark Purple */
+    color: white;
+}
+
+.bg-cars {
+    background-color: #b71c1c; /* Dark Red */
+    color: white;
+}
+
+.bg-insurance {
+    background-color: #0d47a1; /* Dark Blue */
+    color: white;
+}
+
+.bg-finance {
+    background-color: #f57f17; /* Dark Yellow */
     color: white;
 }
 
@@ -221,33 +264,33 @@
 
 /* New and updated hobby colors */
 .bg-consumerism {
-    background-color: #6f42c1; /* Purple */
+    background-color: #cd5c5c; /* IndianRed */
     color: white;
 }
 
 .bg-travel {
-    background-color: #ff007f; /* Bright Pink */
+    background-color: #32cd32; /* LimeGreen */
     color: white;
 }
 
 .bg-culture {
-    background-color: #00ffff; /* Aqua */
-    color: black;
+    background-color: #8a2be2; /* BlueViolet */
+    color: white;
 }
 
 .bg-cars {
-    background-color: #7fff00; /* Chartreuse */
-    color: black;
+    background-color: #ff4500; /* OrangeRed */
+    color: white;
 }
 
 .bg-insurance {
-    background-color: #8a2be2; /* Blue Violet */
+    background-color: #1e90ff; /* DodgerBlue */
     color: white;
 }
 
 .bg-finance {
-    background-color: #deb887; /* Burlywood */
-    color: black;
+    background-color: #da70d6; /* Orchid */
+    color: white;
 }
 
 /* Ensure existing hobby colors are also distinct */
@@ -257,7 +300,7 @@
 }
 
 .bg-electronics {
-    background-color: #0dcaf0; /* Light Blue */
+    background-color: #4169e1; /* RoyalBlue */
     color: white;
 }
 
@@ -270,6 +313,12 @@
     background-color: #4682b4; /* Steel Blue */
     color: white;
 }
+
+/* Ensure default dark color is not used */
+.badge.bg-dark { background-color: #007bff !important; color: white !important; } /* Defaulting dark to primary (blue) */
+
+/* Ensure Bootstrap secondary (grey) is not used */
+.badge.bg-secondary { background-color: #fd7e14 !important; color: white !important; } /* Defaulting secondary to orange */
 
 td {
     vertical-align: middle;

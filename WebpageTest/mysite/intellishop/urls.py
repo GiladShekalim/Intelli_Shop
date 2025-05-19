@@ -15,5 +15,6 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('logout/', views.logout_view, name='logout'),
     path('coupon/<str:code>/', views.coupon_code_view, name='coupon_code'),
+    path('favorites/', views.favorites_view, name='favorites'),
 ] 
 
