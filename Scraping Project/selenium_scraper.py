@@ -2,21 +2,23 @@ import time
 import json
 import re
 import random
+import tempfile
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
-
-import threading
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-import tempfile
 from selenium.common.exceptions import NoSuchElementException
-
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
+MAX_DISCOUNTS = 10  # Number of discounts to scrape per category
+AMOUNT = 1
+LOCATION = "Israel"
+HEADLESS = True
+BASE_URL = "https://www.hot.co.il"
 
 # --- Configuration ---
 CATEGORIES = [
@@ -27,11 +29,6 @@ CATEGORIES = [
     {"name": "Insurance", "url": "https://www.hot.co.il/קטגוריה/818/ביטוח"},
     {"name": "Finance and Banking", "url": "https://www.hot.co.il/קטגוריה/777/פיננסים_ובנקאות"}
 ]
-
-MAX_DISCOUNTS = 10  # Number of discounts to scrape per category
-AMOUNT = 1
-HEADLESS = True
-BASE_URL = "https://www.hot.co.il"
 
 # --- Setup Driver ---
 def setup_driver():
@@ -52,9 +49,7 @@ def setup_driver():
 
     return webdriver.Chrome(options=options)
 
-
 # --- Helper (Regex) Functions ---
-
 def extract_due_date(text):
     patterns = [
         r'בין התאריכים:\s*\d{1,2}-([0-9]{1,2}\.[0-9]{1,2}\.[0-9]{2,4})',
@@ -77,7 +72,6 @@ def extract_due_date(text):
     fallback_due_date = (datetime.now() + timedelta(days=random_days)).strftime("%d.%m.%y")
     print(f"[!] No due date found, defaulting to: {fallback_due_date} (+{random_days} days)")
     return fallback_due_date
-
 def classify_price_type(price_text):
     if not price_text or price_text.strip() == "":
         print(f"[-] No Price Type Found")
@@ -99,7 +93,6 @@ def classify_price_type(price_text):
     # 3. If neither match
     print(f"[-] No Price Type Found")
     return "N/A"
-
 def extract_discount_code(text):
     # Only match codes that follow a real coupon trigger
     pattern = r'(?:קוד קופון|קוד הטבה|קוד המבצע|קוד)\s*:?\s*([A-Za-z0-9]{4,})'
@@ -115,7 +108,6 @@ def extract_discount_code(text):
         return code
     print(f"[-] No Discount Code Found")
     return "N/A"
-
 def get_club_name_from_url(url):
     """
     Extracts the domain (like 'hot') from a full URL.
@@ -125,8 +117,6 @@ def get_club_name_from_url(url):
     if domain_parts[0] == "www":
         return domain_parts[1]  # e.g., 'hot'
     return domain_parts[0]  # fallback
-
-
 
 # --- Scrape a single category ---
 def extract_discounts_for_category(driver, category_url, category_name):
@@ -160,6 +150,7 @@ def extract_discounts_for_category(driver, category_url, category_name):
     for i, link in enumerate(discount_links):
         print(f"-------------------")
         print(f"[*] For Discount #{i+1}:")
+        
         # try to scrape a discount:
         try:
             
@@ -247,19 +238,8 @@ def extract_discounts_for_category(driver, category_url, category_name):
 
                 else:
                     print("[✓] No send button exists on this discount")
-
             except Exception as e:
                 print(f"[!] External link extraction failed: {type(e).__name__}: {e}")
-
-
-
-
-
-
-
-
-
-
 
             # Title
             try:
@@ -340,24 +320,23 @@ def extract_discounts_for_category(driver, category_url, category_name):
                 "coupon_code": discount_code,
                 "valid_until": due_date,
 
-                "usage_limit": AMOUNT
+                "usage_limit": AMOUNT,
+                "location": LOCATION
             })
             extract_discounts_for_category.counter += 1
-        
-        # wasn't able to scrape the discount:    
+        # If got here - wasn't able to scrape the discount:    
         except Exception as e:
             print(f"[!] Error scraping discount #{i+1}: {e}")
     
     # return total discounts:
     return discounts
 
-# Counter
+# Counter:
 extract_discounts_for_category.counter = 1
 
 # Add delay between discounts:
 print("[⏳] Waiting before next discount...")
 time.sleep(random.uniform(1.5, 3.5))  # small human-like pause
-
 
 # --- Main ---
 if __name__ == "__main__":
@@ -375,7 +354,8 @@ if __name__ == "__main__":
 
     driver.quit()
 
-    with open("hot_discounts.json", "w", encoding="utf-8") as f:
+    # Import the data into a JSON file:
+    with open("scraping project/hot_discounts.json", "w", encoding="utf-8") as f:
         json.dump(all_discounts, f, ensure_ascii=False, indent=2)
 
     print("\n[✔] Scraping complete. Results saved to hot_discounts.json")
