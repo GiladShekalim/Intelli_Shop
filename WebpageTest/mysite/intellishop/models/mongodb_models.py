@@ -4,6 +4,7 @@ import logging
 from jsonschema import validate, ValidationError
 import json
 import csv
+import os
 
 # Constants moved from External-Groq/constants.py
 # Categories for coupons
@@ -586,3 +587,14 @@ class Coupon(MongoDBModel):
             results['errors'].append(f"CSV processing error: {str(e)}")
             
         return results
+
+def find_json_and_csv_files(data_dir_path=None):
+    # ... existing code ...
+    
+    # Filter to only include enhanced files
+    json_files = [f for f in json_files if os.path.basename(f).lower().startswith('enhanced_')]
+    csv_files = [f for f in csv_files if os.path.basename(f).lower().startswith('enhanced_')]
+    
+    logger.info(f"Found {len(json_files)} enhanced JSON files and {len(csv_files)} enhanced CSV files")
+    
+    return json_files, csv_files
