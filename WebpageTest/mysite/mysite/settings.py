@@ -146,33 +146,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Get MongoDB connection details from environment variables
 MONGODB_URI = os.environ.get(
     'MONGODB_URI', 
-    'mongodb+srv://giladshkalim:<db_password>@intellidb.yuauj7i.mongodb.net/IntelliDB?retryWrites=true&w=majority&appName=IntelliDB'
+    'mongodb://localhost:27017/'
 )
-MONGODB_NAME = os.environ.get('MONGODB_NAME', 'IntelliDB')
+MONGODB_NAME = os.environ.get('MONGODB_NAME', 'intellishop_db')
 
-# IMPORTANT: Django still requires a relational database for its built-in features
-# We'll use an in-memory SQLite database as a minimal solution for Django's internal use
-# This won't store any application data, which will all go to MongoDB
+# Django's default database for built-in features and sessions
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',  # Use in-memory database instead of file
+        'NAME': BASE_DIR / 'db.sqlite3',  # File-based database
     }
 }
-
-# Optional: If you want to completely disable migrations (advanced)
-# This can speed up tests but might break some Django functionality
-# MIGRATION_MODULES = {app: None for app in INSTALLED_APPS}
-
-# Instructions for users in comments
-"""
-To connect to MongoDB Atlas:
-1. Create a .env file in the project root (where manage.py is)
-2. Add these lines to the .env file:
-   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-address>/<database>?retryWrites=true&w=majority
-   MONGODB_NAME=<database>
-3. Replace the placeholders with your actual MongoDB credentials
-"""
 
 # Session configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Store sessions in the database
