@@ -46,34 +46,5 @@ def main():
     print(f"\n[✔] Scraping complete. Results saved to {output_file}")
 
 
-    # all_discounts = []
-
-    # if SCRAPE_TARGET in ["hot", "both"]:
-    #     print("[*] Scraping HOT...")
-    #     all_discounts.extend(scrape_hot(driver))
-
-    # if SCRAPE_TARGET in ["adif", "both"]:
-    #     print("[*] Scraping Adif...")
-    #     all_discounts.extend(scrape_adif(driver))
-
-    # driver.quit()
-    
-    # # Determine output file name based on source
-    # if SCRAPE_TARGET == "hot":
-    #     output_file = "output/hot_discounts.json"
-    # elif SCRAPE_TARGET == "adif":
-    #     output_file = "output/adif_discounts.json"
-    # elif SCRAPE_TARGET == "both":
-    #     output_file = "output/all_discounts.json"
-    # else:
-    #     output_file = "output/discounts.json"
-
-    # # Save results to the correct file
-    # with open(output_file, "w", encoding="utf-8") as f:
-    #     json.dump(all_discounts, f, ensure_ascii=False, indent=2)
-
-    # print(f"\n[✔] Scraping complete. Results saved to {output_file}")
-
-
 if __name__ == "__main__":
     main()

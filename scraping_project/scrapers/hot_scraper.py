@@ -1,6 +1,7 @@
 # scrapers/hot_scraper.py
 import time
 import random
+import config
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,7 +11,7 @@ from utils.helpers import *
 
 def scrape_hot(driver):
     all_discounts = []
-    extract_discounts_for_category.counter = 1
+    #extract_discounts_for_category.counter = 1
     
     for category in CATEGORIES_HOT:
         discounts = extract_discounts_for_category(driver, category["url"], category["name"])
@@ -107,7 +108,7 @@ def extract_discounts_for_category(driver, category_url, category_name):
                     else:
                         original_tabs = driver.window_handles.copy()
                         driver.execute_script("arguments[0].click();", button)
-                        print("[*] Clicked send button, waiting...")
+                        #print("[*] Clicked send button, waiting...")
 
                         time.sleep(2.5)  # allow time for tab or form to react
 
@@ -115,11 +116,11 @@ def extract_discounts_for_category(driver, category_url, category_name):
                         if len(new_tabs) > len(original_tabs):
                             new_tab = [tab for tab in new_tabs if tab not in original_tabs][0]
                             driver.switch_to.window(new_tab)
-                            print("[*] Switched to new tab")
+                            #print("[*] Switched to new tab")
 
                             try:
                                 current = driver.execute_script("return window.location.href;")
-                                print(f"[*] JS returned current URL: {current}")
+                                #print(f"[*] JS returned current URL: {current}")
                             except Exception:
                                 current = "N/A"
                                 print("[!] JS failed to read URL")
@@ -205,7 +206,7 @@ def extract_discounts_for_category(driver, category_url, category_name):
                 "club_name": club_name,
                 "category": category_name,
 
-                "discount_id": str(extract_discounts_for_category.counter),
+                "discount_id": str(config.DISCOUNT_ID_COUNTER), #str(extract_discounts_for_category.counter),
                 "title": title,
 
                 "price": price,
@@ -224,7 +225,9 @@ def extract_discounts_for_category(driver, category_url, category_name):
                 "usage_limit": AMOUNT,
                 "location": LOCATION
             })
-            extract_discounts_for_category.counter += 1
+            #extract_discounts_for_category.counter += 1
+            config.DISCOUNT_ID_COUNTER += 1
+        
         # If got here - wasn't able to scrape the discount:    
         except Exception as e:
             print(f"[!] Error scraping discount #{i+1}: {e}")

@@ -1,6 +1,7 @@
 # scrapers/adif_scraper.py
 import time
 import random
+import config
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,7 +11,7 @@ from utils.helpers import *
 
 def scrape_adif(driver):
     all_discounts = []
-    extract_discounts_for_category.counter = 1
+    #extract_discounts_for_category.counter = 1
 
     for category in CATEGORIES_ADIF:
         discounts = extract_discounts_for_category(driver, category["url"], category["name"])
@@ -222,7 +223,7 @@ def extract_discounts_for_category(driver, category_url, category_name):
             discounts.append({
                 "club_name": club_name,
                 "category": category_name,
-                "discount_id": str(extract_discounts_for_category.counter),
+                "discount_id": str(config.DISCOUNT_ID_COUNTER),  #str(extract_discounts_for_category.counter),
                 "title": title,
 
                 "price": price,
@@ -238,10 +239,12 @@ def extract_discounts_for_category(driver, category_url, category_name):
                 "coupon_code": coupon_code,
                 "valid_until": valid_until,
 
-                "usage_limit": AMOUNT,
+                "usage_limit": str(AMOUNT),
                 "location": LOCATION
             })
-            extract_discounts_for_category.counter += 1
+            #extract_discounts_for_category.counter += 1
+            config.DISCOUNT_ID_COUNTER += 1
+
 
         # If got here - wasn't able to scrape the discount:
         except Exception as e:

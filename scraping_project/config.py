@@ -3,7 +3,8 @@ MAX_DISCOUNTS = 10
 AMOUNT = 1
 LOCATION = "Israel"
 HEADLESS = True
-SCRAPE_TARGET = "adif"
+DISCOUNT_ID_COUNTER = 1
+SCRAPE_TARGET = "both"
 BASE_URL_HOT = "https://www.hot.co.il"
 BASE_URL_ADIF = "https://adif.org.il"
 
