@@ -1,6 +1,6 @@
 # IntelliShop
 
-IntelliShop is a modern web application that provides an intuitive e-commerce platform. Built with Django and MongoDB, it offers the foundation for online shopping experiences.
+IntelliShop is a web application that provides an intuitive e-commerce platform. Built with Django and MongoDB, it offers the foundation for online shopping experiences with AI-enhanced data personalization.
 
 ## Quick Start Guide
 
@@ -17,41 +17,16 @@ Before running the application, you need to set up your environment variables:
    # Django Settings
    SECRET_KEY=your-secret-key-here
    DEBUG=True
+   
+   # Groq API (for AI enhancement)
+   GROQ_API_KEY=<your_api_key_here>
    ```
 
 2. Replace the placeholder values with your actual MongoDB credentials and desired settings.
 
 ### Running the Application
 
-The application includes a build script that handles setup and execution:
-
-./build.sh
-
-Access the application at http://localhost:8000
-
-## Features
-
-- Product catalog with categories
-- MongoDB integration for scalable data storage
-- Responsive design for desktop and mobile devices
-- User authentication and account management
-
-## Technologies Used
-
-- **Backend**: Django, Python 3
-- **Database**: MongoDB
-- **Frontend**: HTML, CSS, JavaScript
-- **Deployment**: WSL (Windows Subsystem for Linux)
-
-## Prerequisites
-
-- Python 3.8 or higher
-- Access to a MongoDB database (Atlas URI)
-- Git
-
-## Detailed Installation
-
-### 1. Clone the Repository
+The application includes an interactive setup menu that guides you through different initialization options:
 
 ```bash
 git clone https://github.com/yourusername/intellishop.git
@@ -62,24 +37,55 @@ cd intellishop
 
 Follow the "Setting Up Environment Variables" section above to create your `.env` file.
 
-### 3. Run the Build Script
+### 3. Run the Setup Script
 
-Follow the "Running the Application" section above to execute the build script.
+Run the interactive setup menu and select your preferred installation option:
 
-## Project Structure
-
+```bash
+./intelliShop.sh
 ```
-intellishop/
-├── mysite/                  # Django project directory
-│   ├── intellishop/         # Main application
-│   │   ├── models/          # MongoDB models
-│   │   ├── utils/           # Utility functions
-│   │   ├── management/      # Custom management commands
-│   │   ├── views.py         # View controllers
-│   │   └── ...
-│   ├── manage.py            # Django management script
-│   └── ...
-├── build.sh                 # Setup and run script
-├── requirements.txt         # Project dependencies
-└── .env                     # Environment variables (create this)
-```
+
+This will display a menu with the following options:
+1. **Setup only** - Basic application setup
+2. **Setup -> data validation and insert** -> Setup and populate with sample data
+3. **Setup -> AI enhancement -> data validation and insert** -> Setup with AI-enhanced product data
+
+Access the application at http://localhost:8000 after setup completes.
+
+## Features
+
+- Product catalog with categories
+- MongoDB integration for scalable data storage
+- Responsive design for desktop and mobile devices
+- User authentication and account management
+- AI-powered discount data enhancement
+- JSON-formatted product enhancements
+- Field extraction and categorization
+
+## Technologies Used
+
+- **Backend**: Django, Python 3
+- **Database**: MongoDB
+- **Frontend**: HTML, CSS, JavaScript
+- **AI Integration**: Groq Chat API
+- **Deployment**: WSL (Windows Subsystem for Linux)
+
+## Prerequisites
+
+- Python 3.8 or higher
+- Access to a MongoDB database (Atlas URI)
+- Groq API key (for AI enhancement features)
+
+## AI Enhancement Features
+
+The application includes AI-powered enhancement for discount data using the Groq Chat API:
+
+- Support for Hebrew text in discount objects
+- Comprehensive error handling with retries
+- Detailed processing summary
+- Automatic environment setup
+
+The enhancement process:
+- Reads discount objects from data directory
+- Processes each object through Groq's API
+- Saves enhanced objects to data directory

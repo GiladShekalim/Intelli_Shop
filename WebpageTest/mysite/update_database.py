@@ -18,18 +18,27 @@ import pymongo
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S,%3d'
 )
 logger = logging.getLogger("DatabaseUpdate")
 
 # Add the project directory to the path so we can import modules
-sys.path.append(os.path.join(os.path.dirname(__file__), 'mysite'))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(SCRIPT_DIR, '..'))  # Add parent directory
+sys.path.append(os.path.join(SCRIPT_DIR, '..', 'mysite'))  # Add mysite directory if it exists
+
+# Additional fallbacks for Django settings module
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
+# Try alternative settings module if the first fails
+if not os.path.exists(os.path.join(SCRIPT_DIR, '..', 'mysite', 'settings.py')):
+    if os.path.exists(os.path.join(SCRIPT_DIR, 'mysite', 'settings.py')):
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'exes.mysite.settings')
 
 # Try to import Django settings
 try:
     import django
     # Set up Django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
     django.setup()
     
     # Import models after Django setup
@@ -75,16 +84,20 @@ def test_mongodb_connection():
         if 'client' in locals():
             client.close()
 
-def find_data_files():
+def find_json_and_csv_files(data_dir_path=None):
     """Find all JSON and CSV files in the data directory and its subdirectories"""
+    # Get the base directory (WebpageTest/mysite)
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(base_dir, 'mysite', 'intellishop', 'data')
+    
+    # Default data directory path (WebpageTest/mysite/intellishop/data)
+    data_dir = os.path.join(base_dir, 'intellishop', 'data')
     
     # Add fallback paths if the primary one doesn't exist
     if not os.path.exists(data_dir):
         alternative_paths = [
-            os.path.join(base_dir, 'intellishop', 'data'),
-            os.path.join(base_dir, 'mysite', 'data')
+            os.path.join(base_dir, 'data'),
+            os.path.join(os.path.dirname(base_dir), 'data'),
+            os.path.join(base_dir, '..', 'data')
         ]
         
         for alt_path in alternative_paths:
@@ -92,6 +105,11 @@ def find_data_files():
                 data_dir = alt_path
                 logger.info(f"Using alternative data directory: {data_dir}")
                 break
+    
+    # If data_dir_path is provided, use it instead
+    if data_dir_path and os.path.exists(data_dir_path):
+        data_dir = data_dir_path
+        logger.info(f"Using provided data directory: {data_dir}")
     
     json_files = []
     csv_files = []
@@ -116,51 +134,94 @@ def find_data_files():
     return json_files, csv_files
 
 def process_coupon_data(coupon_data):
-    """Custom pre-validation processing for coupon data"""
-    # Normalize data fields
-    if 'code' in coupon_data:
-        coupon_data['code'] = coupon_data['code'].strip().upper()
-    
+    """Process coupon data to match the new schema requirements"""
     # Add computed fields
     if 'date_created' not in coupon_data:
         coupon_data['date_created'] = datetime.now().isoformat()
     
+    # Ensure price is an integer
+    if 'price' in coupon_data and not isinstance(coupon_data['price'], int):
+        try:
+            # Handle price as dictionary (legacy format)
+            if isinstance(coupon_data['price'], dict) and 'amount' in coupon_data['price']:
+                coupon_data['price'] = int(coupon_data['price']['amount'])
+            else:
+                # Convert string to integer
+                price_str = str(coupon_data['price']).replace('%', '').strip()
+                coupon_data['price'] = int(float(price_str))
+        except (ValueError, TypeError):
+            coupon_data['price'] = 0
+    
+    # Infer discount_type if not present
+    if 'discount_type' not in coupon_data and 'price' in coupon_data:
+        price_str = str(coupon_data.get('price', ''))
+        if '%' in price_str:
+            coupon_data['discount_type'] = 'percentage'
+        else:
+            coupon_data['discount_type'] = 'fixed_amount'
+    
     # Add business logic validations
-    if coupon_data.get('discount_type') == 'percent' and coupon_data.get('amount', 0) > 50:
-        logger.warning(f"High discount detected: {coupon_data['code']} with {coupon_data['amount']}%")
+    if coupon_data.get('discount_type') == 'percentage' and coupon_data.get('price', 0) > 50:
+        logger.warning(f"High discount percentage detected: {coupon_data.get('coupon_code', 'unknown')} with {coupon_data.get('price')}%")
     
     return coupon_data
 
-def import_json_file(file_path):
-    """Import data from a JSON file"""
+def import_coupons_from_json(file_path):
+    """Import coupons from a JSON file"""
+    filename = os.path.basename(file_path)
+    logger.info(f"Importing coupons from JSON file: {file_path}")
     try:
-        logger.info(f"Importing data from JSON file: {file_path}")
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-            
-            # Determine type of data based on file name or content
-            if 'coupon_samples.json' in file_path:
-                # Handle coupon data specifically
-                results = Coupon.import_from_json(data)
-                logger.info(f"Imported coupon data: {results['valid']} valid, {results['invalid']} invalid")
-                return True
-            else:
-                # Look for array of objects with identifiable fields
-                if isinstance(data, list) and len(data) > 0:
-                    sample = data[0]
-                    if 'title' in sample and ('price' in sample or 'price_type' in sample or 'coupon_code' in sample):
-                        results = Coupon.import_from_json(data)
-                        logger.info(f"Imported as coupon data: {results['valid']} valid, {results['invalid']} invalid")
-                        return True
+        with open(file_path, 'r', encoding='utf-8') as file:
+            json_data = json.load(file)
+        
+        results = Coupon.import_from_json(json_data)
+        
+        # Track deprecated IDs
+        deprecated_ids = []
+        for detail in results.get('details', []):
+            if 'error' in detail and detail.get('id'):
+                deprecated_ids.append(detail.get('id', 'unknown'))
+        
+        # Log summary
+        total = results.get('success', 0) + len(results.get('errors', []))
+        logger.info(f"File Summary for {filename}:")
+        logger.info(f"  - Total items processed: {total}")
+        logger.info(f"  - Successfully imported: {results['success']}")
+        logger.info(f"  - Deprecated items: {len(results.get('errors', []))}")
+        
+        if deprecated_ids:
+            logger.info(f"  - Deprecated IDs: {', '.join(deprecated_ids[:20])}")
+            if len(deprecated_ids) > 20:
+                logger.info(f"    ... and {len(deprecated_ids) - 20} more")
+        
+        # Original logging can remain
+        logger.info(f"Successfully imported {results['success']} coupons from {filename}")
+        
+        if results['warnings']:
+            logger.warning(f"Encountered {len(results['warnings'])} warnings while importing coupons from {filename}:")
+            for warning in results['warnings'][:10]:  # Limit to first 10 warnings
+                logger.warning(f"  - {warning}")
                 
-                logger.warning(f"Unknown data format in {file_path}. Skipping.")
-                return False
+            if len(results['warnings']) > 10:
+                logger.warning(f"  ... and {len(results['warnings']) - 10} more warnings")
+                
+        # Log detailed information if not too many
+        if results['details'] and len(results['details']) <= 50:
+            logger.info(f"Detailed import information for {filename}:")
+            for detail in results['details']:
+                if 'error' in detail:
+                    logger.error(f"  Entry #{detail['entry']} '{detail['title']}': {detail['error']}")
+                elif 'warning' in detail:
+                    logger.warning(f"  Entry #{detail['entry']} '{detail['title']}': {detail['warning']}")
+        
+        return results['success'] > 0
     except Exception as e:
-        logger.error(f"Error importing JSON file {file_path}: {str(e)}")
+        logger.error(f"Failed to import coupons from JSON file {filename}: {str(e)}")
         return False
 
 def import_csv_file(file_path):
     """Import data from a CSV file"""
+    filename = os.path.basename(file_path)
     try:
         logger.info(f"Importing data from CSV file: {file_path}")
         
@@ -170,6 +231,28 @@ def import_csv_file(file_path):
                 # Add more detailed logging to debug import issues
                 logger.info(f"Starting CSV import from {file_path}")
                 results = Coupon.import_from_csv(f)
+                
+                # Track deprecated IDs
+                deprecated_ids = []
+                for error in results.get('detailed_errors', []):
+                    if isinstance(error, dict) and 'id' in error:
+                        deprecated_ids.append(error['id'])
+                    elif isinstance(error, dict) and 'row' in error:
+                        deprecated_ids.append(f"row-{error['row']}")
+                
+                # Log summary for this file
+                total = results.get('valid', 0) + results.get('invalid', 0)
+                logger.info(f"File Summary for {filename}:")
+                logger.info(f"  - Total items processed: {total}")
+                logger.info(f"  - Successfully imported: {results.get('valid', 0)}")
+                logger.info(f"  - Deprecated items: {results.get('invalid', 0)}")
+                
+                if deprecated_ids:
+                    logger.info(f"  - Deprecated IDs: {', '.join(deprecated_ids[:20])}")
+                    if len(deprecated_ids) > 20:
+                        logger.info(f"    ... and {len(deprecated_ids) - 20} more")
+                
+                # Original logging remains
                 if results['invalid'] > 0:
                     for error in results.get('errors', []):
                         logger.warning(f"CSV import error: {error}")
@@ -196,11 +279,30 @@ def import_csv_file(file_path):
                         logger.info("CSV file appears to contain coupon data, importing...")
                         results = Coupon.import_from_csv(f)
                         
-                        # Log detailed error information
+                        # Track deprecated IDs
+                        deprecated_ids = []
+                        for error in results.get('detailed_errors', []):
+                            if isinstance(error, dict) and 'id' in error:
+                                deprecated_ids.append(error['id'])
+                            elif isinstance(error, dict) and 'row' in error:
+                                deprecated_ids.append(f"row-{error['row']}")
+                        
+                        # Log summary for this file
+                        total = results.get('valid', 0) + results.get('invalid', 0)
+                        logger.info(f"File Summary for {filename}:")
+                        logger.info(f"  - Total items processed: {total}")
+                        logger.info(f"  - Successfully imported: {results.get('valid', 0)}")
+                        logger.info(f"  - Deprecated items: {results.get('invalid', 0)}")
+                        
+                        if deprecated_ids:
+                            logger.info(f"  - Deprecated IDs: {', '.join(deprecated_ids[:20])}")
+                            if len(deprecated_ids) > 20:
+                                logger.info(f"    ... and {len(deprecated_ids) - 20} more")
+                        
+                        # Original logging
                         if results['invalid'] > 0:
                             for error in results.get('errors', []):
                                 logger.warning(f"CSV import error: {error}")
-                                
                         logger.info(f"Imported as coupon data: {results['valid']} valid, {results['invalid']} invalid")
                         return True
             
@@ -216,7 +318,7 @@ def verify_database_content():
     """Verify that the database was updated successfully"""
     try:
         # Count documents in collections
-        current_date = datetime.now()
+        current_date = datetime.now().isoformat()
         
         logger.info("Verifying database content...")
         
@@ -225,16 +327,20 @@ def verify_database_content():
         expired_coupons = 0
         
         coupons_collection = get_collection_handle('coupons')
-        if coupons_collection is not None:  # Properly check for None
+        if coupons_collection is not None:
+            # Count active coupons
             active_coupons = coupons_collection.count_documents({
                 '$or': [
-                    {'valid_until': {'$gt': current_date}},
-                    {'valid_until': None}
+                    {'valid_until': {'$exists': False}},
+                    {'valid_until': None},
+                    {'valid_until': ''},
+                    {'valid_until': {'$gt': current_date}}
                 ]
             })
             
+            # Count expired coupons
             expired_coupons = coupons_collection.count_documents({
-                'valid_until': {'$lte': current_date}
+                'valid_until': {'$exists': True, '$ne': None, '$ne': '', '$lte': current_date}
             })
         else:
             logger.error("Could not get coupons collection handle")
@@ -256,7 +362,7 @@ def main():
         return False
     
     # Find all data files
-    json_files, csv_files = find_data_files()
+    json_files, csv_files = find_json_and_csv_files()
     
     if not json_files and not csv_files:
         logger.warning("No data files found to import. Check your data directory structure.")
@@ -265,7 +371,7 @@ def main():
     # Process all JSON files
     json_success = True
     for json_file in json_files:
-        file_result = import_json_file(json_file)
+        file_result = import_coupons_from_json(json_file)
         json_success = json_success and file_result
     
     # Process all CSV files

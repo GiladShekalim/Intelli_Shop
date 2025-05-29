@@ -4,6 +4,25 @@ import logging
 from jsonschema import validate, ValidationError
 import json
 import csv
+import os
+
+# Constants moved from External-Groq/constants.py
+# Categories for coupons
+CATEGORIES = [
+    "Consumerism", "Travel and Vacation", "Culture and Leisure", 
+    "Cars", "Insurance", "Finance and Banking"
+]
+
+# Consumer statuses
+CONSUMER_STATUS = [
+    "Young", "Senior", "Homeowner", "Traveler", "Tech", 
+    "Pets", "Fitness", "Student", "Remote", "Family"
+]
+
+# Discount types
+DISCOUNT_TYPE = [
+    "fixed_amount", "percentage", "buy_one_get_one", "Cost"
+]
 
 logger = logging.getLogger(__name__)
 
@@ -51,12 +70,25 @@ class MongoDBModel:
         return None
     
     @classmethod
-    def update_one(cls, query, update):
-        """Update a document in the collection"""
+    def update_one(cls, filter_dict, update_data, upsert=False):
+        """
+        Update a single document in the collection.
+        
+        Args:
+            filter_dict: Dictionary to filter documents
+            update_data: Dictionary with update data
+            upsert: If True, insert a new document if no document matches the filter
+        
+        Returns:
+            Result of the update operation
+        """
         collection = cls.get_collection()
-        if collection is not None:  # Add explicit None check
-            return collection.update_one(query, {'$set': update})
-        return None
+        
+        # If update_data doesn't have $ operators, use $set
+        if not any(key.startswith('$') for key in update_data.keys()):
+            update_data = {'$set': update_data}
+        
+        return collection.update_one(filter_dict, update_data, upsert=upsert)
     
     @classmethod
     def delete_one(cls, query):
@@ -75,7 +107,7 @@ class User(MongoDBModel):
         """Create a new user in MongoDB"""
         user_data = {
             'username': username,
-            'password': password,  # In production, hash this password
+            'password': password,  # In production, hash this
             'email': email,
             'status': status,
             'age': age,
@@ -100,11 +132,11 @@ class User(MongoDBModel):
         """Get a user by ID"""
         return cls.find_one({'_id': ObjectId(user_id)})
 
-# Add this Coupon model to your MongoDB models
+# Updated Coupon model with new schema
 class Coupon(MongoDBModel):
     collection_name = 'coupons'
     
-    # Define the coupon schema
+    # Define the updated coupon schema
     schema = {
         "type": "object",
         "properties": {
@@ -114,51 +146,46 @@ class Coupon(MongoDBModel):
             },
             "title": {
                 "type": "string",
-                "description": "Name or title of the coupon.",
+                "description": "Title of the coupon."
             },
             "price": {
-                "type": ["number", "string"],
-                "description": "Discount amount (can be numeric or percentage)."
+                "type": "integer",
+                "minimum": 0,
+                "description": "Price or discount amount."
             },
-            "price_type": {
+            "discount_type": {
                 "type": "string",
-                "enum": ["fixed_amount", "percentage", "buy_one_get_one", "Cost"],
-                "description": "Type of discount offered."
+                "enum": DISCOUNT_TYPE,
+                "description": "Type of discount (fixed_amount, percentage, buy_one_get_one, Cost)."
             },
             "description": {
-                "type": ["string", "null"],
+                "type": "string",
                 "description": "Detailed description of the coupon."
             },
             "image_link": {
-                "type": ["string", "null"],
-                "description": "Link to an image representing the coupon."
+                "type": "string",
+                "description": "URL to an image representing the coupon."
             },
             "discount_link": {
                 "type": "string",
-                "description": "Link to the original offer or product page."
+                "description": "URL to the discount page."
             },
             "terms_and_conditions": {
-                "type": ["string", "null"],
-                "description": "Terms and conditions or restrictions related to the coupon."
+                "type": "string",
+                "description": "Terms and conditions for using the coupon."
             },
             "club_name": {
-                "type": ["string", "null"],
-                "enum": [
-                    "Young", "Senior", "Homeowner", "Traveler", 
-                    "Tech", "Pets", "Fitness", "Student", 
-                    "Remote", "Family", None
-                ],
-                "description": "Club name associated with the coupon."
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "List of club names associated with the coupon."
             },
             "category": {
-                "type": ["array", "string", "null"],
+                "type": "array",
                 "items": {
                     "type": "string",
-                    "enum": [
-                        "Consumerism", "Travel and Vacation", 
-                        "Culture and Leisure", "Cars", 
-                        "Insurance", "Finance and Banking"
-                    ]
+                    "enum": CATEGORIES
                 },
                 "description": "Categories the coupon belongs to."
             },
@@ -168,18 +195,28 @@ class Coupon(MongoDBModel):
             },
             "usage_limit": {
                 "type": ["integer", "null"],
+                "minimum": 1,
                 "description": "Total number of times the coupon can be used."
-            },
-            "usage_count": {
-                "type": ["integer", "null"],
-                "description": "Number of times the coupon has been used."
             },
             "coupon_code": {
                 "type": "string",
-                "description": "Unique code to identify the coupon."
+                "description": "Code to be used when redeeming the coupon."
+            },
+            "provider_link": {
+                "type": "string",
+                "description": "URL to the provider's website."
+            },
+            "consumer_statuses": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": CONSUMER_STATUS
+                },
+                "description": "Consumer statuses this coupon targets."
             }
         },
-        "required": ["title", "price", "discount_link", "valid_until", "coupon_code"]
+        "required": ["title", "price", "discount_link"],
+        "additionalProperties": True
     }
     
     @classmethod
@@ -200,10 +237,225 @@ class Coupon(MongoDBModel):
             '$or': [
                 {'valid_until': {'$exists': False}},
                 {'valid_until': None},
+                {'valid_until': ''},
                 {'valid_until': {'$gt': current_date}}
             ]
         })
     
+    @classmethod
+    def import_from_json(cls, json_data):
+        """Import coupons from JSON data"""
+        results = {
+            'success': 0,
+            'errors': [],
+            'warnings': [],
+            'details': []
+        }
+        
+        try:
+            if isinstance(json_data, str):
+                try:
+                    json_data = json.loads(json_data)
+                except json.JSONDecodeError as e:
+                    results['errors'].append(f"Invalid JSON format: {str(e)}")
+                    return results
+            
+            if not isinstance(json_data, list):
+                json_data = [json_data]
+            
+            for idx, coupon_data in enumerate(json_data):
+                try:
+                    # Validate required fields
+                    required_fields = ['title', 'price', 'discount_link']
+                    missing_fields = [field for field in required_fields if field not in coupon_data or 
+                                     (coupon_data[field] is None or (field != 'price' and not coupon_data[field]))]
+                    
+                    if missing_fields:
+                        error_msg = f"Entry #{idx+1}: Missing required fields: {', '.join(missing_fields)}"
+                        results['errors'].append(error_msg)
+                        results['details'].append({
+                            'entry': idx+1,
+                            'title': coupon_data.get('title', 'Unknown'),
+                            'error': f"Missing required fields: {', '.join(missing_fields)}"
+                        })
+                        continue
+                    
+                    # Handle price validation separately
+                    if 'price' in coupon_data:
+                        price = coupon_data['price']
+                        if isinstance(price, dict):
+                            if 'amount' not in price:
+                                error_msg = f"Entry #{idx+1}: Price dictionary missing 'amount' field"
+                                results['errors'].append(error_msg)
+                                results['details'].append({
+                                    'entry': idx+1,
+                                    'title': coupon_data.get('title', 'Unknown'),
+                                    'error': f"Price dictionary missing 'amount' field"
+                                })
+                                continue
+                    
+                    # Normalize coupon data
+                    normalized_data = cls._normalize_coupon_data(coupon_data)
+                    
+                    # Insert or update coupon
+                    if 'discount_id' in normalized_data and normalized_data['discount_id']:
+                        # Update by discount_id
+                        filter_dict = {'discount_id': normalized_data['discount_id']}
+                        cls.update_one(filter_dict, normalized_data, upsert=True)
+                    elif 'coupon_code' in normalized_data and normalized_data['coupon_code']:
+                        # Update by coupon_code
+                        filter_dict = {'coupon_code': normalized_data['coupon_code']}
+                        cls.update_one(filter_dict, normalized_data, upsert=True)
+                    else:
+                        # Insert as new
+                        cls.insert_one(normalized_data)
+                    
+                    results['success'] += 1
+                
+                except Exception as e:
+                    error_msg = f"Entry #{idx+1}: Error processing coupon '{coupon_data.get('title', 'Unknown')}': {str(e)}"
+                    results['errors'].append(error_msg)
+                    results['details'].append({
+                        'entry': idx+1,
+                        'title': coupon_data.get('title', 'Unknown'),
+                        'error': str(e)
+                    })
+            
+        except Exception as e:
+            results['errors'].append(f"Error during JSON import: {str(e)}")
+        
+        return results
+
+    @classmethod
+    def _validate_coupon_data_types(cls, coupon_data, entry_idx, results):
+        """Validate data types of coupon fields"""
+        is_valid = True
+        
+        # Check price data type
+        if 'price' in coupon_data:
+            price = coupon_data['price']
+            if isinstance(price, str) and price.endswith('%'):
+                try:
+                    float(price.rstrip('%'))
+                except ValueError:
+                    results['errors'].append(f"Entry #{entry_idx}: Invalid price format '{price}'")
+                    results['details'].append({
+                        'entry': entry_idx,
+                        'title': coupon_data.get('title', 'Unknown'),
+                        'error': f"Invalid price format: '{price}'"
+                    })
+                    is_valid = False
+            elif not isinstance(price, (int, float, str)):
+                results['errors'].append(f"Entry #{entry_idx}: Price must be a number or string, got {type(price).__name__}")
+                results['details'].append({
+                    'entry': entry_idx,
+                    'title': coupon_data.get('title', 'Unknown'),
+                    'error': f"Price must be a number or string, got {type(price).__name__}"
+                })
+                is_valid = False
+        
+        # Check discount_type
+        if 'discount_type' in coupon_data:
+            discount_type = coupon_data['discount_type']
+            valid_types = ['percentage', 'fixed_amount', 'buy_one_get_one', 'free_shipping', '']
+            if discount_type not in valid_types:
+                results['warnings'].append(f"Entry #{entry_idx}: Unknown discount_type '{discount_type}'")
+                results['details'].append({
+                    'entry': entry_idx,
+                    'title': coupon_data.get('title', 'Unknown'),
+                    'warning': f"Unknown discount_type: '{discount_type}'"
+                })
+        
+        # Check date format for valid_until
+        if 'valid_until' in coupon_data and coupon_data['valid_until']:
+            date_str = coupon_data['valid_until']
+            
+            # Try to parse in known formats
+            parsed = False
+            for date_format in ['%d.%m.%y', '%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y']:
+                try:
+                    datetime.datetime.strptime(date_str, date_format)
+                    parsed = True
+                    break
+                except ValueError:
+                    continue
+            
+            if not parsed:
+                results['warnings'].append(f"Entry #{entry_idx}: Potentially invalid date format '{date_str}'")
+                results['details'].append({
+                    'entry': entry_idx,
+                    'title': coupon_data.get('title', 'Unknown'),
+                    'warning': f"Potentially invalid date format: '{date_str}'"
+                })
+        
+        return is_valid
+
+    @classmethod
+    def _normalize_coupon_data(cls, coupon_data):
+        """Normalize coupon data to ensure consistent schema"""
+        normalized = dict(coupon_data)
+        
+        # Set default values for missing fields
+        if 'discount_id' not in normalized or not normalized['discount_id']:
+            normalized['discount_id'] = str(ObjectId())
+            
+        if 'date_created' not in normalized:
+            normalized['date_created'] = datetime.datetime.now().isoformat()
+            
+        # Normalize price - handle dictionary price format
+        if 'price' in normalized:
+            price = normalized['price']
+            # Handle price as dictionary (from enhanced_hot_discounts.json)
+            if isinstance(price, dict) and 'amount' in price:
+                normalized['price'] = price['amount']
+                if 'type' in price and not normalized.get('discount_type'):
+                    normalized['discount_type'] = price['type']
+            elif isinstance(price, str):
+                if price.endswith('%'):
+                    # It's a percentage discount
+                    try:
+                        normalized['price'] = float(price.rstrip('%'))
+                        if 'discount_type' not in normalized or not normalized['discount_type']:
+                            normalized['discount_type'] = 'percentage'
+                    except ValueError:
+                        # Keep as is if conversion fails
+                        pass
+                elif price.lower() in ['free_shipping', 'buy_one_get_one']:
+                    # Special discount types
+                    normalized['discount_type'] = price.lower()
+                    normalized['price'] = 0
+        
+        # Normalize arrays
+        for field in ['club_name', 'category', 'consumer_statuses']:
+            if field in normalized:
+                if not isinstance(normalized[field], list):
+                    if normalized[field]:  # Only convert non-empty values to list
+                        normalized[field] = [normalized[field]]
+                    else:
+                        normalized[field] = []
+        
+        # Normalize date format
+        if 'valid_until' in normalized and normalized['valid_until']:
+            date_str = normalized['valid_until']
+            # Try common date formats
+            for date_format in ['%d.%m.%y', '%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y']:
+                try:
+                    date_obj = datetime.datetime.strptime(date_str, date_format)
+                    normalized['valid_until'] = date_obj.strftime('%Y-%m-%d')  # ISO format
+                    break
+                except ValueError:
+                    continue
+        
+        # Ensure numeric price value
+        if 'price' in normalized and normalized['price'] is not None:
+            try:
+                normalized['price'] = float(normalized['price'])
+            except (ValueError, TypeError):
+                # If conversion fails, set a default price
+                normalized['price'] = 0
+        
+        return normalized
+
     @classmethod
     def import_from_csv(cls, csv_file):
         """Import coupons from a CSV file or file object"""
@@ -216,43 +468,93 @@ class Coupon(MongoDBModel):
             'errors': []
         }
         
+        close_after = False
+        
         try:
-            # Handle file path or file object
+            # If a string path is provided, open the file
             if isinstance(csv_file, str):
                 file_obj = open(csv_file, 'r', encoding='utf-8')
                 close_after = True
             else:
                 file_obj = csv_file
-                close_after = False
-            
+                
             try:
+                # Read the CSV file
                 reader = csv.DictReader(file_obj)
+                if not reader.fieldnames:
+                    results['errors'].append("CSV file has no headers")
+                    return results
+                    
+                # Map CSV fields to model fields (case insensitive)
+                field_mapping = {
+                    'id': 'discount_id',
+                    'discount_id': 'discount_id',
+                    'title': 'title',
+                    'name': 'title',
+                    'price': 'price',
+                    'amount': 'price',
+                    'discount': 'price',
+                    'discount_type': 'discount_type',
+                    'price_type': 'discount_type',
+                    'type': 'discount_type',
+                    'description': 'description',
+                    'desc': 'description',
+                    'image': 'image_link',
+                    'image_link': 'image_link',
+                    'image_url': 'image_link',
+                    'link': 'discount_link',
+                    'discount_link': 'discount_link',
+                    'url': 'discount_link',
+                    'terms': 'terms_and_conditions',
+                    'terms_and_conditions': 'terms_and_conditions',
+                    'tc': 'terms_and_conditions',
+                    'club': 'club_name',
+                    'club_name': 'club_name',
+                    'category': 'category',
+                    'categories': 'category',
+                    'valid_until': 'valid_until',
+                    'expiry': 'valid_until',
+                    'expiry_date': 'valid_until',
+                    'expires': 'valid_until',
+                    'usage_limit': 'usage_limit',
+                    'limit': 'usage_limit',
+                    'code': 'coupon_code',
+                    'coupon_code': 'coupon_code',
+                    'provider': 'provider_link',
+                    'provider_link': 'provider_link',
+                    'provider_url': 'provider_link',
+                    'consumer_status': 'consumer_statuses',
+                    'consumer_statuses': 'consumer_statuses',
+                    'status': 'consumer_statuses'
+                }
                 
                 for row in reader:
                     results['total'] += 1
                     
                     try:
-                        # Direct mapping - use fields as they are in CSV
+                        # Map CSV fields to model fields
                         coupon = {}
+                        for csv_field, value in row.items():
+                            if csv_field.lower() in field_mapping:
+                                model_field = field_mapping[csv_field.lower()]
+                                
+                                # Handle array fields
+                                if model_field in ['category', 'club_name', 'consumer_statuses']:
+                                    if value:
+                                        coupon[model_field] = [v.strip() for v in value.split(',')]
+                                else:
+                                    coupon[model_field] = value
                         
-                        # Map all fields from the CSV to our document
-                        for field, value in row.items():
-                            if value:  # Only add non-empty values
-                                coupon[field] = value
+                        # Normalize and set defaults
+                        coupon = cls._normalize_coupon_data(coupon)
                         
-                        # Handle numeric fields
-                        numeric_fields = ['price', 'usage_limit']
-                        for field in numeric_fields:
-                            if field in coupon and coupon[field]:
-                                try:
-                                    # Convert to appropriate numeric type
-                                    if '.' in coupon[field]:
-                                        coupon[field] = float(coupon[field])
-                                    else:
-                                        coupon[field] = int(coupon[field])
-                                except ValueError:
-                                    # Keep as string if conversion fails
-                                    pass
+                        # Validate against schema
+                        try:
+                            validate(instance=coupon, schema=cls.schema)
+                        except ValidationError as e:
+                            results['invalid'] += 1
+                            results['errors'].append(f"Row {results['total']}: {str(e)}")
+                            continue
                         
                         # Check if we want to update by coupon_code (if it exists)
                         if 'coupon_code' in coupon and coupon['coupon_code']:
@@ -267,10 +569,10 @@ class Coupon(MongoDBModel):
                                 cls.insert_one(coupon)
                                 results['new'] += 1
                         else:
-                            # No coupon_code field, just insert as new
+                            # Insert as new coupon
                             cls.insert_one(coupon)
                             results['new'] += 1
-                        
+                            
                         results['valid'] += 1
                         
                     except Exception as e:
@@ -286,101 +588,13 @@ class Coupon(MongoDBModel):
             
         return results
 
-    @classmethod
-    def import_from_json(cls, json_data):
-        """Import coupons from JSON data"""
-        results = {
-            'total': 0,
-            'valid': 0,
-            'invalid': 0,
-            'updated': 0,
-            'new': 0,
-            'errors': []
-        }
-        
-        try:
-            if not isinstance(json_data, list):
-                json_data = [json_data]
-                
-            for coupon_data in json_data:
-                results['total'] += 1
-                
-                try:
-                    # Validate and prepare coupon data
-                    coupon = {}
-                    
-                    # Extract fields from JSON
-                    for field, value in coupon_data.items():
-                        if field == 'discount_type':
-                            # Map legacy discount_type to price_type
-                            discount_type = value.lower()
-                            if discount_type == 'percent' or discount_type == 'percentage':
-                                coupon['price_type'] = 'percentage'
-                            elif discount_type == 'fixed_cart' or discount_type == 'fixed_amount':
-                                coupon['price_type'] = 'fixed_amount'
-                            else:
-                                coupon['price_type'] = discount_type
-                        elif field == 'code':
-                            # Map legacy code field to coupon_code
-                            coupon['coupon_code'] = value
-                        elif field == 'amount':
-                            # Map legacy amount field to price
-                            coupon['price'] = value
-                        elif field == 'date_expires':
-                            # Map legacy date_expires to valid_until
-                            coupon['valid_until'] = value
-                        else:
-                            coupon[field] = value
-                    
-                    # Validate required fields
-                    required_fields = ['title', 'price', 'discount_link', 'coupon_code']
-                    for field in required_fields:
-                        if field not in coupon or not coupon[field]:
-                            raise ValueError(f"Missing required field: {field}")
-                    
-                    # Set defaults for missing fields
-                    if 'description' not in coupon:
-                        coupon['description'] = "[No description provided]"
-                        
-                    if 'price_type' not in coupon:
-                        # Infer price_type from price
-                        price = str(coupon['price'])
-                        if '%' in price:
-                            coupon['price_type'] = 'percentage'
-                        else:
-                            coupon['price_type'] = 'fixed_amount'
-                    
-                    if 'terms_and_conditions' not in coupon:
-                        coupon['terms_and_conditions'] = "See provider website for details"
-                    
-                    if 'club_name' not in coupon:
-                        coupon['club_name'] = "[Unknown Club]"
-                    
-                    if 'category' not in coupon:
-                        coupon['category'] = "Uncategorized"
-                    
-                    # Check for existing coupon with same code
-                    coupon_id = None
-                    existing_coupon = cls.find_one({'coupon_code': coupon['coupon_code']})
-                    
-                    if existing_coupon:
-                        coupon_id = existing_coupon['_id']
-                        # Merge with existing coupon data, keeping the new values
-                        merged_coupon = {**existing_coupon, **coupon}
-                        cls.update_one({'_id': coupon_id}, merged_coupon)
-                        results['updated'] += 1
-                    else:
-                        # Insert new coupon
-                        cls.insert_one(coupon)
-                        results['new'] += 1
-                        
-                    results['valid'] += 1
-                    
-                except Exception as e:
-                    results['invalid'] += 1
-                    results['errors'].append(f"Coupon {coupon_data.get('coupon_code', coupon_data.get('code', 'unknown'))}: {str(e)}")
-        
-        except Exception as e:
-            results['errors'].append(f"JSON processing error: {str(e)}")
-            
-        return results
+def find_json_and_csv_files(data_dir_path=None):
+    # ... existing code ...
+    
+    # Filter to only include enhanced files
+    json_files = [f for f in json_files if os.path.basename(f).lower().startswith('enhanced_')]
+    csv_files = [f for f in csv_files if os.path.basename(f).lower().startswith('enhanced_')]
+    
+    logger.info(f"Found {len(json_files)} enhanced JSON files and {len(csv_files)} enhanced CSV files")
+    
+    return json_files, csv_files
