@@ -18,9 +18,7 @@ show_menu() {
     echo -e "${BLUE}======================================${NC}"
     echo -e "${GREEN}1.${NC} Setup and start server"
     echo -e "${GREEN}2.${NC} Setup and start server -> data validation and insert"
-#TODO: option 3 is not yet coded in build.sh.
     echo -e "${GREEN}3.${NC} Setup and start server -> AI enhancement -> data validation and insert"
-
     echo -e "${GREEN}4.${NC} X Setup -> Data Scraping -> AI enhancement -> data validation and insert"
     echo -e "${BLUE}======================================${NC}"
     echo -e "${YELLOW}q.${NC} Quit"

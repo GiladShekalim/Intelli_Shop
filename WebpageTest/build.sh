@@ -52,9 +52,17 @@ MONGODB_NAME=IntelliDB
 SECRET_KEY=your-secret-key-here
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Groq API Settings
+GROQ_API_KEY=your-groq-api-key-here
 EOF
-        log "Created environment file with MongoDB settings" 1 "$SCRIPT_NAME"
+        log "Created environment file with MongoDB and Groq settings" 1 "$SCRIPT_NAME"
     else
+        # Check if Groq API key exists in the file, if not append it
+        if ! grep -q "GROQ_API_KEY" "$ENV_FILE"; then
+            echo -e "\n# Groq API Settings\nGROQ_API_KEY=your-groq-api-key-here" >> "$ENV_FILE"
+            log "Added Groq API key configuration to existing environment file" 1 "$SCRIPT_NAME"
+        fi
         log "Environment file $ENV_FILE already exists" 1 "$SCRIPT_NAME"
     fi
     
@@ -89,6 +97,38 @@ run_database_update() {
         return $?
     else
         log "update_database.py not found at $script_path" 0 "$SCRIPT_NAME"
+        return 1
+    fi
+}
+
+verify_groq_api_key() {
+    log "Verifying Groq API key configuration..." 1 "$SCRIPT_NAME"
+    if [ -z "$GROQ_API_KEY" ] || [ "$GROQ_API_KEY" = "your-groq-api-key-here" ]; then
+        log "Groq API key not properly configured in $ENV_FILE" 0 "$SCRIPT_NAME"
+        log "Please set your Groq API key in the $ENV_FILE file" 0 "$SCRIPT_NAME"
+        return 1
+    fi
+    return 0
+}
+
+# Function to run Groq enhancement
+run_groq_enhancement() {
+    log "Running Groq AI enhancement..." 1 "$SCRIPT_NAME"
+    
+    # Verify Groq API key first
+    verify_groq_api_key || return 1
+    
+    # Use relative paths based on script location
+    local base_dir="$SCRIPT_DIR"
+    local script_path="$base_dir/$PROJECT_DIR/groq_chat.py"
+    
+    if [[ -f "$script_path" ]]; then
+        log "Found groq_chat.py at $script_path" 1 "$SCRIPT_NAME"
+        # Set PYTHONPATH to include the project directory for imports
+        PYTHONPATH="$base_dir/$PROJECT_DIR" python "$script_path"
+        return $?
+    else
+        log "groq_chat.py not found at $script_path" 0 "$SCRIPT_NAME"
         return 1
     fi
 }
@@ -136,6 +176,25 @@ test_mongodb_connection || log "Warning: MongoDB connection test failed. Please 
 log "Running database migrations" 1 "$SCRIPT_NAME"
 python manage.py makemigrations
 python manage.py migrate
+
+# Run Groq enhancement and database update if parameter is 2
+if [ "$1" = "2" ]; then
+    log "Running Groq enhancement as requested" 1 "$SCRIPT_NAME"
+    run_groq_enhancement
+    if [ $? -ne 0 ]; then
+        log "Groq enhancement failed" 0 "$SCRIPT_NAME"
+        exit 1
+    fi
+    log "Groq enhancement completed successfully" 1 "$SCRIPT_NAME"
+    
+    log "Running database update" 1 "$SCRIPT_NAME"
+    run_database_update
+    if [ $? -ne 0 ]; then
+        log "Database update failed" 0 "$SCRIPT_NAME"
+        exit 1
+    fi
+    log "Database update completed successfully" 1 "$SCRIPT_NAME"
+fi
 
 # Run database update if parameter is 1
 if [ "$1" = "1" ]; then
