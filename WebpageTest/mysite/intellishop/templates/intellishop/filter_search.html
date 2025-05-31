@@ -251,6 +251,127 @@
     font-size: 0.95em;
     text-decoration: underline;
 }
+
+.discount-flex-row {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 12px;
+}
+.discount-image-col {
+    flex: 0 0 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.discount-details-col {
+    flex: 1 1 0;
+    min-width: 0;
+}
+.discount-bottom-row {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    gap: 10px;
+}
+.like-icon-col {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+}
+.like-icon {
+    font-size: 1.6em;
+    color: #e74c3c;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+.like-icon:hover {
+    color: #c0392b;
+}
+.website-link-col {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+.site-link-btn {
+    display: inline-block;
+    background: #ffc107;
+    color: #000;
+    text-decoration: none;
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1em;
+    transition: background 0.2s;
+}
+.site-link-btn:hover {
+    background: #ffb300;
+}
+.price-type-col {
+    flex: 1;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+}
+.price-label-big {
+    margin-bottom: 0;
+}
+.price-value-big {
+    margin-bottom: 0;
+}
+.discount-title {
+    font-size: 2em;
+    font-weight: bold;
+    background: linear-gradient(90deg, #f0f2f5 60%, #ffe082 100%);
+    padding: 8px 18px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
+.discount-meta {
+    font-size: 0.55em;
+    color: #555;
+    margin-right: 18px;
+    vertical-align: middle;
+}
+.meta-item {
+    margin-left: 18px;
+    display: inline-block;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 2px 10px;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+.expired-label {
+    color: #fff;
+    background: #e53935;
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-size: 1em;
+    font-weight: bold;
+    margin-top: 4px;
+    display: inline-block;
+    box-shadow: 0 1px 4px rgba(229,57,53,0.08);
+    letter-spacing: 0.03em;
+}
+.like-fav-text {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #7a7a7a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
 </style>
 
 <script>
@@ -315,13 +436,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     let type = discount.discount_type || discount.price_type || '';
                     console.log('Discount:', discount.title, 'type:', type, 'discount_type:', discount.discount_type, 'price_type:', discount.price_type);
                     if (['fixed_amount', 'fixed_price', 'amount', 'fixed'].includes(type)) {
-                        priceLabel = '₪ מחיר סופי';
+                        priceLabel = 'מחיר סופי';
                         priceColor = '#007bff'; // blue
                     } else if (type === 'percentage' || type === '%') {
                         priceLabel = '% הנחה';
                         priceColor = '#28a745'; // green
                     } else {
-                        priceLabel = '';
+                        priceLabel = ''; // DO NOT SHOW PRICE LABEL -> LINK FOR WEBSITE
                         priceColor = '#6c757d'; // gray
                     }
 
@@ -341,22 +462,57 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     div.innerHTML = `
-                        <h4>${discount.title}</h4>
-                        <div class="desc-block">
-                            <strong>תיאור:</strong>
-                            <div>${getShowMoreHtml(discount.description, `desc-${discount.discount_id}`)}</div>
+                        <div class="discount-flex-row">
+                            <div class="discount-image-col">
+                                <img src="${discount.image_link}" alt="${discount.title}" style="max-width:288px; max-height:288px; border-radius:8px;">
+                            </div>
+                            <div class="discount-details-col">
+                                <h4 class="discount-title">${discount.title}
+                                    <span class="discount-meta">
+                                        ${discount.valid_until ? (() => {
+                                            // Parse date (assume format YYYY-MM-DD)
+                                            let expired = false;
+                                            let dateStr = discount.valid_until;
+                                            let now = new Date();
+                                            let dateObj = new Date(dateStr);
+                                            if (!isNaN(dateObj.getTime()) && dateStr.length >= 8) {
+                                                expired = dateObj < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                            }
+                                            return `<span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: ${dateStr}
+                                                ${expired ? `<div class='expired-label'>פג תוקף</div>` : ''}
+                                            </span>`;
+                                        })() : ''}
+                                        ${discount.usage_limit ? `<span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: ${discount.usage_limit}</span>` : ''}
+                                    </span>
+                                </h4>
+                                <div class="desc-block">
+                                    <strong>תיאור:</strong>
+                                    <div>${getShowMoreHtml(discount.description, `desc-${discount.discount_id}`)}</div>
+                                </div>
+                                <div class="terms-block" style="margin-top:10px;">
+                                    <strong>תנאים והגבלות:</strong>
+                                    <div>${getShowMoreHtml(discount.terms_and_conditions, `terms-${discount.discount_id}`)}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="terms-block" style="margin-top:10px;">
-                            <strong>תנאים והגבלות:</strong>
-                            <div>${getShowMoreHtml(discount.terms_and_conditions, `terms-${discount.discount_id}`)}</div>
+                        <div class="discount-bottom-row">
+                            <div class="like-icon-col">
+                                <span class="like-fav-text">Favorites <span class="like-icon" title="אהבתי">&#10084;</span> Add</span>
+                            </div>
+                            <div class="website-link-col">
+                                ${discount.discount_link ? `
+                                    <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
+                                        מעבר לאתר
+                                    </a>
+                                ` : ''}
+                            </div>
+                            <div class="price-type-col">
+                                <span class="price-label-big" style="background:${priceColor};color:white;padding:3px 9px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
+                                    ${priceLabel}
+                                </span>
+                                <span class="price-value-big" style="font-size:2.2em;font-weight:bold;color:#333;display:inline-block;vertical-align:middle;margin-right:12px;">${discount.price}</span>
+                            </div>
                         </div>
-                        <p style="margin-top:10px;">
-                            <strong>Price:</strong> ${discount.price}
-                            <span class="price-label" style="background:${priceColor};color:white;padding:3px 8px;border-radius:12px;font-size:0.9em;margin-right:8px;">
-                                ${priceLabel}
-                            </span>
-                        </p>
-                        <img src="${discount.image_link}" alt="${discount.title}" style="max-width:150px;">
                         <hr>
                     `;
                     container.appendChild(div);
