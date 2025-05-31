@@ -312,10 +312,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Determine label and color
                     let priceLabel = '';
                     let priceColor = '';
-                    if (discount.discount_type === 'fixed_amount') {
+                    let type = discount.discount_type || discount.price_type || '';
+                    console.log('Discount:', discount.title, 'type:', type, 'discount_type:', discount.discount_type, 'price_type:', discount.price_type);
+                    if (['fixed_amount', 'fixed_price', 'amount', 'fixed'].includes(type)) {
                         priceLabel = '₪ מחיר סופי';
                         priceColor = '#007bff'; // blue
-                    } else if (discount.discount_type === 'percentage') {
+                    } else if (type === 'percentage' || type === '%') {
                         priceLabel = '% הנחה';
                         priceColor = '#28a745'; // green
                     } else {
