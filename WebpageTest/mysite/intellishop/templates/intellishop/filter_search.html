@@ -232,6 +232,24 @@
     padding: 15px;
     margin: 10px 0;
     background: #fafbfc;
+    direction: rtl;
+    text-align: right;
+    font-family: "Segoe UI", Arial, "Noto Sans Hebrew", "Open Sans", sans-serif;
+}
+
+.desc-block, .terms-block {
+    margin-bottom: 8px;
+}
+.desc-block strong, .terms-block strong {
+    color: #0d6efd;
+    font-weight: bold;
+}
+.show-more-link {
+    color: #007bff;
+    cursor: pointer;
+    margin-right: 8px;
+    font-size: 0.95em;
+    text-decoration: underline;
 }
 </style>
 
@@ -290,14 +308,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 data.discounts.forEach(discount => {
                     const div = document.createElement('div');
                     div.className = 'discount-card';
+
+                    // Determine label and color
+                    let priceLabel = '';
+                    let priceColor = '';
+                    if (discount.discount_type === 'fixed_amount') {
+                        priceLabel = '₪ מחיר סופי';
+                        priceColor = '#007bff'; // blue
+                    } else if (discount.discount_type === 'percentage') {
+                        priceLabel = '% הנחה';
+                        priceColor = '#28a745'; // green
+                    } else {
+                        priceLabel = '';
+                        priceColor = '#6c757d'; // gray
+                    }
+
+                    // Show more logic for description and terms
+                    function getShowMoreHtml(text, idPrefix) {
+                        const maxLength = 250;
+                        if (!text) return '';
+                        if (text.length <= maxLength) {
+                            return `<span>${text}</span>`;
+                        }
+                        const shortText = text.slice(0, maxLength) + '...';
+                        return `
+                            <span id="${idPrefix}-short">${shortText}</span>
+                            <span id="${idPrefix}-full" style="display:none;">${text}</span>
+                            <a href="#" class="show-more-link" data-id="${idPrefix}">הצג עוד</a>
+                        `;
+                    }
+
                     div.innerHTML = `
                         <h4>${discount.title}</h4>
-                        <p>${discount.description}</p>
-                        <p><strong>Price:</strong> ${discount.price}</p>
+                        <div class="desc-block">
+                            <strong>תיאור:</strong>
+                            <div>${getShowMoreHtml(discount.description, `desc-${discount.discount_id}`)}</div>
+                        </div>
+                        <div class="terms-block" style="margin-top:10px;">
+                            <strong>תנאים והגבלות:</strong>
+                            <div>${getShowMoreHtml(discount.terms_and_conditions, `terms-${discount.discount_id}`)}</div>
+                        </div>
+                        <p style="margin-top:10px;">
+                            <strong>Price:</strong> ${discount.price}
+                            <span class="price-label" style="background:${priceColor};color:white;padding:3px 8px;border-radius:12px;font-size:0.9em;margin-right:8px;">
+                                ${priceLabel}
+                            </span>
+                        </p>
                         <img src="${discount.image_link}" alt="${discount.title}" style="max-width:150px;">
                         <hr>
                     `;
                     container.appendChild(div);
+                });
+
+                // Add event delegation for show more/less
+                document.getElementById('all-discounts-container').addEventListener('click', function(e) {
+                    if (e.target.classList.contains('show-more-link')) {
+                        e.preventDefault();
+                        const id = e.target.getAttribute('data-id');
+                        const shortSpan = document.getElementById(`${id}-short`);
+                        const fullSpan = document.getElementById(`${id}-full`);
+                        if (shortSpan.style.display === 'none') {
+                            shortSpan.style.display = '';
+                            fullSpan.style.display = 'none';
+                            e.target.textContent = 'הצג עוד';
+                        } else {
+                            shortSpan.style.display = 'none';
+                            fullSpan.style.display = '';
+                            e.target.textContent = 'הצג פחות';
+                        }
+                    }
                 });
             });
     });

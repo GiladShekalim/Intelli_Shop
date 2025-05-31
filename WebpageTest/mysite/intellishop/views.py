@@ -400,8 +400,11 @@ def favorites_view(request):
 
 @csrf_exempt
 def show_all_discounts(request):
-    json_path = os.path.join(settings.BASE_DIR, 'intellishop', 'data', 'enhanced_hot_discounts.json')
-    with open(json_path, encoding='utf-8') as f:
-        discounts = json.load(f)
+    # Fetch all coupons from MongoDB
+    discounts = Coupon.get_all()
+    # Convert ObjectId to string for JSON serialization
+    for discount in discounts:
+        if '_id' in discount:
+            discount['_id'] = str(discount['_id'])
     return JsonResponse({'discounts': discounts})
 
