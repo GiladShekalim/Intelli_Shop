@@ -75,7 +75,12 @@
         </div>
     </div>
 
-    <!-- Bottom Action Buttons -->
+    <!-- Bottom Action Buttons     SHOW ALL-->
+    <div style="margin: 20px 0;">
+        <button id="show-all-btn" class="btn-apply" style="width: 100%;">Show All</button>
+        <div id="all-discounts-container"></div>
+    </div>
+
     <div class="action-buttons">
         <button class="btn-clear">Clear all</button>
         <button class="btn-apply">Apply</button>
@@ -220,6 +225,14 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+.discount-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    background: #fafbfc;
+}
 </style>
 
 <script>
@@ -264,6 +277,29 @@ document.addEventListener('DOMContentLoaded', function() {
             .map(tag => tag.textContent);
         console.log('Selected filters:', selectedTags);
         // Add your filter application logic here
+    });
+
+    // DISPLAY ALL DISCOUNTS
+    document.getElementById('show-all-btn').addEventListener('click', function() {
+        const container = document.getElementById('all-discounts-container');
+        container.innerHTML = '<p>Loading...</p>';
+        fetch('/show_all_discounts/')
+            .then(response => response.json())
+            .then(data => {
+                container.innerHTML = '';
+                data.discounts.forEach(discount => {
+                    const div = document.createElement('div');
+                    div.className = 'discount-card';
+                    div.innerHTML = `
+                        <h4>${discount.title}</h4>
+                        <p>${discount.description}</p>
+                        <p><strong>Price:</strong> ${discount.price}</p>
+                        <img src="${discount.image_link}" alt="${discount.title}" style="max-width:150px;">
+                        <hr>
+                    `;
+                    container.appendChild(div);
+                });
+            });
     });
 });
 </script>

@@ -9,6 +9,8 @@ import csv
 import os
 from datetime import datetime
 from django.templatetags.static import static
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 def index(request):
     return render(request, 'intellishop/index.html')
@@ -395,4 +397,11 @@ def favorites_view(request):
         'favorite_items': [] # Replace with actual favorite items
     }
     return render(request, 'intellishop/favorites.html', context)
+
+@csrf_exempt
+def show_all_discounts(request):
+    json_path = os.path.join(settings.BASE_DIR, 'intellishop', 'data', 'enhanced_hot_discounts.json')
+    with open(json_path, encoding='utf-8') as f:
+        discounts = json.load(f)
+    return JsonResponse({'discounts': discounts})
 
