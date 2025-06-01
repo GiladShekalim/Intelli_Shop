@@ -302,6 +302,11 @@ def coupon_detail(request, store):
     return render(request, 'intellishop/coupon_detail.html', context)
 
 def filter_search(request):
+    # Check if the user is logged in using custom session variable
+    if not request.session.get('user_id'):
+        # If not authenticated, redirect to the login page
+        return redirect('login')
+    
     print("Debug: Accessing filter_search view")  # Add debug print
     return render(request, 'intellishop/filter_search.html')
 

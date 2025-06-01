@@ -265,7 +265,7 @@
 }
 
 .discount-image-col {
-    flex: 0 0 300px; /* Increased fixed width for the image column */
+    flex: 0 0 400px; /* Increased fixed width for the image column (twice the original size) */
     display: flex;
     align-items: flex-start; /* Align image to the top */
     justify-content: center;
@@ -496,6 +496,9 @@
 </style>
 
 <script>
+    // Check if the user is authenticated (set by Django context)
+    var isLoggedIn = {% if user.is_authenticated %} true {% else %} false {% endif %};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle sections
     const headers = document.querySelectorAll('.section-header');
@@ -539,6 +542,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add your filter application logic here
     });
 
+    // Add event listener to the search icon
+    const searchIcon = document.querySelector('.search-icon');
+    if (searchIcon) {
+        searchIcon.addEventListener('click', function(e) {
+            if (!isLoggedIn) {
+                // Prevent default search action
+                e.preventDefault();
+                // Redirect to login page
+                window.location.href = '{% url "login" %}'; // Replace 'login' with the actual URL name for your login page
+            } else {
+                // User is logged in, proceed with search logic
+                // TODO: Add your search functionality here
+                console.log('User is logged in, perform search.');
+                // Example: You might want to get the search input value and trigger a search results display
+                // const searchValue = document.querySelector('.search-input').value;
+                // triggerSearch(searchValue);
+            }
+        });
+    }
+
     // DISPLAY ALL DISCOUNTS
     document.getElementById('show-all-btn').addEventListener('click', function() {
         const button = this;
@@ -547,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show loading state
         button.classList.add('loading');
-        buttonText.textContent = 'Loading...';
+        buttonText.textContent = 'Loading Please Wait ...';
         container.innerHTML = ''; // Clear previous content
 
         // Create a promise that resolves after 3 seconds
@@ -615,7 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     div.innerHTML = `
                         <div class="discount-flex-row">
                             <div class="discount-image-col">
-                                <img src="${discount.image_link}" alt="${discount.title}" style="max-width:300px; max-height:300px; border-radius:8px;">
+                                <img src="${discount.image_link}" alt="${discount.title}" style="max-width:400px; max-height:400px; border-radius:8px;">
                             </div>
                             <div class="discount-details-col">
                                 <h4 class="discount-title">${discount.title}
