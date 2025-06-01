@@ -77,7 +77,9 @@
 
     <!-- Bottom Action Buttons     SHOW ALL-->
     <div style="margin: 20px 0;">
-        <button id="show-all-btn" class="btn-apply" style="width: 100%;">Show All</button>
+        <button id="show-all-btn" class="btn-apply" style="width: 100%;">
+            <span class="btn-text">Show All</span>
+        </button>
         <div id="all-discounts-container"></div>
     </div>
 
@@ -212,8 +214,22 @@
 }
 
 .btn-apply {
-    background: #0d6efd;
-    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    min-height: 44px; /* Ensure consistent height */
+}
+
+.btn-apply.loading {
+    background: #0b5ed7;
+    cursor: wait;
+}
+
+.btn-apply.loading .btn-text {
+    content: "Loading...";
 }
 
 .btn-apply:hover {
@@ -235,21 +251,8 @@
     direction: rtl;
     text-align: right;
     font-family: "Segoe UI", Arial, "Noto Sans Hebrew", "Open Sans", sans-serif;
-}
-
-.desc-block, .terms-block {
-    margin-bottom: 8px;
-}
-.desc-block strong, .terms-block strong {
-    color: #0d6efd;
-    font-weight: bold;
-}
-.show-more-link {
-    color: #007bff;
-    cursor: pointer;
-    margin-right: 8px;
-    font-size: 0.95em;
-    text-decoration: underline;
+    display: flex; /* Use flexbox for the card to arrange top and bottom rows */
+    flex-direction: column; /* Stack the top flex row and bottom row vertically */
 }
 
 .discount-flex-row {
@@ -258,89 +261,73 @@
     align-items: flex-start;
     gap: 24px;
     margin-bottom: 12px;
+    flex-wrap: nowrap; /* Prevent wrapping of image and details column */
 }
+
 .discount-image-col {
-    flex: 0 0 440px; /* Increased image size */
+    flex: 0 0 300px; /* Increased fixed width for the image column */
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Align image to the top */
     justify-content: center;
 }
-.discount-details-col {
-    flex: 1 1 0;
-    min-width: 0;
+
+.discount-image-col img {
+    max-width: 100%; /* Ensure image scales within its container */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 8px;
 }
+
+.discount-details-col {
+    flex: 1 1 0; /* Allow details to grow and shrink */
+    min-width: 0; /* Prevent content overflow */
+}
+
 .discount-bottom-row {
     display: flex;
-    justify-content: space-between; /* Distribute items along the main axis */
-    align-items: center;
+    justify-content: center; /* Center the items horizontally */
+    align-items: center; /* Vertically align items in the middle */
     margin-top: 10px;
-    gap: 10px; /* Space between flex items */
-    flex-wrap: nowrap; /* Prevent wrapping */
+    gap: 100px; /* Increased space between the items */
+    flex-wrap: wrap; /* Allow wrapping if the container is too narrow */
 }
 
-/* Ensure direct children of discount-bottom-row are flex items */
+/* Ensure direct children of discount-bottom-row are flex items and don't shrink unexpectedly */
 .discount-bottom-row > div, .discount-bottom-row > a {
-    /* Reset potential conflicting styles from previous attempts */
-    display: flex !important; /* Ensure they are flex items */
-    align-items: center;
-    flex-shrink: 0; /* Prevent shrinking */
+    flex-shrink: 0;
+    display: flex; /* Ensure flex properties apply */
+    align-items: center; /* Vertically center content within each item */
 }
 
-/* Remove previous group styles if they conflict */
-.bottom-left-group, .bottom-right-group, .bottom-left-item, .bottom-middle-item, .bottom-right-item {
-    display: unset; /* Remove flex/grid display */
-    align-items: unset;
-    gap: unset;
-    flex-wrap: unset;
-    justify-content: unset;
-    flex: unset;
-    min-width: unset;
-}
-
-.like-icon-col {
-    display: flex; /* Use flex to align text and icon */
-    align-items: center; /* Vertically center text and icon */
-    gap: 6px; /* Space between text and icon */
-}
-.like-icon {
-    font-size: 1.6em;
-    color: #e74c3c;
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.2s;
-}
-.like-icon:hover {
-    color: #c0392b;
-}
-.like-fav-text {
-    font-size: 1.2em;
-    font-weight: 500;
-    color: #7a7a7a;
-    display: flex; /* Make the span a flex container */
-    align-items: center; /* Vertically center items */
-    gap: 6px; /* Space between "Add", icon, and "Favorites" */
-}
-
-.site-link-btn {
-    display: inline-block;
-    background: #ffc107;
-    color: #000;
-    text-decoration: none;
-    padding: 8px 24px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 1em;
-    transition: background 0.2s;
-    text-align: center;
-}
-.site-link-btn:hover {
-    background: #ffb300;
-}
+/* Keep or adjust existing styles for individual items as needed */
 .price-type-col {
     display: flex;
     flex-direction: row-reverse; /* Keep price and label RTL */
     align-items: center;
-    gap: 12px;
+    gap: 12px; /* Space between price and label */
+}
+
+.like-icon-col {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Space between text and icon */
+}
+
+.site-link-btn {
+    display: inline-block;
+    background: #ffb347; /* Light orange background */
+    color: #fff; /* White text for better contrast */
+    text-decoration: none;
+    padding: 8px 16px; /* Adjusted padding */
+}
+
+.site-link-btn:hover {
+    background: #ffa327; /* Slightly darker orange on hover */
+}
+
+/* Remove any old group styles that might interfere */
+.bottom-left-group, .bottom-right-group, .bottom-left-item, .bottom-middle-item, .bottom-right-item, .buttons-and-price-group, .bottom-buttons-group {
+     display: unset; /* Remove flex/grid display from previous attempts */
+     /* You might need to inspect your current styles and unset other conflicting properties if the layout is still off */
 }
 
 .price-label-big {
@@ -422,6 +409,90 @@
     background: #4caf50; /* Green when copied */
     text-align: center;
 }
+
+/* Loading Spinner Styles */
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: white;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* No Results Message */
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.no-results i {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 16px;
+}
+
+.no-results p {
+    color: #495057;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+/* Error Message */
+.error-message {
+    text-align: center;
+    padding: 20px;
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    margin: 20px 0;
+    color: #d32f2f;
+}
+
+.error-message i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.buttons-and-price-group, .bottom-buttons-group {
+    /* These groups are no longer needed for the new structure, can be removed or repurposed if other styles depend on them */
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between elements */
+}
+
+.like-icon {
+    font-size: 1.6em;
+    color: #ff0000; /* Red color for the icon */
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+.like-icon:hover {
+    color: #cc0000; /* Slightly darker red on hover */
+}
+.like-fav-text {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #ff6666; /* Light red color for the text */
+    display: flex; /* Make the span a flex container */
+    align-items: center; /* Vertically center items */
+}
 </style>
 
 <script>
@@ -470,12 +541,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // DISPLAY ALL DISCOUNTS
     document.getElementById('show-all-btn').addEventListener('click', function() {
+        const button = this;
+        const buttonText = button.querySelector('.btn-text');
         const container = document.getElementById('all-discounts-container');
-        container.innerHTML = '<p>Loading...</p>';
-        fetch('/show_all_discounts/')
-            .then(response => response.json())
-            .then(data => {
+        
+        // Show loading state
+        button.classList.add('loading');
+        buttonText.textContent = 'Loading...';
+        container.innerHTML = ''; // Clear previous content
+
+        // Create a promise that resolves after 3 seconds
+        const minimumLoadingTime = new Promise(resolve => setTimeout(resolve, 3000));
+
+        // Create a promise for the fetch request
+        const fetchPromise = fetch('/show_all_discounts/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            });
+
+        // Wait for both the minimum loading time and the fetch to complete
+        Promise.all([minimumLoadingTime, fetchPromise])
+            .then(([_, data]) => {
                 container.innerHTML = '';
+                
+                if (!data.discounts || data.discounts.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-results">
+                            <i class="bi bi-emoji-frown"></i>
+                            <p>No discounts found at the moment.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
                 data.discounts.forEach(discount => {
                     const div = document.createElement('div');
                     div.className = 'discount-card';
@@ -514,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     div.innerHTML = `
                         <div class="discount-flex-row">
                             <div class="discount-image-col">
-                                <img src="${discount.image_link}" alt="${discount.title}" style="max-width:440px; max-height:440px; border-radius:8px;">
+                                <img src="${discount.image_link}" alt="${discount.title}" style="max-width:300px; max-height:300px; border-radius:8px;">
                             </div>
                             <div class="discount-details-col">
                                 <h4 class="discount-title">${discount.title}
@@ -606,6 +707,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <p>Failed to load discounts. Please try again later.</p>
+                    </div>
+                `;
+            })
+            .finally(() => {
+                // Remove loading state and restore button text
+                button.classList.remove('loading');
+                buttonText.textContent = 'Show All';
             });
     });
 });
