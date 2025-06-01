@@ -389,16 +389,24 @@ def coupon_code_view(request, code):
     # If we get here, redirect to home instead of showing error
     return redirect('index_home')
 
+
+
+# Favorites Page
 def favorites_view(request):
     # Check if user is logged in
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('login')
 
-    # This is a placeholder view for the favorites page.
-    # In a real application, you would fetch the user's favorite items
+    # Get user from MongoDB
+    user = User.find_one({'_id': ObjectId(user_id)})
+    if not user:
+        # If user somehow doesn't exist despite having a session user_id, redirect to login
+        return redirect('login')
+
     # from the database and pass them to the template context.
     context = {
+        'user': user, # Pass the user object to the template
         'favorite_items': [] # Replace with actual favorite items
     }
     return render(request, 'intellishop/favorites.html', context)
