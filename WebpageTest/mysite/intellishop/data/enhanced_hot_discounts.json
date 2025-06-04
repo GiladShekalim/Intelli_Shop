@@ -18,7 +18,7 @@
     "usage_limit": 1,
     "coupon_code": "HT10",
     "provider_link": "https://shugon.co.il/",
-    "consumer_statuses": []
+    "consumer_statuses": []   
   },
   {
     "discount_id": "4",
@@ -32,7 +32,7 @@
     "club_name": [
       "hot"
     ],
-    "category": [
+    "category": [   
       "Consumerism"
     ],
     "consumer_statuses": [

@@ -16,16 +16,33 @@
 
     <!-- Filter Sections -->
     <div class="filter-sections">
-        <!-- Last Viewed Section -->
+        <!-- Price Range by fixed amount Section -->
         <div class="filter-section">
             <div class="section-header">
-                <h3>Last Viewed</h3>
+                <h3>Price Range by Value</h3>
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="filter-options">
-                <div class="filter-item placeholder"></div>
-                <div class="filter-item placeholder"></div>
-                <div class="filter-item placeholder"></div>
+                <div class="price-range-slider-container">
+                    <span class="min-price-label">ILS{{ min_price }}</span>
+                    <input type="range" class="price-range-slider" min="{{ min_price }}" max="{{ max_price }}" value="[{{ min_price }}, {{ max_price }}]">
+                    <span class="max-price-label">ILS{{ max_price }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Range by percentage Section -->
+        <div class="filter-section">
+            <div class="section-header">
+                <h3>Price Range by Percentage (%)  </h3>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="filter-options">
+                <div class="price-range-slider-container">
+                    <span class="min-percentage-label">0%</span>
+                    <input type="range" class="percentage-range-slider" min="0" max="100" value="[0, 100]">
+                    <span class="max-percentage-label">100%</span>
+                </div>
             </div>
         </div>
 
@@ -42,35 +59,16 @@
             </div>
         </div>
 
-        <!-- Close to you Section -->
+        <!-- Last Viewed Section -->
         <div class="filter-section">
             <div class="section-header">
-                <h3>Close to you</h3>
+                <h3>Last Viewed</h3>
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="filter-options">
                 <div class="filter-item placeholder"></div>
                 <div class="filter-item placeholder"></div>
                 <div class="filter-item placeholder"></div>
-            </div>
-        </div>
-
-        <!-- More Section -->
-        <div class="filter-section">
-            <div class="section-header">
-                <h3>More</h3>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-            <div class="filter-tags">
-                <span class="filter-tag">CellarSeek</span>
-                <span class="filter-tag">SipSavant</span>
-                <span class="filter-tag">VinoVault</span>
-                <span class="filter-tag">SipSync</span>
-                <span class="filter-tag">WineWhiz</span>
-                <span class="filter-tag">Wine Oasis</span>
-                <span class="filter-tag">TerraVino</span>
-                <span class="filter-tag">Chateau Quest</span>
-                <span class="filter-tag">VinoVoyage</span>
             </div>
         </div>
     </div>
@@ -492,6 +490,18 @@
     color: #ff6666; /* Light red color for the text */
     display: flex; /* Make the span a flex container */
     align-items: center; /* Vertically center items */
+}
+
+.price-range-slider-container {
+    display: flex; /* Use flexbox */
+    align-items: center; /* Vertically center items */
+    justify-content: flex-start; /* Align items to the left */
+    gap: 10px; /* Add some space between items */
+    width: 100%; /* Allow container to take full width */
+}
+
+.price-range-slider-container input[type="range"] {
+    flex-grow: 1; /* Allow the slider to take up available space */
 }
 </style>
 

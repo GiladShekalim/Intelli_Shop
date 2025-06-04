@@ -303,12 +303,54 @@ def coupon_detail(request, store):
 
 def filter_search(request):
     # Check if the user is logged in using custom session variable
-    if not request.session.get('user_id'):
-        # If not authenticated, redirect to the login page
-        return redirect('login')
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login') # Redirect to login if not logged in
+
+    # Aggregate to find min and max prices
+    min_price = 0  # Default min price
+    max_price = 10000 # Default max price or a high value
+
+    try:
+        coupons_collection = Coupon.get_collection()
+        if coupons_collection:
+            pipeline = [
+                {
+                    '$match': {
+                        'discount_type': 'fixed_amount', # Filter for fixed_amount discounts
+                        'price': { '$exists': True, '$ne': None }
+                    }
+                },
+                 { # Add a stage to ensure price is treated as a number
+                    '$addFields': {
+                        'price': { '$toInt': '$price' }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': None, # Group all documents
+                        'min_price': { '$min': '$price' },
+                        'max_price': { '$max': '$price' }
+                    }
+                }
+            ]
+            print(f"MongoDB aggregation pipeline: {pipeline}") # Debug print pipeline
+            result = list(coupons_collection.aggregate(pipeline))
+            print(f"MongoDB aggregation result: {result}") # Debug print result
+            if result:
+                min_price = result[0].get('min_price', min_price)
+                max_price = result[0].get('max_price', max_price)
+    except Exception as e:
+        print(f"Error fetching min/max prices from MongoDB: {e}")
+        # Keep default min/max prices if fetching fails
+
+    context = {
+        'user_id': user_id, # Pass user_id if needed in template
+        'min_price': min_price,
+        'max_price': max_price,
+    }
     
-    print("Debug: Accessing filter_search view")  # Add debug print
-    return render(request, 'intellishop/filter_search.html')
+    return render(request, 'intellishop/filter_search.html', context)
 
 def profile_view(request):
     
