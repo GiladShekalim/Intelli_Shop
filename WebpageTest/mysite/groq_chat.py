@@ -239,7 +239,7 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     log_checkpoint(f"Output saved to: {output_file_path}")
 
 def find_json_files(data_dir_path=None):
-    """Find all JSON files in the data directory and its subdirectories"""
+    """Find all JSON files in the data directory and its subdirectories, excluding files that start with 'enhanced_'"""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Go up two levels now
     
     # Use provided path if available
@@ -272,11 +272,12 @@ def find_json_files(data_dir_path=None):
     # Walk through directory and its subdirectories
     for root, dirs, files in os.walk(data_dir):
         for file in files:
-            if file.lower().endswith('.json'):
+            # Only include JSON files that don't start with "enhanced_"
+            if file.lower().endswith('.json') and not file.startswith('enhanced_'):
                 file_path = os.path.join(root, file)
                 json_files.append(file_path)
     
-    log_checkpoint(f"Found {len(json_files)} JSON files")
+    log_checkpoint(f"Found {len(json_files)} JSON files to process (excluding enhanced files)")
     
     return json_files
 
