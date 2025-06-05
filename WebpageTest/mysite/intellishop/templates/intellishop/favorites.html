@@ -1,0 +1,95 @@
+{% extends 'intellishop/index_home_original.html' %}
+
+{% block content %}
+    <section class="py-5">
+        <div class="container">
+            <div class="row gx-5 align-items-center">
+                <div class="col-12">
+                    {# Account Details Section #}
+                    <div class="user-welcome p-4 bg-light rounded shadow-sm mb-4" style="border-left: 4px solid #28a745;">
+                        <h2>My Favorites!<span class="text-danger ms-3">❤️</span></h2>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <div>
+                            <strong>Status:</strong>
+                            {# TODO: Add logic to display status tags #}
+                            {% comment %}
+                            {% if user.status_tags %}
+                                {% for tag in user.status_tags %}
+                                    <span class="badge bg-{{ tag.name|slugify }} me-1">{{ tag.name }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">No status tags set.</span>
+                            {% endif %}
+                            {% endcomment %}
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for status in user.status %}
+                                <span class="badge 
+                                    {% if status == 'Young' %}bg-Young
+                                    {% elif status == 'Senior' %}bg-Senior
+                                    {% elif status == 'Homeowner' %}bg-Homeowner
+                                    {% elif status == 'Traveler' %}bg-Traveler
+                                    {% elif status == 'Tech' %}bg-Tech
+                                    {% elif status == 'Pets' %}bg-Pets
+                                    {% elif status == 'Fitness' %}bg-Fitness
+                                    {% elif status == 'Student' %}bg-Student
+                                    {% elif status == 'Remote' %}bg-Remote
+                                    {% elif status == 'Family' %}bg-Family
+                                    {% elif status == 'Parent' %}bg-Parent
+                                    {% elif status == 'Military/Veteran' %}bg-Military\/Veteran
+                                    {% elif status == 'Digital Nomad' %}bg-Digital\ Nomad
+                                    {% elif status == 'First-time Buyer' %}bg-First-time\ Buyer
+                                    {% elif status == 'Retiree' %}bg-Retiree
+                                    {% elif status == 'Single' %}bg-Single
+                                    {% elif status == 'Renter' %}bg-Renter
+                                    {% else %}bg-dark{% endif %}">
+                                    {{ status }}
+                                </span>
+                                {% empty %}
+                                    <span class="text-muted">No status tags set.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Interests:</strong>
+                            {# TODO: Add logic to display interest tags #}
+                            {% comment %}
+                            {% if user.interest_tags %}
+                                {% for tag in user.interest_tags %}
+                                    <span class="badge bg-{{ tag.name|slugify }} me-1">{{ tag.name }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">No interest tags set.</span>
+                            {% endif %}
+                            {% endcomment %}
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for hobby in user.hobbies %}
+                                <span class="badge 
+                                    {% if hobby == 'Consumerism' %}bg-Consumerism
+                                    {% elif hobby == 'Travel and Vacation' %}bg-Travel\ and\ Vacation
+                                    {% elif hobby == 'Culture and Leisure' %}bg-Culture\ and\ Leisure
+                                    {% elif hobby == 'Cars' %}bg-Cars
+                                    {% elif hobby == 'Insurance' %}bg-Insurance
+                                    {% elif hobby == 'Finance and Banking' %}bg-Finance\ and\ Banking
+                                    {% elif hobby == 'lifestyle' %}bg-lifestyle
+                                    {% elif hobby == 'electronics' %}bg-electronics
+                                    {% elif hobby == 'home' %}bg-home
+                                    {% elif hobby == 'books' %}bg-books
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ hobby }}
+                                </span>
+                                {% empty %}
+                                    <span class="text-muted">No interest tags set.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="mb-4">
+
+                    <p class="lead text-muted mb-4">Your favorited items will appear here.</p>
+                    {# TODO: Add logic to display favorited items #}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

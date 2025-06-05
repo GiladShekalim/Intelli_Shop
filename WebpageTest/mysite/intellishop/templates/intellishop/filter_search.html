@@ -16,16 +16,33 @@
 
     <!-- Filter Sections -->
     <div class="filter-sections">
-        <!-- Last Viewed Section -->
+        <!-- Price Range by fixed amount Section -->
         <div class="filter-section">
             <div class="section-header">
-                <h3>Last Viewed</h3>
+                <h3>Price Range by Value</h3>
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="filter-options">
-                <div class="filter-item placeholder"></div>
-                <div class="filter-item placeholder"></div>
-                <div class="filter-item placeholder"></div>
+                <div class="price-range-slider-container">
+                    <span class="min-price-label">ILS{{ min_price }}</span>
+                    <input type="range" class="price-range-slider" min="{{ min_price }}" max="{{ max_price }}" value="[{{ min_price }}, {{ max_price }}]">
+                    <span class="max-price-label">ILS{{ max_price }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Range by percentage Section -->
+        <div class="filter-section">
+            <div class="section-header">
+                <h3>Price Range by Percentage (%)  </h3>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="filter-options">
+                <div class="price-range-slider-container">
+                    <span class="min-percentage-label">0%</span>
+                    <input type="range" class="percentage-range-slider" min="0" max="100" value="[0, 100]">
+                    <span class="max-percentage-label">100%</span>
+                </div>
             </div>
         </div>
 
@@ -42,10 +59,10 @@
             </div>
         </div>
 
-        <!-- Close to you Section -->
+        <!-- Last Viewed Section -->
         <div class="filter-section">
             <div class="section-header">
-                <h3>Close to you</h3>
+                <h3>Last Viewed</h3>
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="filter-options">
@@ -54,28 +71,16 @@
                 <div class="filter-item placeholder"></div>
             </div>
         </div>
-
-        <!-- More Section -->
-        <div class="filter-section">
-            <div class="section-header">
-                <h3>More</h3>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-            <div class="filter-tags">
-                <span class="filter-tag">CellarSeek</span>
-                <span class="filter-tag">SipSavant</span>
-                <span class="filter-tag">VinoVault</span>
-                <span class="filter-tag">SipSync</span>
-                <span class="filter-tag">WineWhiz</span>
-                <span class="filter-tag">Wine Oasis</span>
-                <span class="filter-tag">TerraVino</span>
-                <span class="filter-tag">Chateau Quest</span>
-                <span class="filter-tag">VinoVoyage</span>
-            </div>
-        </div>
     </div>
 
-    <!-- Bottom Action Buttons -->
+    <!-- Bottom Action Buttons     SHOW ALL-->
+    <div style="margin: 20px 0;">
+        <button id="show-all-btn" class="btn-apply" style="width: 100%;">
+            <span class="btn-text">Show All</span>
+        </button>
+        <div id="all-discounts-container"></div>
+    </div>
+
     <div class="action-buttons">
         <button class="btn-clear">Clear all</button>
         <button class="btn-apply">Apply</button>
@@ -207,8 +212,22 @@
 }
 
 .btn-apply {
-    background: #0d6efd;
-    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    min-height: 44px; /* Ensure consistent height */
+}
+
+.btn-apply.loading {
+    background: #0b5ed7;
+    cursor: wait;
+}
+
+.btn-apply.loading .btn-text {
+    content: "Loading...";
 }
 
 .btn-apply:hover {
@@ -220,9 +239,276 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+.discount-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    background: #fafbfc;
+    direction: rtl;
+    text-align: right;
+    font-family: "Segoe UI", Arial, "Noto Sans Hebrew", "Open Sans", sans-serif;
+    display: flex; /* Use flexbox for the card to arrange top and bottom rows */
+    flex-direction: column; /* Stack the top flex row and bottom row vertically */
+}
+
+.discount-flex-row {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 12px;
+    flex-wrap: nowrap; /* Prevent wrapping of image and details column */
+}
+
+.discount-image-col {
+    flex: 0 0 400px; /* Increased fixed width for the image column (twice the original size) */
+    display: flex;
+    align-items: flex-start; /* Align image to the top */
+    justify-content: center;
+}
+
+.discount-image-col img {
+    max-width: 100%; /* Ensure image scales within its container */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 8px;
+}
+
+.discount-details-col {
+    flex: 1 1 0; /* Allow details to grow and shrink */
+    min-width: 0; /* Prevent content overflow */
+}
+
+.discount-bottom-row {
+    display: flex;
+    justify-content: center; /* Center the items horizontally */
+    align-items: center; /* Vertically align items in the middle */
+    margin-top: 10px;
+    gap: 100px; /* Increased space between the items */
+    flex-wrap: wrap; /* Allow wrapping if the container is too narrow */
+}
+
+/* Ensure direct children of discount-bottom-row are flex items and don't shrink unexpectedly */
+.discount-bottom-row > div, .discount-bottom-row > a {
+    flex-shrink: 0;
+    display: flex; /* Ensure flex properties apply */
+    align-items: center; /* Vertically center content within each item */
+}
+
+/* Keep or adjust existing styles for individual items as needed */
+.price-type-col {
+    display: flex;
+    flex-direction: row-reverse; /* Keep price and label RTL */
+    align-items: center;
+    gap: 12px; /* Space between price and label */
+}
+
+.like-icon-col {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Space between text and icon */
+}
+
+.site-link-btn {
+    display: inline-block;
+    background: #ffb347; /* Light orange background */
+    color: #fff; /* White text for better contrast */
+    text-decoration: none;
+    padding: 8px 16px; /* Adjusted padding */
+}
+
+.site-link-btn:hover {
+    background: #ffa327; /* Slightly darker orange on hover */
+}
+
+/* Remove any old group styles that might interfere */
+.bottom-left-group, .bottom-right-group, .bottom-left-item, .bottom-middle-item, .bottom-right-item, .buttons-and-price-group, .bottom-buttons-group {
+     display: unset; /* Remove flex/grid display from previous attempts */
+     /* You might need to inspect your current styles and unset other conflicting properties if the layout is still off */
+}
+
+.price-label-big {
+    margin-bottom: 0;
+    background:${priceColor}; /* Use dynamic color */
+    color:white;
+    padding:3px 9px;
+    border-radius:16px;
+    font-size:1em;
+    font-weight:bold;
+    display:inline-block;
+    vertical-align:middle;
+}
+.price-value-big {
+    margin-bottom: 0;
+    font-size:2.2em;
+    font-weight:bold;
+    color:#333;
+    display:inline-block;
+    vertical-align:middle;
+    margin-right:12px;
+}
+.discount-title {
+    font-size: 2em;
+    font-weight: bold;
+    background: linear-gradient(90deg, #f0f2f5 60%, #ffe082 100%);
+    padding: 8px 18px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
+.discount-meta {
+    font-size: 0.55em;
+    color: #555;
+    margin-right: 18px;
+    vertical-align: middle;
+}
+.meta-item {
+    margin-left: 18px;
+    display: inline-block;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 2px 10px;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+.expired-label {
+    color: #fff;
+    background: #e53935;
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-size: 1em;
+    font-weight: bold;
+    margin-top: 4px;
+    display: inline-block;
+    box-shadow: 0 1px 4px rgba(229,57,53,0.08);
+    letter-spacing: 0.03em;
+}
+.copy-code-btn {
+    background: #ff9800; /* Orange background */
+    color: #fff; /* White text */
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none; /* Prevent text selection */
+    display: inline-block; /* Ensure it acts like a button */
+    font-size: 1em;
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+.copy-code-btn:hover {
+    background: #f57c00; /* Darker orange on hover */
+}
+.copy-code-btn.copied {
+    background: #4caf50; /* Green when copied */
+    text-align: center;
+}
+
+/* Loading Spinner Styles */
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: white;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* No Results Message */
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.no-results i {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 16px;
+}
+
+.no-results p {
+    color: #495057;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+/* Error Message */
+.error-message {
+    text-align: center;
+    padding: 20px;
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    margin: 20px 0;
+    color: #d32f2f;
+}
+
+.error-message i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.buttons-and-price-group, .bottom-buttons-group {
+    /* These groups are no longer needed for the new structure, can be removed or repurposed if other styles depend on them */
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between elements */
+}
+
+.like-icon {
+    font-size: 1.6em;
+    color: #ff0000; /* Red color for the icon */
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+.like-icon:hover {
+    color: #cc0000; /* Slightly darker red on hover */
+}
+.like-fav-text {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #ff6666; /* Light red color for the text */
+    display: flex; /* Make the span a flex container */
+    align-items: center; /* Vertically center items */
+}
+
+.price-range-slider-container {
+    display: flex; /* Use flexbox */
+    align-items: center; /* Vertically center items */
+    justify-content: flex-start; /* Align items to the left */
+    gap: 10px; /* Add some space between items */
+    width: 100%; /* Allow container to take full width */
+}
+
+.price-range-slider-container input[type="range"] {
+    flex-grow: 1; /* Allow the slider to take up available space */
+}
 </style>
 
 <script>
+    // Check if the user is authenticated (set by Django context)
+    var isLoggedIn = {% if user.is_authenticated %} true {% else %} false {% endif %};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle sections
     const headers = document.querySelectorAll('.section-header');
@@ -264,6 +550,211 @@ document.addEventListener('DOMContentLoaded', function() {
             .map(tag => tag.textContent);
         console.log('Selected filters:', selectedTags);
         // Add your filter application logic here
+    });
+
+    // Add event listener to the search icon
+    const searchIcon = document.querySelector('.search-icon');
+    if (searchIcon) {
+        searchIcon.addEventListener('click', function(e) {
+            if (!isLoggedIn) {
+                // Prevent default search action
+                e.preventDefault();
+                // Redirect to login page
+                window.location.href = '{% url "login" %}'; // Replace 'login' with the actual URL name for your login page
+            } else {
+                // User is logged in, proceed with search logic
+                // TODO: Add your search functionality here
+                console.log('User is logged in, perform search.');
+                // Example: You might want to get the search input value and trigger a search results display
+                // const searchValue = document.querySelector('.search-input').value;
+                // triggerSearch(searchValue);
+            }
+        });
+    }
+
+    // DISPLAY ALL DISCOUNTS
+    document.getElementById('show-all-btn').addEventListener('click', function() {
+        const button = this;
+        const buttonText = button.querySelector('.btn-text');
+        const container = document.getElementById('all-discounts-container');
+        
+        // Show loading state
+        button.classList.add('loading');
+        buttonText.textContent = 'Loading Please Wait ...';
+        container.innerHTML = ''; // Clear previous content
+
+        // Create a promise that resolves after 3 seconds
+        const minimumLoadingTime = new Promise(resolve => setTimeout(resolve, 3000));
+
+        // Create a promise for the fetch request
+        const fetchPromise = fetch('/show_all_discounts/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            });
+
+        // Wait for both the minimum loading time and the fetch to complete
+        Promise.all([minimumLoadingTime, fetchPromise])
+            .then(([_, data]) => {
+                container.innerHTML = '';
+                
+                if (!data.discounts || data.discounts.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-results">
+                            <i class="bi bi-emoji-frown"></i>
+                            <p>No discounts found at the moment.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.discounts.forEach(discount => {
+                    const div = document.createElement('div');
+                    div.className = 'discount-card';
+
+                    // Determine label and color
+                    let priceLabel = '';
+                    let priceColor = '';
+                    let type = discount.discount_type || discount.price_type || '';
+                    console.log('Discount:', discount.title, 'type:', type, 'discount_type:', discount.discount_type, 'price_type:', discount.price_type);
+                    if (['fixed_amount', 'fixed_price', 'amount', 'fixed'].includes(type)) {
+                        priceLabel = 'מחיר סופי';
+                        priceColor = '#007bff'; // blue
+                    } else if (type === 'percentage' || type === '%') {
+                        priceLabel = '% הנחה';
+                        priceColor = '#28a745'; // green
+                    } else {
+                        priceLabel = ''; // DO NOT SHOW PRICE LABEL -> LINK FOR WEBSITE
+                        priceColor = '#6c757d'; // gray
+                    }
+
+                    // Show more logic for description and terms
+                    function getShowMoreHtml(text, idPrefix) {
+                        const maxLength = 250;
+                        if (!text) return '';
+                        if (text.length <= maxLength) {
+                            return `<span>${text}</span>`;
+                        }
+                        const shortText = text.slice(0, maxLength) + '...';
+                        return `
+                            <span id="${idPrefix}-short">${shortText}</span>
+                            <span id="${idPrefix}-full" style="display:none;">${text}</span>
+                            <a href="#" class="show-more-link" data-id="${idPrefix}">הצג עוד</a>
+                        `;
+                    }
+
+                    div.innerHTML = `
+                        <div class="discount-flex-row">
+                            <div class="discount-image-col">
+                                <img src="${discount.image_link}" alt="${discount.title}" style="max-width:400px; max-height:400px; border-radius:8px;">
+                            </div>
+                            <div class="discount-details-col">
+                                <h4 class="discount-title">${discount.title}
+                                    <span class="discount-meta">
+                                        ${discount.valid_until ? (() => {
+                                            // Parse date (assume format YYYY-MM-DD)
+                                            let expired = false;
+                                            let dateStr = discount.valid_until;
+                                            let now = new Date();
+                                            let dateObj = new Date(dateStr);
+                                            if (!isNaN(dateObj.getTime()) && dateStr.length >= 8) {
+                                                expired = dateObj < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                            }
+                                            return `<span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: ${dateStr}
+                                                ${expired ? `<div class='expired-label'>פג תוקף</div>` : ''}
+                                            </span>`;
+                                        })() : ''}
+                                        ${discount.usage_limit ? `<span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: ${discount.usage_limit}</span>` : ''}
+                                    </span>
+                                </h4>
+                                <div class="desc-block">
+                                    <strong>תיאור:</strong>
+                                    <div>${getShowMoreHtml(discount.description, `desc-${discount.discount_id}`)}</div>
+                                </div>
+                                <div class="terms-block" style="margin-top:10px;">
+                                    <strong>תנאים והגבלות:</strong>
+                                    <div>${getShowMoreHtml(discount.terms_and_conditions, `terms-${discount.discount_id}`)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="discount-bottom-row">
+                            <div class="price-type-col">
+                                <span class="price-label-big" style="background:${priceColor};color:white;padding:3px 9px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
+                                    ${priceLabel}
+                                </span>
+                                <span class="price-value-big" style="font-size:2.2em;font-weight:bold;color:#333;display:inline-block;vertical-align:middle;margin-right:12px;">${discount.price}</span>
+                            </div>
+                            ${discount.coupon_code ? `
+                                <div class="copy-code-btn" data-code="${discount.coupon_code}">
+                                    Copy Code Coupon
+                                </div>
+                            ` : ''}
+                            ${discount.discount_link ? `
+                                <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
+                                    מעבר לאתר
+                                </a>
+                            ` : ''}
+                            <div class="like-icon-col">
+                                <span class="like-fav-text">Favorites <span class="like-icon" title="Click To Save">&#10084;</span> Add</span>
+                            </div>
+                        </div>
+                        <hr>
+                    `;
+                    container.appendChild(div);
+                });
+
+                // Add event delegation for show more/less
+                document.getElementById('all-discounts-container').addEventListener('click', function(e) {
+                    if (e.target.classList.contains('show-more-link')) {
+                        e.preventDefault();
+                        const id = e.target.getAttribute('data-id');
+                        const shortSpan = document.getElementById(`${id}-short`);
+                        const fullSpan = document.getElementById(`${id}-full`);
+                        if (shortSpan.style.display === 'none') {
+                            shortSpan.style.display = '';
+                            fullSpan.style.display = 'none';
+                            e.target.textContent = 'הצג עוד';
+                        } else {
+                            shortSpan.style.display = 'none';
+                            fullSpan.style.display = '';
+                            e.target.textContent = 'הצג פחות';
+                        }
+                    }
+                    // Add event delegation for copy coupon code
+                    if (e.target.classList.contains('copy-code-btn')) {
+                        const code = e.target.getAttribute('data-code');
+                        if (code) {
+                            navigator.clipboard.writeText(code).then(() => {
+                                const originalText = e.target.textContent;
+                                e.target.textContent = 'Copied!';
+                                e.target.classList.add('copied');
+                                setTimeout(() => {
+                                    e.target.textContent = originalText;
+                                    e.target.classList.remove('copied');
+                                }, 2000);
+                            }).catch(err => {
+                                console.error('Failed to copy:', err);
+                            });
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <p>Failed to load discounts. Please try again later.</p>
+                    </div>
+                `;
+            })
+            .finally(() => {
+                // Remove loading state and restore button text
+                button.classList.remove('loading');
+                buttonText.textContent = 'Show All';
+            });
     });
 });
 </script>

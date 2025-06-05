@@ -78,6 +78,42 @@
             background-color: #23272b !important;
         }
     </style>
+    <style>
+        /* Custom badge colors for Status tags */
+        .bg-Young { background-color: #0d6efd !important; color: white !important; }
+        .bg-Senior { background-color: #ffc107 !important; color: black !important; }
+        .bg-Homeowner { background-color: #20c997 !important; color: white !important; }
+        .bg-Traveler { background-color: #0dcaf0 !important; color: black !important; }
+        .bg-Tech { background-color: #6610f2 !important; color: white !important; } /* Indigo */
+        .bg-Pets { background-color: #198754 !important; color: white !important; }
+        .bg-Fitness { background-color: #dc3545 !important; color: white !important; }
+        .bg-Student { background-color: #0d6efd !important; color: white !important; }
+        .bg-Remote { background-color: #ff8000 !important; color: white !important; } /* Orange-ish */
+        .bg-Family { background-color: #6f42c1 !important; color: white !important; }
+        .bg-Parent { background-color: #198754 !important; color: white !important; }
+        .bg-Military\/Veteran { background-color: #dc3545 !important; color: white !important; } /* Red */
+        .bg-Digital\ Nomad { background-color: #0dcaf0 !important; color: black !important; } /* Cyan */
+        .bg-First-time\ Buyer { background-color: #ffc107 !important; color: black !important; } /* Yellow */
+        .bg-Retiree { background-color: #ff8000 !important; color: white !important; } /* Orange-ish */
+        .bg-Single { background-color: #e83e8c !important; color: white !important; } /* Pink */
+        .bg-Renter { background-color: #6f42c1 !important; color: white !important; } /* Purple */
+
+        /* Custom badge colors for Interests tags */
+        .bg-Consumerism { background-color: #fd7e14 !important; color: white !important; } /* Orange */
+        .bg-Travel\ and\ Vacation { background-color: #28a745 !important; color: white !important; } /* Green */
+        .bg-Culture\ and\ Leisure { background-color: #17a2b8 !important; color: white !important; } /* Cyan */
+        .bg-Cars { background-color: #ff4500 !important; color: white !important; } /* Red-Orange */
+        .bg-Insurance { background-color: #007bff !important; color: white !important; } /* Blue */
+        .bg-Finance\ and\ Banking { background-color: #6610f2 !important; color: white !important; } /* Indigo */
+        .bg-lifestyle { background-color: #20c997 !important; color: white !important; }
+        .bg-electronics { background-color: #0dcaf0 !important; color: black !important; }
+        .bg-home { background-color: #6f42c1 !important; color: white !important; }
+        .bg-books { background-color: #fd7e14 !important; color: white !important; }
+
+        /* Ensure default dark color is not used if specific class is found */
+        .badge.bg-dark { background-color: #0d6efd !important; color: white !important; } /* Defaulting dark to primary (blue) */
+
+    </style>
 </head>
 <body>
     <!-- Navigation-->
@@ -246,6 +282,12 @@
                             Search
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'favorites' %}">
+                            <i class="bi bi-heart"></i>
+                            Favorites
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -263,15 +305,23 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% for status in user.status %}
                         <span class="badge 
-                            {% if status == 'Student' %}bg-primary
-                            {% elif status == 'Parent' %}bg-success
-                            {% elif status == 'Military/Veteran' %}bg-danger
-                            {% elif status == 'Digital Nomad' %}bg-info
-                            {% elif status == 'First-time Buyer' %}bg-warning
-                            {% elif status == 'Retiree' %}bg-secondary
-                            {% elif status == 'Single' %}bg-pink
-                            {% elif status == 'Renter' %}bg-purple
-                            {% elif status == 'Homeowner' %}bg-teal
+                            {% if status == 'Young' %}bg-Young
+                            {% elif status == 'Senior' %}bg-Senior
+                            {% elif status == 'Homeowner' %}bg-Homeowner
+                            {% elif status == 'Traveler' %}bg-Traveler
+                            {% elif status == 'Tech' %}bg-Tech
+                            {% elif status == 'Pets' %}bg-Pets
+                            {% elif status == 'Fitness' %}bg-Fitness
+                            {% elif status == 'Student' %}bg-Student
+                            {% elif status == 'Remote' %}bg-Remote
+                            {% elif status == 'Family' %}bg-Family
+                            {% elif status == 'Parent' %}bg-Parent
+                            {% elif status == 'Military/Veteran' %}bg-Military\/Veteran
+                            {% elif status == 'Digital Nomad' %}bg-Digital\ Nomad
+                            {% elif status == 'First-time Buyer' %}bg-First-time\ Buyer
+                            {% elif status == 'Retiree' %}bg-Retiree
+                            {% elif status == 'Single' %}bg-Single
+                            {% elif status == 'Renter' %}bg-Renter
                             {% else %}bg-dark{% endif %}">
                             {{ status }}
                         </span>
@@ -283,7 +333,13 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% for hobby in user.hobbies %}
                         <span class="badge 
-                            {% if hobby == 'lifestyle' %}bg-lifestyle
+                            {% if hobby == 'Consumerism' %}bg-Consumerism
+                            {% elif hobby == 'Travel and Vacation' %}bg-Travel\ and\ Vacation
+                            {% elif hobby == 'Culture and Leisure' %}bg-Culture\ and\ Leisure
+                            {% elif hobby == 'Cars' %}bg-Cars
+                            {% elif hobby == 'Insurance' %}bg-Insurance
+                            {% elif hobby == 'Finance and Banking' %}bg-Finance\ and\ Banking
+                            {% elif hobby == 'lifestyle' %}bg-lifestyle
                             {% elif hobby == 'electronics' %}bg-electronics
                             {% elif hobby == 'home' %}bg-home
                             {% elif hobby == 'books' %}bg-books

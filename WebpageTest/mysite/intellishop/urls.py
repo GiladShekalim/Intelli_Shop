@@ -15,5 +15,9 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('logout/', views.logout_view, name='logout'),
     path('coupon/<str:code>/', views.coupon_code_view, name='coupon_code'),
+    path('favorites/', views.favorites_view, name='favorites'),
+    path('show_all_discounts/', views.show_all_discounts, name='show_all_discounts'),
+    # path('add_favorite/', views.add_favorite_view, name='add_favorite'),
+    # path('remove_favorite/<int:coupon_id>/', views.remove_favorite, name='remove_favorite'),
 ] 
 

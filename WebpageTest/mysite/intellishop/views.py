@@ -9,6 +9,8 @@ import csv
 import os
 from datetime import datetime
 from django.templatetags.static import static
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 def index(request):
     return render(request, 'intellishop/index.html')
@@ -224,6 +226,10 @@ def dashboard(request):
                 }
                 users_list.append(user_data)
         
+        # Debug: Print hobby values for each user
+        for user_data in users_list:
+            print(f"User {user_data.get('username')}: Hobbies = {user_data.get('hobbies')}")
+
         return render(request, 'intellishop/dashboard.html', {'users': users_list})
         
     except Exception as e:
@@ -296,8 +302,55 @@ def coupon_detail(request, store):
     return render(request, 'intellishop/coupon_detail.html', context)
 
 def filter_search(request):
-    print("Debug: Accessing filter_search view")  # Add debug print
-    return render(request, 'intellishop/filter_search.html')
+    # Check if the user is logged in using custom session variable
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login') # Redirect to login if not logged in
+
+    # Aggregate to find min and max prices
+    min_price = 0  # Default min price
+    max_price = 10000 # Default max price or a high value
+
+    try:
+        coupons_collection = Coupon.get_collection()
+        if coupons_collection:
+            pipeline = [
+                {
+                    '$match': {
+                        'discount_type': 'fixed_amount', # Filter for fixed_amount discounts
+                        'price': { '$exists': True, '$ne': None }
+                    }
+                },
+                 { # Add a stage to ensure price is treated as a number
+                    '$addFields': {
+                        'price': { '$toInt': '$price' }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': None, # Group all documents
+                        'min_price': { '$min': '$price' },
+                        'max_price': { '$max': '$price' }
+                    }
+                }
+            ]
+            print(f"MongoDB aggregation pipeline: {pipeline}") # Debug print pipeline
+            result = list(coupons_collection.aggregate(pipeline))
+            print(f"MongoDB aggregation result: {result}") # Debug print result
+            if result:
+                min_price = result[0].get('min_price', min_price)
+                max_price = result[0].get('max_price', max_price)
+    except Exception as e:
+        print(f"Error fetching min/max prices from MongoDB: {e}")
+        # Keep default min/max prices if fetching fails
+
+    context = {
+        'user_id': user_id, # Pass user_id if needed in template
+        'min_price': min_price,
+        'max_price': max_price,
+    }
+    
+    return render(request, 'intellishop/filter_search.html', context)
 
 def profile_view(request):
     
@@ -377,4 +430,36 @@ def coupon_code_view(request, code):
     
     # If we get here, redirect to home instead of showing error
     return redirect('index_home')
+
+
+
+# Favorites Page
+def favorites_view(request):
+    # Check if user is logged in
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+
+    # Get user from MongoDB
+    user = User.find_one({'_id': ObjectId(user_id)})
+    if not user:
+        # If user somehow doesn't exist despite having a session user_id, redirect to login
+        return redirect('login')
+
+    # from the database and pass them to the template context.
+    context = {
+        'user': user, # Pass the user object to the template
+        'favorite_items': [] # Replace with actual favorite items
+    }
+    return render(request, 'intellishop/favorites.html', context)
+
+@csrf_exempt
+def show_all_discounts(request):
+    # Fetch all coupons from MongoDB
+    discounts = Coupon.get_all()
+    # Convert ObjectId to string for JSON serialization
+    for discount in discounts:
+        if '_id' in discount:
+            discount['_id'] = str(discount['_id'])
+    return JsonResponse({'discounts': discounts})
 

@@ -6,18 +6,28 @@ import datetime
 import json
 import os
 from django.conf import settings
+from pymongo import MongoClient
 
 class Command(BaseCommand):
     help = 'Test MongoDB connection'
 
     def handle(self, *args, **options):
         try:
-            db, client = get_db_handle()
+            # Get MongoDB connection details from environment
+            mongodb_uri = os.environ.get('MONGODB_URI')
+            if not mongodb_uri:
+                raise ValueError("MongoDB URI not configured in environment")
+
+            # Simple MongoDB connection without SSL
+            client = MongoClient(mongodb_uri)
+            
+            # Test the connection
             server_info = client.server_info()
             self.stdout.write(self.style.SUCCESS(f'Successfully connected to MongoDB version: {server_info["version"]}'))
             self.stdout.write(self.style.SUCCESS(f'Available databases: {client.list_database_names()}'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Failed to connect to MongoDB: {e}'))
+            self.stdout.write(self.style.ERROR(f'MongoDB connection error: {str(e)}'))
+            raise e
         finally:
             if 'client' in locals():
                 client.close()
