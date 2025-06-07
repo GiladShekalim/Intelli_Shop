@@ -448,6 +448,16 @@
     background: #ffa327; /* Slightly darker orange on hover */
 }
 
+/* Styles for the new Provider Link button */
+.site-link-btn.provider-link-btn {
+    background: #d84368; /* A shade of pink/magenta from the provided image */
+    color: white; /* White text for contrast */
+}
+
+.site-link-btn.provider-link-btn:hover {
+    background: #c33a5d; /* Darker shade on hover */
+}
+
 /* Remove any old group styles that might interfere */
 .bottom-left-group, .bottom-right-group, .bottom-left-item, .bottom-middle-item, .bottom-right-item, .buttons-and-price-group, .bottom-buttons-group {
      display: unset; /* Remove flex/grid display from previous attempts */
@@ -982,11 +992,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                     Copy Code Coupon
                                 </div>
                             ` : ''}
-                            ${discount.discount_link ? `
-                                <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
-                                    מעבר לאתר
+                            ${discount.provider_link ? `
+                                <a href="${discount.provider_link}" target="_blank" class="site-link-btn provider-link-btn">
+                                    Go To Provider
                                 </a>
                             ` : ''}
+                            <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
+                                Discount Link
+                            </a>
                             <div class="like-icon-col">
                                 <span class="like-fav-text">Favorites <span class="like-icon" title="Click To Save">&#10084;</span> Add</span>
                             </div>
@@ -1019,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (code) {
                             navigator.clipboard.writeText(code).then(() => {
                                 const originalText = e.target.textContent;
-                                e.target.textContent = 'Copied!';
+                                e.target.textContent = '! Copied';
                                 e.target.classList.add('copied');
                                 setTimeout(() => {
                                     e.target.textContent = originalText;
