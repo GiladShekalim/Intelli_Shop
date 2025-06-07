@@ -222,7 +222,8 @@ def dashboard(request):
                     'age': user.get('age', ''),
                     'location': user.get('location', ''),
                     'hobbies': user.get('hobbies', []),
-                    '_id': str(user.get('_id', ''))
+                    '_id': str(user.get('_id', '')),
+                    'date_created': user.get('created_at', '')
                 }
                 users_list.append(user_data)
         
