@@ -5,21 +5,21 @@
         <div class="container">
             <div class="row gx-5 align-items-center">
                 <div class="col-12">
-                    {# Account Details Section #}
+                        {# Account Details Section #}
                     <div class="user-welcome p-4 bg-light rounded shadow-sm mb-4" style="border-left: 4px solid #28a745;">
                         <h2>My Favorites!<span class="text-danger ms-3">❤️</span></h2>
-                        <p><strong>Email:</strong> {{ user.email }}</p>
-                        <div>
-                            <strong>Status:</strong>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <div>
+                                <strong>Status:</strong>
                             {# TODO: Add logic to display status tags #}
                             {% comment %}
-                            {% if user.status_tags %}
-                                {% for tag in user.status_tags %}
-                                    <span class="badge bg-{{ tag.name|slugify }} me-1">{{ tag.name }}</span>
-                                {% endfor %}
-                            {% else %}
-                                <span class="text-muted">No status tags set.</span>
-                            {% endif %}
+                                {% if user.status_tags %}
+                                    {% for tag in user.status_tags %}
+                                        <span class="badge bg-{{ tag.name|slugify }} me-1">{{ tag.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">No status tags set.</span>
+                                {% endif %}
                             {% endcomment %}
                             <div class="d-flex flex-wrap gap-2">
                                 {% for status in user.status %}
@@ -48,18 +48,18 @@
                                     <span class="text-muted">No status tags set.</span>
                                 {% endfor %}
                             </div>
-                        </div>
-                        <div class="mt-2">
-                            <strong>Interests:</strong>
+                            </div>
+                            <div class="mt-2">
+                                <strong>Interests:</strong>
                             {# TODO: Add logic to display interest tags #}
                             {% comment %}
-                            {% if user.interest_tags %}
-                                {% for tag in user.interest_tags %}
-                                    <span class="badge bg-{{ tag.name|slugify }} me-1">{{ tag.name }}</span>
-                                {% endfor %}
-                            {% else %}
-                                <span class="text-muted">No interest tags set.</span>
-                            {% endif %}
+                                {% if user.interest_tags %}
+                                    {% for tag in user.interest_tags %}
+                                        <span class="badge bg-{{ tag.name|slugify }} me-1">{{ tag.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">No interest tags set.</span>
+                                {% endif %}
                             {% endcomment %}
                             <div class="d-flex flex-wrap gap-2">
                                 {% for hobby in user.hobbies %}
@@ -81,13 +81,13 @@
                                     <span class="text-muted">No interest tags set.</span>
                                 {% endfor %}
                             </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <hr class="mb-4">
+                        
+                        <hr class="mb-4">
 
-                    <p class="lead text-muted mb-4">Your favorited items will appear here.</p>
-                    {# TODO: Add logic to display favorited items #}
+                        <p class="lead text-muted mb-4">Your favorited items will appear here.</p>
+                        {# TODO: Add logic to display favorited items #}
                 </div>
             </div>
         </div>

@@ -99,19 +99,19 @@
         .bg-Renter { background-color: #6f42c1 !important; color: white !important; } /* Purple */
 
         /* Custom badge colors for Interests tags */
-        .bg-Consumerism { background-color: #fd7e14 !important; color: white !important; } /* Orange */
-        .bg-Travel\ and\ Vacation { background-color: #28a745 !important; color: white !important; } /* Green */
-        .bg-Culture\ and\ Leisure { background-color: #17a2b8 !important; color: white !important; } /* Cyan */
-        .bg-Cars { background-color: #ff4500 !important; color: white !important; } /* Red-Orange */
-        .bg-Insurance { background-color: #007bff !important; color: white !important; } /* Blue */
-        .bg-Finance\ and\ Banking { background-color: #6610f2 !important; color: white !important; } /* Indigo */
-        .bg-lifestyle { background-color: #20c997 !important; color: white !important; }
-        .bg-electronics { background-color: #0dcaf0 !important; color: black !important; }
-        .bg-home { background-color: #6f42c1 !important; color: white !important; }
-        .bg-books { background-color: #fd7e14 !important; color: white !important; }
+        /* .bg-Consumerism { background-color: #fd7e14 !important; color: white !important; } */
+        /* .bg-Travel\ and\ Vacation { background-color: #28a745 !important; color: white !important; } */
+        /* .bg-Culture\ and\ Leisure { background-color: #17a2b8 !important; color: white !important; } */
+        /* .bg-Cars { background-color: #ff4500 !important; color: white !important; } */
+        /* .bg-Insurance { background-color: #007bff !important; color: white !important; } */
+        /* .bg-Finance\ and\ Banking { background-color: #6610f2 !important; color: white !important; } */
+        /* .bg-lifestyle { background-color: #20c997 !important; color: white !important; } */
+        /* .bg-electronics { background-color: #0dcaf0 !important; color: black !important; } */
+        /* .bg-home { background-color: #6f42c1 !important; color: white !important; } */
+        /* .bg-books { background-color: #fd7e14 !important; color: white !important; } */
 
         /* Ensure default dark color is not used if specific class is found */
-        .badge.bg-dark { background-color: #0d6efd !important; color: white !important; } /* Defaulting dark to primary (blue) */
+        /* .badge.bg-dark { background-color: #0d6efd !important; color: white !important; } */ /* Defaulting dark to primary (blue) */
 
     </style>
 </head>
@@ -332,20 +332,21 @@
                     <strong>Interests:</strong>
                     <div class="d-flex flex-wrap gap-2">
                         {% for hobby in user.hobbies %}
-                        <span class="badge 
-                            {% if hobby == 'Consumerism' %}bg-Consumerism
-                            {% elif hobby == 'Travel and Vacation' %}bg-Travel\ and\ Vacation
-                            {% elif hobby == 'Culture and Leisure' %}bg-Culture\ and\ Leisure
-                            {% elif hobby == 'Cars' %}bg-Cars
-                            {% elif hobby == 'Insurance' %}bg-Insurance
-                            {% elif hobby == 'Finance and Banking' %}bg-Finance\ and\ Banking
-                            {% elif hobby == 'lifestyle' %}bg-lifestyle
-                            {% elif hobby == 'electronics' %}bg-electronics
-                            {% elif hobby == 'home' %}bg-home
-                            {% elif hobby == 'books' %}bg-books
-                            {% else %}bg-secondary{% endif %}">
-                            {{ hobby }}
-                        </span>
+                            <span class="badge" style="background-color:
+                                {% if hobby == 'lifestyle' %}#1a237e /* Deep Indigo */
+                                {% elif hobby == 'electronics' %}#004d40 /* Dark Teal */
+                                {% elif hobby == 'home' %}#e65100 /* Deep Orange */
+                                {% elif hobby == 'books' %}#33691e /* Dark Lime Green */
+                                {% elif hobby == 'Consumerism' %}#880e4f /* Dark Pink */
+                                {% elif hobby == 'Travel and Vacation' %}#01579b /* Dark Cyan */
+                                {% elif hobby == 'Culture and Leisure' %}#4a148c /* Dark Purple */
+                                {% elif hobby == 'Cars' %}#b71c1c /* Dark Red */
+                                {% elif hobby == 'Insurance' %}#0d47a1 /* Dark Blue */
+                                {% elif hobby == 'Finance and Banking' %}#f57f17 /* Dark Yellow */
+                                {% else %}#6c757d /* Defaulting to a neutral color */
+                                {% endif %} !important; color: white !important;">
+                                {{ hobby }}
+                            </span>
                         {% endfor %}
                     </div>
                 </div>
