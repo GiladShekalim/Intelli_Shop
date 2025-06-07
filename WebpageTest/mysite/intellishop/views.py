@@ -324,11 +324,44 @@ def filter_search(request):
     # Set a default minimum price, or fetch from data if needed
     min_fixed_amount_price = 0 # You might want to calculate this similarly if needed
 
+    # Calculate counts for percentage discounts
+    percentage_coupons = list(Coupon.find({'discount_type': 'percentage'}))
+
+    percentage_counts = {
+        'more_than_60': 0,
+        'between_50_60': 0,
+        'between_40_50': 0,
+        'between_30_40': 0,
+        'between_20_30': 0,
+        'up_to_20': 0,
+    }
+
+    for coupon in percentage_coupons:
+        try:
+            amount = float(coupon.get('amount', 0))
+            if amount >= 60:
+                percentage_counts['more_than_60'] += 1
+            elif amount >= 50 and amount < 60:
+                percentage_counts['between_50_60'] += 1
+            elif amount >= 40 and amount < 50:
+                percentage_counts['between_40_50'] += 1
+            elif amount >= 30 and amount < 40:
+                percentage_counts['between_30_40'] += 1
+            elif amount >= 20 and amount < 30:
+                percentage_counts['between_20_30'] += 1
+            elif amount < 20:
+                percentage_counts['up_to_20'] += 1
+        except (ValueError, TypeError):
+            # Handle cases where 'amount' might not be a valid number
+            print(f"Warning: Could not convert amount '{coupon.get('amount')}' to float for coupon '{coupon.get('_id')}'. Skipping.")
+
     context = {
         'min_price': min_fixed_amount_price,
-        'max_price': max_fixed_amount_price
+        'max_price': max_fixed_amount_price,
+        'percentage_counts': percentage_counts,
     }
     
+    print("Debug: Accessing filter_search view with context:", context)  # Add debug print
     return render(request, 'intellishop/filter_search.html', context)
 
 def profile_view(request):
