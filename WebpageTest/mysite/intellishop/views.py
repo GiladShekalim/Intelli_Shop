@@ -301,53 +301,32 @@ def coupon_detail(request, store):
     }
     return render(request, 'intellishop/coupon_detail.html', context)
 
+
+# FILTER PAGE
 def filter_search(request):
     # Check if the user is logged in using custom session variable
-    user_id = request.session.get('user_id')
-    if not user_id:
-        return redirect('login') # Redirect to login if not logged in
+    if not request.session.get('user_id'):
+        # If not authenticated, redirect to the login page
+        return redirect('login')
+    
+    # Get all coupons with discount_type 'fixed_amount'
+    fixed_amount_coupons = list(Coupon.find({'discount_type': 'fixed_amount'}))
+    
+    max_fixed_amount_price = 0
+    if fixed_amount_coupons:
+        # Extract prices, convert to float, and find the maximum
+        prices = [float(c.get('price', 0)) for c in fixed_amount_coupons if c.get('price') is not None]
+        if prices:
+            max_fixed_amount_price = max(prices)
+            # Ensure it's an integer for the slider, or keep it float if needed
+            max_fixed_amount_price = int(max_fixed_amount_price) # Convert to integer
 
-    # Aggregate to find min and max prices
-    min_price = 0  # Default min price
-    max_price = 10000 # Default max price or a high value
-
-    try:
-        coupons_collection = Coupon.get_collection()
-        if coupons_collection:
-            pipeline = [
-                {
-                    '$match': {
-                        'discount_type': 'fixed_amount', # Filter for fixed_amount discounts
-                        'price': { '$exists': True, '$ne': None }
-                    }
-                },
-                 { # Add a stage to ensure price is treated as a number
-                    '$addFields': {
-                        'price': { '$toInt': '$price' }
-                    }
-                },
-                {
-                    '$group': {
-                        '_id': None, # Group all documents
-                        'min_price': { '$min': '$price' },
-                        'max_price': { '$max': '$price' }
-                    }
-                }
-            ]
-            print(f"MongoDB aggregation pipeline: {pipeline}") # Debug print pipeline
-            result = list(coupons_collection.aggregate(pipeline))
-            print(f"MongoDB aggregation result: {result}") # Debug print result
-            if result:
-                min_price = result[0].get('min_price', min_price)
-                max_price = result[0].get('max_price', max_price)
-    except Exception as e:
-        print(f"Error fetching min/max prices from MongoDB: {e}")
-        # Keep default min/max prices if fetching fails
+    # Set a default minimum price, or fetch from data if needed
+    min_fixed_amount_price = 0 # You might want to calculate this similarly if needed
 
     context = {
-        'user_id': user_id, # Pass user_id if needed in template
-        'min_price': min_price,
-        'max_price': max_price,
+        'min_price': min_fixed_amount_price,
+        'max_price': max_fixed_amount_price
     }
     
     return render(request, 'intellishop/filter_search.html', context)
