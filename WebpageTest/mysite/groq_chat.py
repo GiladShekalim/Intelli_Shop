@@ -172,6 +172,7 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
                 logger.error(f"{error_message}\nMax retries exceeded. Using original discount.")
                 return discount
     return discount
+    
 # TODO: 
 # create a copy file of the original coupons list.
 # the copy file will contain the list of objects with a change - ID is generated.
@@ -179,7 +180,6 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
 # 1 get the relevent fields from the response.
 # 2 change the copy file with the new values for the specific object. - using the discount_id as the key.
 # 3 save the copy file as a new file
-#
 #
 
 def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
