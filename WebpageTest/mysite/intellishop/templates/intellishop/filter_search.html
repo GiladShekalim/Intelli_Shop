@@ -5,9 +5,6 @@
 <div class="filter-search-container">
     <!-- Search Bar -->
     <div class="search-bar">
-        <button class="back-button" onclick="history.back()">
-            <i class="bi bi-arrow-left"></i>
-        </button>
         <div class="search-input-container">
             <input type="text" placeholder="Write..." class="search-input">
             <i class="bi bi-search search-icon"></i>
@@ -853,6 +850,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(([_, data]) => {
                 container.innerHTML = '';
                 
+                // Remove search input, Show All button, and action buttons after results are loaded
+                const searchBar = document.querySelector('.search-bar');
+                if (searchBar) searchBar.remove();
+                button.remove();
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) actionButtons.remove();
+
                 if (!data.discounts || data.discounts.length === 0) {
                     container.innerHTML = `
                         <div class="no-results">
