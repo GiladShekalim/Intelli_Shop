@@ -110,7 +110,7 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
     """
     global current_model_index  # Use the global variable
     
-    # Force disable Groq client's internal logging right before we use it
+    # disable Groq client's internal logging
     logging.getLogger("groq").setLevel(logging.WARNING)
     logging.getLogger("groq._base_client").setLevel(logging.WARNING)
     
@@ -120,7 +120,7 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
     system_message = MESSAGE_TEMPLATE
     
     discount_id = discount.get('discount_id', 'unknown')
-    user_message = f"Please enhance this discount object according to the instructions:\n{json.dumps(discount, indent=2, ensure_ascii=False)}"
+    user_message = f"Please edit each indvidual field for the following discount object as described in the instructions:\n{json.dumps(discount, indent=2, ensure_ascii=False)}"
     
     retry_count = 0
     while retry_count <= max_retries:
@@ -171,8 +171,16 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
             else:
                 logger.error(f"{error_message}\nMax retries exceeded. Using original discount.")
                 return discount
-    
     return discount
+# TODO: 
+# create a copy file of the original coupons list.
+# the copy file will contain the list of objects with a change - ID is generated.
+# After groq return response with the json format. - containing only the required fields for edits. 
+# 1 get the relevent fields from the response.
+# 2 change the copy file with the new values for the specific object. - using the discount_id as the key.
+# 3 save the copy file as a new file
+#
+#
 
 def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     """
