@@ -29,30 +29,24 @@
             </div>
         </div>
 
-        <!-- Last Viewed Section -->
-        <div class="filter-section">
-            <div class="section-header">
-                <h3>Last Viewed</h3>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-            <div class="filter-options">
-                <div class="filter-item placeholder"></div>
-                <div class="filter-item placeholder"></div>
-                <div class="filter-item placeholder"></div>
-            </div>
-        </div>
-
         <!-- Price Range by fixed amount Section -->
         <div class="filter-section">
             <div class="section-header">
-                <h3>Price Range by Value</h3>
+                <h3>Enable Price Range by Value</h3>
                 <i class="bi bi-chevron-down"></i>
             </div>
+            <div class="filter-options">
+                <input type="checkbox" class="btn-check filter-checkbox" id="enable-value-filters" autocomplete="off">
+                <label class="btn btn-outline-secondary filter-label" for="enable-value-filters">Enable Value Filters</label>
+            </div>
+        </div>
+        <div class="filter-section" id="value-price-filter-section">
             <div class="filter-options" style="grid-template-columns: 1fr;">
                 <div class="price-range-slider-container">
                     <span class="min-price-label">{{ min_price }}</span>
-                    <input type="range" class="price-range-slider" min="{{ min_price }}" max="{{ max_price }}" value="{{ max_price }}">
+                    <input type="range" class="price-range-slider" min="{{ min_price }}" max="{{ max_price }}" value="{{ max_price }}" id="price-range-slider">
                     <span class="max-price-label">{{ max_price }}</span>
+                    <span class="current-price-value"></span>
                 </div>
             </div>
         </div>
@@ -60,38 +54,45 @@
         <!-- Price Range by percentage Section -->
         <div class="filter-section">
             <div class="section-header">
-                <h3>Price Range by Percentage (%)  </h3>
+                <h3>Price Range by Percentage (%)</h3>
                 <i class="bi bi-chevron-down"></i>
             </div>
-            <div class="filter-options" style="grid-template-columns: 1fr 1fr; align-items: flex-start;"> {# Two columns for slider and options #}
-                <div class="price-range-slider-container">
+            <div class="filter-options">
+                <input type="checkbox" class="btn-check filter-checkbox" id="enable-percentage-filters" autocomplete="off">
+                <label class="btn btn-outline-secondary filter-label" for="enable-percentage-filters">Enable Percentage Filters</label>
+            </div>
+        </div>
+        <div class="filter-section" id="percentage-price-filter-section">
+            <div class="filter-options" style="grid-template-columns: 1fr;"> {# Two columns for slider and options #}
+                <div class="percentage-range-slider-container">
                     <span class="min-percentage-label">0%</span>
-                    <input type="range" class="percentage-range-slider" min="0" max="100" value="100">
+                    <input type="range" class="percentage-range-slider" min="0" max="100" value="100" id="percentage-range-slider">
                     <span class="max-percentage-label">100%</span>
+                    <span class="current-percentage-value"></span>
                 </div>
                 <div class="percentage-options-list">
                     <label class="percentage-filter-item">
-                        <input type="checkbox" class="btn-check percentage-checkbox" id="percentage-60-plus" value="60-plus" autocomplete="off">
+                        <input type="radio" class="btn-check percentage-checkbox" name="percentage-filter" id="percentage-60-plus" value="60-plus" autocomplete="off">
                         <span class="btn btn-outline-secondary percentage-label" for="percentage-60-plus">60% or more ({{ percentage_counts.more_than_60 }})</span>
                     </label>
                     <label class="percentage-filter-item">
-                        <input type="checkbox" class="btn-check percentage-checkbox" id="percentage-50-60" value="50-60" autocomplete="off">
+                        <input type="radio" class="btn-check percentage-checkbox" name="percentage-filter" id="percentage-50-60" value="50-60" autocomplete="off">
                         <span class="btn btn-outline-secondary percentage-label" for="percentage-50-60">50% - 60% ({{ percentage_counts.between_50_60 }})</span>
                     </label>
                     <label class="percentage-filter-item">
-                        <input type="checkbox" class="btn-check percentage-checkbox" id="percentage-40-50" value="40-50" autocomplete="off">
+                        <input type="radio" class="btn-check percentage-checkbox" name="percentage-filter" id="percentage-40-50" value="40-50" autocomplete="off">
                         <span class="btn btn-outline-secondary percentage-label" for="percentage-40-50">40% - 50% ({{ percentage_counts.between_40_50 }})</span>
                     </label>
                     <label class="percentage-filter-item">
-                        <input type="checkbox" class="btn-check percentage-checkbox" id="percentage-30-40" value="30-40" autocomplete="off">
+                        <input type="radio" class="btn-check percentage-checkbox" name="percentage-filter" id="percentage-30-40" value="30-40" autocomplete="off">
                         <span class="btn btn-outline-secondary percentage-label" for="percentage-30-40">30% - 40% ({{ percentage_counts.between_30_40 }})</span>
                     </label>
                     <label class="percentage-filter-item">
-                        <input type="checkbox" class="btn-check percentage-checkbox" id="percentage-20-30" value="20-30" autocomplete="off">
+                        <input type="radio" class="btn-check percentage-checkbox" name="percentage-filter" id="percentage-20-30" value="20-30" autocomplete="off">
                         <span class="btn btn-outline-secondary percentage-label" for="percentage-20-30">20% - 30% ({{ percentage_counts.between_20_30 }})</span>
                     </label>
                     <label class="percentage-filter-item">
-                        <input type="checkbox" class="btn-check percentage-checkbox" id="percentage-up-to-20" value="up-to-20" autocomplete="off">
+                        <input type="radio" class="btn-check percentage-checkbox" name="percentage-filter" id="percentage-up-to-20" value="up-to-20" autocomplete="off">
                         <span class="btn btn-outline-secondary percentage-label" for="percentage-up-to-20">Up to 20% ({{ percentage_counts.up_to_20 }})</span>
                     </label>
                 </div>
@@ -447,6 +448,16 @@
     background: #ffa327; /* Slightly darker orange on hover */
 }
 
+/* Styles for the new Provider Link button */
+.site-link-btn.provider-link-btn {
+    background: #d84368; /* A shade of pink/magenta from the provided image */
+    color: white; /* White text for contrast */
+}
+
+.site-link-btn.provider-link-btn:hover {
+    background: #c33a5d; /* Darker shade on hover */
+}
+
 /* Remove any old group styles that might interfere */
 .bottom-left-group, .bottom-right-group, .bottom-left-item, .bottom-middle-item, .bottom-right-item, .buttons-and-price-group, .bottom-buttons-group {
      display: unset; /* Remove flex/grid display from previous attempts */
@@ -617,16 +628,27 @@
     align-items: center; /* Vertically center items */
 }
 
-.price-range-slider-container {
+/* Price Range Slider Styles */
+.price-range-slider-container,
+.percentage-range-slider-container {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    width: 100%;
+    justify-content: center;
+    width: 70%; /* Adjusted from 80% to make the bar shorter */
+    margin: 0 auto; /* Center the container */
 }
 
-.price-range-slider-container input[type="range"] {
-    flex-grow: 1; /* Allow the slider to take up available space */
+.price-range-slider,
+.percentage-range-slider {
+    flex: 1;
+    margin: 0 10px; /* Add some margin to separate from labels */
+}
+
+.min-price-label,
+.max-price-label,
+.min-percentage-label,
+.max-percentage-label {
+    white-space: nowrap;
 }
 
 /* Add styling for selected filter labels */
@@ -663,6 +685,7 @@
     flex-direction: row; /* Change to row */
     flex-wrap: wrap; /* Allow wrapping */
     gap: 8px; /* Slightly increase gap for bigger tags */
+    justify-content: center; /* Center the options horizontally */
 }
 
 .percentage-filter-item {
@@ -692,6 +715,19 @@
     background-color: #0d6efd !important;
     border-color: #0d6efd !important;
     color: white !important;
+}
+
+/* Styles for current slider values */
+.current-price-value,
+.current-percentage-value {
+    background-color: #0d6efd; /* Bootstrap primary blue */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-left: 10px; /* Space from the slider */
+    min-width: 60px; /* Ensure consistent width */
+    text-align: center;
 }
 </style>
 
@@ -732,6 +768,52 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Handle price range slider value display
+    const priceRangeSlider = document.getElementById('price-range-slider');
+    const currentPriceValueSpan = document.querySelector('#value-price-filter-section .current-price-value');
+
+    if (priceRangeSlider && currentPriceValueSpan) {
+        // Initial display
+        currentPriceValueSpan.textContent = priceRangeSlider.value;
+
+        // Update on input change
+        priceRangeSlider.addEventListener('input', () => {
+            currentPriceValueSpan.textContent = priceRangeSlider.value;
+        });
+    }
+
+    // Handle percentage range slider value display
+    const percentageRangeSlider = document.getElementById('percentage-range-slider');
+    const currentPercentageValueSpan = document.querySelector('#percentage-price-filter-section .current-percentage-value');
+
+    if (percentageRangeSlider && currentPercentageValueSpan) {
+        // Initial display
+        currentPercentageValueSpan.textContent = percentageRangeSlider.value + '%';
+
+        // Update on input change
+        percentageRangeSlider.addEventListener('input', () => {
+            currentPercentageValueSpan.textContent = percentageRangeSlider.value + '%';
+        });
+    }
+
+    // Handle enable/disable price filters checkboxes
+    const enableValueFiltersCheckbox = document.getElementById('enable-value-filters');
+    const valuePriceFilterSection = document.getElementById('value-price-filter-section');
+    const enablePercentageFiltersCheckbox = document.getElementById('enable-percentage-filters');
+    const percentagePriceFilterSection = document.getElementById('percentage-price-filter-section');
+
+    function toggleFilterVisibility(checkbox, section) {
+        section.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    // Initial state
+    toggleFilterVisibility(enableValueFiltersCheckbox, valuePriceFilterSection);
+    toggleFilterVisibility(enablePercentageFiltersCheckbox, percentagePriceFilterSection);
+
+    // Event listeners for the checkboxes
+    enableValueFiltersCheckbox.addEventListener('change', () => toggleFilterVisibility(enableValueFiltersCheckbox, valuePriceFilterSection));
+    enablePercentageFiltersCheckbox.addEventListener('change', () => toggleFilterVisibility(enablePercentageFiltersCheckbox, percentagePriceFilterSection));
 
     // Clear all button (update to clear checkboxes)
     document.querySelector('.btn-clear').addEventListener('click', () => {
@@ -910,11 +992,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                     Copy Code Coupon
                                 </div>
                             ` : ''}
-                            ${discount.discount_link ? `
-                                <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
-                                    מעבר לאתר
+                            ${discount.provider_link ? `
+                                <a href="${discount.provider_link}" target="_blank" class="site-link-btn provider-link-btn">
+                                    Go To Provider
                                 </a>
                             ` : ''}
+                            <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
+                                Discount Link
+                            </a>
                             <div class="like-icon-col">
                                 <span class="like-fav-text">Favorites <span class="like-icon" title="Click To Save">&#10084;</span> Add</span>
                             </div>
@@ -947,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (code) {
                             navigator.clipboard.writeText(code).then(() => {
                                 const originalText = e.target.textContent;
-                                e.target.textContent = 'Copied!';
+                                e.target.textContent = '! Copied';
                                 e.target.classList.add('copied');
                                 setTimeout(() => {
                                     e.target.textContent = originalText;

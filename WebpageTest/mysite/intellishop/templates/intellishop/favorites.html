@@ -51,30 +51,23 @@
                             </div>
                             <div class="mt-2">
                                 <strong>Interests:</strong>
-                            {# TODO: Add logic to display interest tags #}
-                            {% comment %}
-                                {% if user.interest_tags %}
-                                    {% for tag in user.interest_tags %}
-                                        <span class="badge bg-{{ tag.name|slugify }} me-1">{{ tag.name }}</span>
-                                    {% endfor %}
-                                {% else %}
-                                    <span class="text-muted">No interest tags set.</span>
-                                {% endif %}
-                            {% endcomment %}
+                            
+                            
                             <div class="d-flex flex-wrap gap-2">
                                 {% for hobby in user.hobbies %}
-                                <span class="badge 
-                                    {% if hobby == 'Consumerism' %}bg-Consumerism
-                                    {% elif hobby == 'Travel and Vacation' %}bg-Travel\ and\ Vacation
-                                    {% elif hobby == 'Culture and Leisure' %}bg-Culture\ and\ Leisure
-                                    {% elif hobby == 'Cars' %}bg-Cars
-                                    {% elif hobby == 'Insurance' %}bg-Insurance
-                                    {% elif hobby == 'Finance and Banking' %}bg-Finance\ and\ Banking
-                                    {% elif hobby == 'lifestyle' %}bg-lifestyle
-                                    {% elif hobby == 'electronics' %}bg-electronics
-                                    {% elif hobby == 'home' %}bg-home
-                                    {% elif hobby == 'books' %}bg-books
-                                    {% else %}bg-secondary{% endif %}">
+                                <span class="badge" style="background-color:
+                                    {% if hobby == 'lifestyle' %}#1a237e /* Deep Indigo */
+                                    {% elif hobby == 'electronics' %}#004d40 /* Dark Teal */
+                                    {% elif hobby == 'home' %}#e65100 /* Deep Orange */
+                                    {% elif hobby == 'books' %}#33691e /* Dark Lime Green */
+                                    {% elif hobby == 'Consumerism' %}#880e4f /* Dark Pink */
+                                    {% elif hobby == 'Travel and Vacation' %}#01579b /* Dark Cyan */
+                                    {% elif hobby == 'Culture and Leisure' %}#4a148c /* Dark Purple */
+                                    {% elif hobby == 'Cars' %}#b71c1c /* Dark Red */
+                                    {% elif hobby == 'Insurance' %}#0d47a1 /* Dark Blue */
+                                    {% elif hobby == 'Finance and Banking' %}#f57f17 /* Dark Yellow */
+                                    {% else %}#6c757d /* Defaulting to a neutral color */
+                                    {% endif %} !important; color: white !important;">
                                     {{ hobby }}
                                 </span>
                                 {% empty %}
