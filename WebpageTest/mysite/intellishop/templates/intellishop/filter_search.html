@@ -201,7 +201,7 @@
 
     <!-- Bottom Action Buttons     SHOW ALL-->
     <div style="margin: 20px 0;">
-        <button id="show-all-btn" class="btn-apply" style="width: 100%;">
+        <button id="show-all-btn" class="btn-apply" type="button" style="width: 100%;">
             <span class="btn-text">Show All</span>
         </button>
         <div id="all-discounts-container"></div>
@@ -209,7 +209,9 @@
 
     <div class="action-buttons">
         <button class="btn-clear">Clear all</button>
-        <button class="btn-apply">Apply</button>
+        <button id="apply-filters-btn" class="btn-apply" type="button">
+            <span class="btn-text">Apply</span>
+        </button>
     </div>
 </div>
 
@@ -833,9 +835,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Enhanced Apply button functionality
-    document.querySelector('.btn-apply').addEventListener('click', function() {
+    document.getElementById('apply-filters-btn').addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent any default form submission
         const button = this;
-        const buttonText = button.querySelector('.btn-text');
+        const buttonText = button.querySelector('.btn-text') || button;
         const container = document.getElementById('all-discounts-container');
         
         // Show loading state
@@ -1180,7 +1183,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Enhanced Show All button (now uses the shared renderDiscountCards function)
-    document.getElementById('show-all-btn').addEventListener('click', function() {
+    document.getElementById('show-all-btn').addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent any default form submission
         const button = this;
         const buttonText = button.querySelector('.btn-text');
         const container = document.getElementById('all-discounts-container');
