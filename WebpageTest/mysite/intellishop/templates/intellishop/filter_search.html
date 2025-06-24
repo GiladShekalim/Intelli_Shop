@@ -881,6 +881,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(([_, data]) => {
                 container.innerHTML = '';
                 
+                // Remove search input, Show All button, and action buttons after results are loaded
+                const searchBar = document.querySelector('.search-bar');
+                if (searchBar) searchBar.remove();
+                button.remove();
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) actionButtons.remove();
+
                 if (!data.discounts || data.discounts.length === 0) {
                     container.innerHTML = `
                         <div class="no-results">
