@@ -63,13 +63,7 @@
             </div>
         </div>
         <div class="filter-section" id="percentage-price-filter-section">
-            <div class="filter-options" style="grid-template-columns: 1fr;"> {# Two columns for slider and options #}
-                <div class="percentage-range-slider-container">
-                    <span class="min-percentage-label">0%</span>
-                    <input type="range" class="percentage-range-slider" min="0" max="100" value="100" id="percentage-range-slider">
-                    <span class="max-percentage-label">100%</span>
-                    <span class="current-percentage-value"></span>
-                </div>
+            <div class="filter-options" style="grid-template-columns: 1fr;"> 
                 <div class="percentage-options-list">
                     <label class="percentage-filter-item">
                         <input type="radio" class="btn-check percentage-checkbox" name="percentage-filter" id="percentage-60-plus" value="60-plus" autocomplete="off">
@@ -782,20 +776,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update on input change
         priceRangeSlider.addEventListener('input', () => {
             currentPriceValueSpan.textContent = priceRangeSlider.value;
-        });
-    }
-
-    // Handle percentage range slider value display
-    const percentageRangeSlider = document.getElementById('percentage-range-slider');
-    const currentPercentageValueSpan = document.querySelector('#percentage-price-filter-section .current-percentage-value');
-
-    if (percentageRangeSlider && currentPercentageValueSpan) {
-        // Initial display
-        currentPercentageValueSpan.textContent = percentageRangeSlider.value + '%';
-
-        // Update on input change
-        percentageRangeSlider.addEventListener('input', () => {
-            currentPercentageValueSpan.textContent = percentageRangeSlider.value + '%';
         });
     }
 
