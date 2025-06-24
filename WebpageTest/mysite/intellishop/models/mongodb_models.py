@@ -266,33 +266,29 @@ class Coupon(MongoDBModel):
         # Price range filters (for fixed_amount type)
         if filters.get('price_range'):
             price_range = filters['price_range']
-            if price_range.get('enabled') and price_range.get('max_value'):
+            if price_range.get('enabled') and price_range.get('max_value') is not None:
                 query['$and'] = query.get('$and', [])
                 query['$and'].extend([
                     {'discount_type': 'fixed_amount'},
                     {'price': {'$lte': price_range['max_value']}}
                 ])
         
-        # Percentage range filters
+        # Percentage range filters (bucket only)
         if filters.get('percentage_range'):
             percentage_range = filters['percentage_range']
             if percentage_range.get('enabled'):
-                if percentage_range.get('max_value'):
-                    query['$and'] = query.get('$and', [])
-                    query['$and'].extend([
-                        {'discount_type': 'percentage'},
-                        {'price': {'$lte': percentage_range['max_value']}}
-                    ])
-                
-                # Handle percentage bucket filters
+                # Always filter by discount_type: 'percentage'
+                and_clauses = query.get('$and', [])
+                and_clauses.append({'discount_type': 'percentage'})
+
+                # If a bucket is selected, use its min/max
                 if percentage_range.get('bucket'):
                     bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
                     if bucket_config:
-                        query['$and'] = query.get('$and', [])
-                        query['$and'].extend([
-                            {'discount_type': 'percentage'},
-                            {'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}}
-                        ])
+                        and_clauses.append({'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}})
+                # (Optional) If you want to support max_value slider as well, add here
+
+                query['$and'] = and_clauses
         
         return query
     
