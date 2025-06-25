@@ -1061,10 +1061,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function collectFilterData() {
         const filters = {};
         
-        // Collect text search (NEW)
+        // Collect text search (NEW) - but clear it after collection for AI-triggered searches
         const searchInput = document.querySelector('.search-input');
         if (searchInput && searchInput.value.trim()) {
             filters.text_search = searchInput.value.trim();
+            // Clear the text field after collecting the data
+            searchInput.value = '';
+            // Reset search icon color
+            const searchIcon = searchInput.parentElement.querySelector('.search-icon');
+            if (searchIcon) {
+                searchIcon.style.color = '#666';
+            }
         }
         
         // Collect status filters (existing)
@@ -1705,6 +1712,16 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('AI Filter Helper response:', data);
             
             if (data.success && data.filters) {
+                // Clear the text field before applying filters
+                const searchInput = document.querySelector('.search-input');
+                if (searchInput) {
+                    searchInput.value = '';
+                    const searchIcon = searchInput.parentElement.querySelector('.search-icon');
+                    if (searchIcon) {
+                        searchIcon.style.color = '#666';
+                    }
+                }
+                
                 // Apply the extracted filters to the UI
                 applyFiltersToUI(data.filters);
                 

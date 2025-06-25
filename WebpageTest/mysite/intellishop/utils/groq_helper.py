@@ -32,6 +32,7 @@ CONSUMER_STATUS_STRING = get_consumer_status_string()
 FILTER_EXTRACTION_PROMPT = f"""You are an AI assistant that helps users set filters for a discount search system.
 
 Given a user's text query, analyze it and return a JSON object with relevant filter parameters.
+Be comprehensive and include ALL relevant filters that could match the user's intent.
 Only include fields that are relevant to the user's query. If no relevant filters are found, return an empty object {{}}.
 
 Available filter fields and their possible values:
@@ -49,27 +50,89 @@ Available filter fields and their possible values:
    Format: {{"enabled": true, "bucket": "bucket_name"}}
    Available buckets: {list(FILTER_CONFIG['PERCENTAGE_BUCKETS'].keys())}
 
-**IMPORTANT RULES:**
+**CRITICAL RULES FOR COMPREHENSIVE FILTERING:**
 - Return ONLY a valid JSON object, no extra text or explanations
 - Use exact field names and values as specified above
-- Only include fields that are clearly relevant to the user's query
-- For price_range, extract the maximum amount mentioned
-- For percentage_range, choose the most appropriate bucket based on percentages mentioned
-- If user mentions "young people" or "students", include relevant statuses
-- If user mentions "electronics" or "travel", include relevant interests
-- If user mentions specific amounts like "under 100" or "up to 50%", set appropriate ranges
+- Be INCLUSIVE: Include ALL relevant statuses and interests that could apply
+- For statuses: If user mentions any demographic (young, student, family, etc.), include ALL relevant statuses
+- For interests: If user mentions any category (electronics, travel, etc.), include ALL related interests
+- For percentage_range: ANY mention of percentages, discounts, or "off" should trigger percentage_range
+- For price_range: ANY mention of amounts, prices, or costs should trigger price_range
+
+**PERCENTAGE DETECTION RULES:**
+- If user mentions ANY percentage (e.g., "20% off", "discount", "sale", "reduced price"), set percentage_range
+- Choose the most appropriate bucket based on the percentage mentioned
+- If no specific percentage is mentioned but discount is implied, use "up_to_20" as default
+- Keywords that should trigger percentage_range: "discount", "off", "sale", "reduced", "percentage", "%", "save"
+
+**COMPREHENSIVE CATEGORY MATCHING:**
+- "electronics" → include ["electronics", "Consumerism", "Tech"]
+- "travel" → include ["Travel and Vacation", "Culture and Leisure"]
+- "home" → include ["home", "lifestyle", "Consumerism"]
+- "fitness" → include ["Fitness", "lifestyle", "Consumerism"]
+- "student" → include ["Student", "Young", "Family"]
+- "family" → include ["Family", "Parent", "Homeowner"]
+- "young" → include ["Young", "Student", "Single"]
+- "senior" → include ["Senior", "Retiree", "Homeowner"]
 
 **EXAMPLE RESPONSES:**
 User: "I want electronics discounts for students under 200 shekels"
-Response: {{"statuses": ["Student"], "interests": ["electronics"], "price_range": {{"enabled": true, "max_value": 200}}}}
+Response: {{"statuses": ["Student", "Young", "Tech"], "interests": ["electronics", "Consumerism", "Tech"], "price_range": {{"enabled": true, "max_value": 200}}}}
 
 User: "Show me travel discounts with 30% or more off"
-Response: {{"interests": ["Travel and Vacation"], "percentage_range": {{"enabled": true, "bucket": "between_30_40"}}}}
+Response: {{"interests": ["Travel and Vacation", "Culture and Leisure"], "percentage_range": {{"enabled": true, "bucket": "between_30_40"}}}}
+
+User: "Family discounts for home and garden"
+Response: {{"statuses": ["Family", "Parent", "Homeowner"], "interests": ["home", "lifestyle", "Consumerism"]}}
+
+User: "Student discounts on books"
+Response: {{"statuses": ["Student", "Young"], "interests": ["books", "Consumerism"]}}
+
+User: "Senior discounts with 50% off"
+Response: {{"statuses": ["Senior", "Retiree"], "percentage_range": {{"enabled": true, "bucket": "between_50_60"}}}}
 
 User: "Just show me all discounts"
 Response: {{}}
 
 User query: """
+
+def select_percentage_bucket(text: str) -> str:
+    """
+    Intelligently select a percentage bucket based on text analysis.
+    
+    Args:
+        text (str): User text input
+        
+    Returns:
+        str: Selected bucket name or empty string if no match
+    """
+    text_lower = text.lower()
+    
+    # Keywords that indicate percentage ranges
+    percentage_keywords = {
+        'more_than_60': ['60%', '60 percent', '60% or more', 'over 60', 'above 60', '60+', 'sixty percent'],
+        'between_50_60': ['50%', '50 percent', '50-60', '50 to 60', 'fifty percent', '55%', '55 percent'],
+        'between_40_50': ['40%', '40 percent', '40-50', '40 to 50', 'forty percent', '45%', '45 percent'],
+        'between_30_40': ['30%', '30 percent', '30-40', '30 to 40', 'thirty percent', '35%', '35 percent'],
+        'between_20_30': ['20%', '20 percent', '20-30', '20 to 30', 'twenty percent', '25%', '25 percent'],
+        'up_to_20': ['10%', '10 percent', '15%', '15 percent', '20%', '20 percent', 'up to 20', 'under 20', 'less than 20']
+    }
+    
+    # Check for specific percentage mentions
+    for bucket, keywords in percentage_keywords.items():
+        for keyword in keywords:
+            if keyword in text_lower:
+                logger.info(f"Found percentage keyword '{keyword}' in text, selecting bucket: {bucket}")
+                return bucket
+    
+    # Check for general discount terms that should default to a lower percentage
+    general_discount_terms = ['discount', 'off', 'sale', 'reduced', 'save', 'deal']
+    for term in general_discount_terms:
+        if term in text_lower:
+            logger.info(f"Found general discount term '{term}' in text, defaulting to up_to_20 bucket")
+            return 'up_to_20'
+    
+    return ''
 
 def extract_filters_from_text(user_text: str, max_retries: int = 2) -> Dict[str, Any]:
     """
@@ -124,6 +187,16 @@ def extract_filters_from_text(user_text: str, max_retries: int = 2) -> Dict[str,
             
             # Validate the extracted filters
             validated_filters = validate_extracted_filters(extracted_filters)
+            
+            # If percentage_range is missing but should be included based on text analysis
+            if not validated_filters.get('percentage_range') and any(term in user_text.lower() for term in ['discount', 'off', 'sale', 'reduced', 'save', 'deal', '%', 'percent']):
+                selected_bucket = select_percentage_bucket(user_text)
+                if selected_bucket:
+                    validated_filters['percentage_range'] = {
+                        'enabled': True,
+                        'bucket': selected_bucket
+                    }
+                    logger.info(f"Added missing percentage_range with bucket: {selected_bucket}")
             
             logger.info(f"Successfully extracted filters: {validated_filters}")
             return validated_filters
@@ -190,16 +263,21 @@ def validate_extracted_filters(filters: Dict[str, Any]) -> Dict[str, Any]:
             except (ValueError, TypeError):
                 pass
     
-    # Validate percentage_range
+    # Validate percentage_range - improved validation
     if 'percentage_range' in filters and isinstance(filters['percentage_range'], dict):
         percentage_range = filters['percentage_range']
         if percentage_range.get('enabled'):
             validated_percentage = {'enabled': True}
             
-            # Validate bucket
+            # Validate bucket - this is the most important part
             bucket = percentage_range.get('bucket')
             if bucket and bucket in FILTER_CONFIG['PERCENTAGE_BUCKETS']:
                 validated_percentage['bucket'] = bucket
+                logger.info(f"Validated percentage bucket: {bucket}")
+            else:
+                # If no valid bucket but percentage_range is enabled, set a default
+                logger.warning(f"Invalid or missing percentage bucket: {bucket}. Available buckets: {list(FILTER_CONFIG['PERCENTAGE_BUCKETS'].keys())}")
+                # Don't include percentage_range if no valid bucket
             
             # Validate max_value if present
             if 'max_value' in percentage_range:
@@ -210,9 +288,12 @@ def validate_extracted_filters(filters: Dict[str, Any]) -> Dict[str, Any]:
                 except (ValueError, TypeError):
                     pass
             
-            if len(validated_percentage) > 1:  # More than just 'enabled'
+            # Only include if we have a valid bucket
+            if 'bucket' in validated_percentage:
                 validated['percentage_range'] = validated_percentage
+                logger.info(f"Final validated percentage_range: {validated_percentage}")
     
+    logger.info(f"Final validated filters: {validated}")
     return validated
 
 def get_filter_schema() -> Dict[str, Any]:
