@@ -10,7 +10,7 @@
             <i class="bi bi-search search-icon"></i>
         </div>
         <!-- AI Filter Helper Button -->
-        <button id="ai-filter-helper-btn" class="btn-ai-helper" type="button">
+        <button id="ai-filter-helper-btn" class="btn-ai-helper" type="button" title="Explain what you are looking for.&#10;We will filter for you !">
             <i class="bi bi-magic"></i>
             <span class="btn-text">AI Filter Helper</span>
         </button>
@@ -837,7 +837,7 @@
 
 <script>
     // Check if the user is authenticated (set by Django context)
-    var isLoggedIn = {% if user.is_authenticated %} true {% else %} false {% endif %};
+    // var isLoggedIn = document.body.getAttribute('data-user-authenticated') === 'true';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle sections
@@ -1178,7 +1178,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (appliedFiltersList.length > 0) {
-                summaryText += `<br><small>פילטרים שהוחלו: ${appliedFiltersList.join(' | ')}</small>`;
+                summaryText += `<br><small><strong>פילטרים שהוחלו:</strong> ${appliedFiltersList.join(' | ')}</small>`;
             }
         }
         
@@ -1923,3 +1923,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
+ritten_file>
