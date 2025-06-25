@@ -624,3 +624,58 @@ def search_discounts_by_text(request):
         logger.error(f"Error in search_discounts_by_text: {str(e)}")
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
+@csrf_exempt
+def ai_filter_helper(request):
+    """
+    AI Filter Helper endpoint that uses Groq API to extract filter parameters from user text.
+    
+    Expected JSON payload:
+    {
+        "user_text": "I want electronics discounts for students under 200 shekels"
+    }
+    
+    Returns:
+    {
+        "filters": {
+            "statuses": ["Student"],
+            "interests": ["electronics"],
+            "price_range": {"enabled": true, "max_value": 200}
+        },
+        "success": true
+    }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        user_text = data.get('user_text', '').strip()
+        
+        if not user_text:
+            return JsonResponse({'error': 'User text is required'}, status=400)
+        
+        # Import the AI filter helper utility
+        from intellishop.utils.groq_helper import extract_filters_from_text
+        
+        logger.info(f"AI Filter Helper request received for text: {user_text[:100]}...")
+        
+        # Extract filters using Groq API
+        extracted_filters = extract_filters_from_text(user_text)
+        
+        logger.info(f"AI Filter Helper extracted filters: {extracted_filters}")
+        
+        return JsonResponse({
+            'filters': extracted_filters,
+            'success': True,
+            'user_text': user_text
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in ai_filter_helper: {str(e)}")
+        return JsonResponse({
+            'error': 'Failed to process AI filter request',
+            'success': False
+        }, status=500)
+

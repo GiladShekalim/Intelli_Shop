@@ -9,6 +9,11 @@
             <input type="text" placeholder="Write..." class="search-input">
             <i class="bi bi-search search-icon"></i>
         </div>
+        <!-- AI Filter Helper Button -->
+        <button id="ai-filter-helper-btn" class="btn-ai-helper" type="button">
+            <i class="bi bi-magic"></i>
+            <span class="btn-text">AI Filter Helper</span>
+        </button>
     </div>
 
     <!-- Filter Sections -->
@@ -358,6 +363,15 @@
 @media (max-width: 768px) {
     .filter-options {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .search-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-ai-helper {
+        width: 100%;
     }
 }
 
@@ -783,6 +797,41 @@
 
 #all-discounts-container {
     margin-top: 8px !important;
+}
+
+/* AI Filter Helper Button Styles */
+.btn-ai-helper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    background: #6f42c1; /* Purple background for AI button */
+    color: white;
+    white-space: nowrap;
+}
+
+.btn-ai-helper:hover {
+    background: #5a32a3;
+}
+
+.btn-ai-helper.loading {
+    background: #5a32a3;
+    cursor: wait;
+}
+
+.btn-ai-helper.loading .btn-text {
+    content: "Processing...";
+}
+
+.btn-ai-helper i {
+    font-size: 1.1em;
 }
 </style>
 
@@ -1612,6 +1661,221 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
+    // AI Filter Helper functionality
+    document.getElementById('ai-filter-helper-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const button = this;
+        const buttonText = button.querySelector('.btn-text');
+        const searchInput = document.querySelector('.search-input');
+        
+        // Get the user text
+        const userText = searchInput ? searchInput.value.trim() : '';
+        
+        if (!userText) {
+            alert('Please enter some text in the search field to use AI Filter Helper.');
+            return;
+        }
+        
+        // Show loading state
+        button.classList.add('loading');
+        buttonText.textContent = 'Processing...';
+        button.disabled = true;
+        
+        console.log('AI Filter Helper processing text:', userText);
+        
+        // Send request to AI Filter Helper endpoint
+        fetch('/ai_filter_helper/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                user_text: userText
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('AI Filter Helper response:', data);
+            
+            if (data.success && data.filters) {
+                // Apply the extracted filters to the UI
+                applyFiltersToUI(data.filters);
+                
+                // Show success message
+                showNotification('AI filters applied successfully!', 'success');
+                
+                // Automatically trigger the Apply button for parameter-based search
+                setTimeout(() => {
+                    document.getElementById('apply-filters-btn').click();
+                }, 500);
+            } else {
+                showNotification('No relevant filters found for your text.', 'info');
+            }
+        })
+        .catch(error => {
+            console.error('AI Filter Helper error:', error);
+            showNotification('Failed to process AI filter request. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Remove loading state
+            button.classList.remove('loading');
+            buttonText.textContent = 'AI Filter Helper';
+            button.disabled = false;
+        });
+    });
+
+    // Function to apply filters to UI
+    function applyFiltersToUI(filters) {
+        console.log('Applying filters to UI:', filters);
+        
+        // Clear existing filters first
+        document.querySelectorAll('.filter-checkbox:checked, .percentage-checkbox:checked').forEach(checkbox => {
+            checkbox.checked = false;
+            const label = document.querySelector(`label[for='${checkbox.id}'] span.percentage-label`) || 
+                          document.querySelector(`label[for='${checkbox.id}']`);
+            if (label) {
+                label.classList.remove('selected');
+            }
+        });
+        
+        // Apply status filters
+        if (filters.statuses && Array.isArray(filters.statuses)) {
+            filters.statuses.forEach(status => {
+                const checkbox = document.querySelector(`.filter-checkbox[id^="status-"][value="${status}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    const label = document.querySelector(`label[for='${checkbox.id}']`);
+                    if (label) {
+                        label.classList.add('selected');
+                    }
+                }
+            });
+        }
+        
+        // Apply interest filters
+        if (filters.interests && Array.isArray(filters.interests)) {
+            filters.interests.forEach(interest => {
+                const checkbox = document.querySelector(`.filter-checkbox[id^="interest-"][value="${interest}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    const label = document.querySelector(`label[for='${checkbox.id}']`);
+                    if (label) {
+                        label.classList.add('selected');
+                    }
+                }
+            });
+        }
+        
+        // Apply price range filters
+        if (filters.price_range && filters.price_range.enabled) {
+            const enableValueFilters = document.getElementById('enable-value-filters');
+            const priceRangeSlider = document.getElementById('price-range-slider');
+            
+            if (enableValueFilters) {
+                enableValueFilters.checked = true;
+                toggleFilterVisibility(enableValueFilters, document.getElementById('value-price-filter-section'));
+            }
+            
+            if (priceRangeSlider && filters.price_range.max_value) {
+                priceRangeSlider.value = filters.price_range.max_value;
+                const currentPriceValueSpan = document.querySelector('#value-price-filter-section .current-price-value');
+                if (currentPriceValueSpan) {
+                    currentPriceValueSpan.textContent = priceRangeSlider.value;
+                }
+            }
+        }
+        
+        // Apply percentage range filters
+        if (filters.percentage_range && filters.percentage_range.enabled) {
+            const enablePercentageFilters = document.getElementById('enable-percentage-filters');
+            
+            if (enablePercentageFilters) {
+                enablePercentageFilters.checked = true;
+                toggleFilterVisibility(enablePercentageFilters, document.getElementById('percentage-price-filter-section'));
+            }
+            
+            if (filters.percentage_range.bucket) {
+                const radio = document.querySelector(`.percentage-checkbox[value="${filters.percentage_range.bucket}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    const label = document.querySelector(`label[for='${radio.id}'] span.percentage-label`);
+                    if (label) {
+                        label.classList.add('selected');
+                    }
+                }
+            }
+        }
+    }
+
+    // Function to show notifications
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        // Set background color based on type
+        switch (type) {
+            case 'success':
+                notification.style.backgroundColor = '#28a745';
+                break;
+            case 'error':
+                notification.style.backgroundColor = '#dc3545';
+                break;
+            case 'info':
+            default:
+                notification.style.backgroundColor = '#17a2b8';
+                break;
+        }
+        
+        notification.textContent = message;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Add CSS animations for notifications
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
 });
 </script>
 {% endblock %}
