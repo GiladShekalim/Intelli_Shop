@@ -11,6 +11,7 @@ from datetime import datetime
 from django.templatetags.static import static
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from intellishop.models.constants import FILTER_CONFIG
 
 def index(request):
     return render(request, 'intellishop/index.html')
@@ -222,7 +223,8 @@ def dashboard(request):
                     'age': user.get('age', ''),
                     'location': user.get('location', ''),
                     'hobbies': user.get('hobbies', []),
-                    '_id': str(user.get('_id', ''))
+                    '_id': str(user.get('_id', '')),
+                    'date_created': user.get('created_at', '')
                 }
                 users_list.append(user_data)
         
@@ -301,53 +303,20 @@ def coupon_detail(request, store):
     }
     return render(request, 'intellishop/coupon_detail.html', context)
 
+
+# FILTER PAGE
 def filter_search(request):
     # Check if the user is logged in using custom session variable
-    user_id = request.session.get('user_id')
-    if not user_id:
-        return redirect('login') # Redirect to login if not logged in
-
-    # Aggregate to find min and max prices
-    min_price = 0  # Default min price
-    max_price = 10000 # Default max price or a high value
-
-    try:
-        coupons_collection = Coupon.get_collection()
-        if coupons_collection:
-            pipeline = [
-                {
-                    '$match': {
-                        'discount_type': 'fixed_amount', # Filter for fixed_amount discounts
-                        'price': { '$exists': True, '$ne': None }
-                    }
-                },
-                 { # Add a stage to ensure price is treated as a number
-                    '$addFields': {
-                        'price': { '$toInt': '$price' }
-                    }
-                },
-                {
-                    '$group': {
-                        '_id': None, # Group all documents
-                        'min_price': { '$min': '$price' },
-                        'max_price': { '$max': '$price' }
-                    }
-                }
-            ]
-            print(f"MongoDB aggregation pipeline: {pipeline}") # Debug print pipeline
-            result = list(coupons_collection.aggregate(pipeline))
-            print(f"MongoDB aggregation result: {result}") # Debug print result
-            if result:
-                min_price = result[0].get('min_price', min_price)
-                max_price = result[0].get('max_price', max_price)
-    except Exception as e:
-        print(f"Error fetching min/max prices from MongoDB: {e}")
-        # Keep default min/max prices if fetching fails
-
+    if not request.session.get('user_id'):
+        return redirect('login')
+    
+    # Get filter statistics using the new method
+    stats = Coupon.get_filter_statistics()
+    
     context = {
-        'user_id': user_id, # Pass user_id if needed in template
-        'min_price': min_price,
-        'max_price': max_price,
+        'min_price': int(stats['price_range']['min']),
+        'max_price': int(stats['price_range']['max']),
+        'percentage_counts': stats['percentage_counts'],
     }
     
     return render(request, 'intellishop/filter_search.html', context)
@@ -462,4 +431,121 @@ def show_all_discounts(request):
         if '_id' in discount:
             discount['_id'] = str(discount['_id'])
     return JsonResponse({'discounts': discounts})
+
+@csrf_exempt
+def filtered_discounts(request):
+    """
+    Get filtered discounts based on applied criteria
+    
+    Expected JSON payload:
+    {
+        "statuses": ["Young", "Senior"],
+        "interests": ["Consumerism", "Travel and Vacation"],
+        "price_range": {
+            "enabled": true,
+            "max_value": 500
+        },
+        "percentage_range": {
+            "enabled": true,
+            "max_value": 50,
+            "bucket": "between_30_40"
+        }
+    }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        filters = json.loads(request.body)
+        
+        # Validate filters
+        validated_filters = _validate_filters(filters)
+        
+        # Get filtered coupons
+        discounts = Coupon.get_filtered_coupons(validated_filters)
+        
+        # Convert ObjectId to string for JSON serialization
+        for discount in discounts:
+            if '_id' in discount:
+                discount['_id'] = str(discount['_id'])
+        
+        return JsonResponse({
+            'discounts': discounts,
+            'total_count': len(discounts),
+            'applied_filters': validated_filters
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in filtered_discounts: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+def _validate_filters(filters):
+    """
+    Validate and sanitize filter parameters
+    
+    Args:
+        filters (dict): Raw filter data
+        
+    Returns:
+        dict: Validated and sanitized filters
+    """
+    from intellishop.models.constants import CONSUMER_STATUS, CATEGORIES, FILTER_CONFIG
+    
+    validated = {}
+    
+    # Validate statuses
+    if filters.get('statuses'):
+        statuses = [s for s in filters['statuses'] if s in CONSUMER_STATUS]
+        if statuses:
+            validated['statuses'] = statuses
+    
+    # Validate interests/categories
+    if filters.get('interests'):
+        interests = [i for i in filters['interests'] if i in CATEGORIES]
+        if interests:
+            validated['interests'] = interests
+    
+    # Validate price range
+    if filters.get('price_range'):
+        price_range = filters['price_range']
+        if isinstance(price_range, dict) and price_range.get('enabled'):
+            max_value = price_range.get('max_value')
+            if max_value is not None:
+                try:
+                    max_value = float(max_value)
+                    if max_value >= 0:
+                        validated['price_range'] = {
+                            'enabled': True,
+                            'max_value': max_value
+                        }
+                except (ValueError, TypeError):
+                    pass
+    
+    # Validate percentage range
+    if filters.get('percentage_range'):
+        percentage_range = filters['percentage_range']
+        if isinstance(percentage_range, dict) and percentage_range.get('enabled'):
+            validated_percentage = {'enabled': True}
+            
+            # Validate max_value
+            max_value = percentage_range.get('max_value')
+            if max_value is not None:
+                try:
+                    max_value = float(max_value)
+                    if 0 <= max_value <= 100:
+                        validated_percentage['max_value'] = max_value
+                except (ValueError, TypeError):
+                    pass
+            
+            # Validate bucket
+            bucket = percentage_range.get('bucket')
+            if bucket and bucket in FILTER_CONFIG['PERCENTAGE_BUCKETS']:
+                validated_percentage['bucket'] = bucket
+            
+            if len(validated_percentage) > 1:  # More than just 'enabled'
+                validated['percentage_range'] = validated_percentage
+    
+    return validated
 

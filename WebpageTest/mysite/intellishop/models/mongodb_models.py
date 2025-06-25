@@ -5,24 +5,7 @@ from jsonschema import validate, ValidationError
 import json
 import csv
 import os
-
-# Constants moved from External-Groq/constants.py
-# Categories for coupons
-CATEGORIES = [
-    "Consumerism", "Travel and Vacation", "Culture and Leisure", 
-    "Cars", "Insurance", "Finance and Banking"
-]
-
-# Consumer statuses
-CONSUMER_STATUS = [
-    "Young", "Senior", "Homeowner", "Traveler", "Tech", 
-    "Pets", "Fitness", "Student", "Remote", "Family"
-]
-
-# Discount types
-DISCOUNT_TYPE = [
-    "fixed_amount", "percentage", "buy_one_get_one", "Cost"
-]
+from .constants import CATEGORIES, CONSUMER_STATUS, DISCOUNT_TYPE, FILTER_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +119,7 @@ class User(MongoDBModel):
 class Coupon(MongoDBModel):
     collection_name = 'coupons'
     
-    # Define the updated coupon schema
+    # Define the updated coupon schema using imported constants
     schema = {
         "type": "object",
         "properties": {
@@ -241,6 +224,105 @@ class Coupon(MongoDBModel):
                 {'valid_until': {'$gt': current_date}}
             ]
         })
+    
+    @classmethod
+    def get_filtered_coupons(cls, filters=None):
+        """
+        Get coupons based on applied filters
+        
+        Args:
+            filters (dict): Dictionary containing filter criteria
+            
+        Returns:
+            list: Filtered coupons
+        """
+        if not filters:
+            return cls.get_all()
+        
+        query = cls._build_filter_query(filters)
+        return cls.find(query)
+    
+    @classmethod
+    def _build_filter_query(cls, filters):
+        """
+        Build MongoDB query based on filter criteria
+        
+        Args:
+            filters (dict): Filter criteria
+            
+        Returns:
+            dict: MongoDB query
+        """
+        query = {}
+        
+        # Status filters
+        if filters.get('statuses'):
+            query['consumer_statuses'] = {'$in': filters['statuses']}
+        
+        # Interest/Category filters
+        if filters.get('interests'):
+            query['category'] = {'$in': filters['interests']}
+        
+        # Price range filters (for fixed_amount type)
+        if filters.get('price_range'):
+            price_range = filters['price_range']
+            if price_range.get('enabled') and price_range.get('max_value') is not None:
+                query['$and'] = query.get('$and', [])
+                query['$and'].extend([
+                    {'discount_type': 'fixed_amount'},
+                    {'price': {'$lte': price_range['max_value']}}
+                ])
+        
+        # Percentage range filters (bucket only)
+        if filters.get('percentage_range'):
+            percentage_range = filters['percentage_range']
+            if percentage_range.get('enabled'):
+                # Always filter by discount_type: 'percentage'
+                and_clauses = query.get('$and', [])
+                and_clauses.append({'discount_type': 'percentage'})
+
+                # If a bucket is selected, use its min/max
+                if percentage_range.get('bucket'):
+                    bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
+                    if bucket_config:
+                        and_clauses.append({'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}})
+                # (Optional) If you want to support max_value slider as well, add here
+
+                query['$and'] = and_clauses
+        
+        return query
+    
+    @classmethod
+    def get_filter_statistics(cls):
+        """
+        Get statistics for filter options (counts, ranges, etc.)
+        
+        Returns:
+            dict: Statistics for filter configuration
+        """
+        stats = {
+            'price_range': {'min': 0, 'max': 0},
+            'percentage_counts': {}
+        }
+        
+        # Get price range for fixed_amount discounts
+        fixed_amount_coupons = cls.find({'discount_type': 'fixed_amount'})
+        if fixed_amount_coupons:
+            prices = [float(c.get('price', 0)) for c in fixed_amount_coupons if c.get('price') is not None]
+            if prices:
+                stats['price_range']['min'] = min(prices)
+                stats['price_range']['max'] = max(prices)
+        
+        # Get percentage counts
+        percentage_coupons = cls.find({'discount_type': 'percentage'})
+        for bucket_name, bucket_config in FILTER_CONFIG['PERCENTAGE_BUCKETS'].items():
+            count = len(cls.find({
+                'discount_type': 'percentage',
+                'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}
+            }))
+            stats['percentage_counts'][bucket_name] = count
+        
+        return stats
     
     @classmethod
     def import_from_json(cls, json_data):

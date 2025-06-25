@@ -110,7 +110,7 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
     """
     global current_model_index  # Use the global variable
     
-    # Force disable Groq client's internal logging right before we use it
+    # disable Groq client's internal logging
     logging.getLogger("groq").setLevel(logging.WARNING)
     logging.getLogger("groq._base_client").setLevel(logging.WARNING)
     
@@ -120,7 +120,7 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
     system_message = MESSAGE_TEMPLATE
     
     discount_id = discount.get('discount_id', 'unknown')
-    user_message = f"Please enhance this discount object according to the instructions:\n{json.dumps(discount, indent=2, ensure_ascii=False)}"
+    user_message = f"Please edit each indvidual field for the following discount object as described in the instructions:\n{json.dumps(discount, indent=2, ensure_ascii=False)}"
     
     retry_count = 0
     while retry_count <= max_retries:
@@ -171,8 +171,16 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
             else:
                 logger.error(f"{error_message}\nMax retries exceeded. Using original discount.")
                 return discount
-    
     return discount
+    
+# TODO: 
+# create a copy file of the original coupons list.
+# the copy file will contain the list of objects with a change - ID is generated.
+# After groq return response with the json format. - containing only the required fields for edits. 
+# 1 get the relevent fields from the response.
+# 2 change the copy file with the new values for the specific object. - using the discount_id as the key.
+# 3 save the copy file as a new file
+#
 
 def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     """
@@ -239,7 +247,7 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     log_checkpoint(f"Output saved to: {output_file_path}")
 
 def find_json_files(data_dir_path=None):
-    """Find all JSON files in the data directory and its subdirectories"""
+    """Find all JSON files in the data directory and its subdirectories, excluding files that start with 'enhanced_'"""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Go up two levels now
     
     # Use provided path if available
@@ -272,11 +280,12 @@ def find_json_files(data_dir_path=None):
     # Walk through directory and its subdirectories
     for root, dirs, files in os.walk(data_dir):
         for file in files:
-            if file.lower().endswith('.json'):
+            # Only include JSON files that don't start with "enhanced_"
+            if file.lower().endswith('.json') and not file.startswith('enhanced_'):
                 file_path = os.path.join(root, file)
                 json_files.append(file_path)
     
-    log_checkpoint(f"Found {len(json_files)} JSON files")
+    log_checkpoint(f"Found {len(json_files)} JSON files to process (excluding enhanced files)")
     
     return json_files
 

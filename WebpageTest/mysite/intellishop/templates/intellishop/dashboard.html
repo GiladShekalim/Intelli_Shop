@@ -23,6 +23,7 @@
                     <th>Age</th>
                     <th>Location</th>
                     <th>Hobbies</th>
+                    <th>Date Created</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,6 +60,7 @@
                             </span>
                         {% endfor %}
                     </td>
+                    <td>{{ user.date_created|date:"Y/m/d H:i" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
