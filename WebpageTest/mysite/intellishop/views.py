@@ -523,25 +523,25 @@ def _validate_filters(filters):
     
     validated = {}
     
-    # Validate text search (NEW)
+    # Validate text search
     if filters.get('text_search'):
         text_search = filters['text_search'].strip()
         if text_search and len(text_search) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
             validated['text_search'] = text_search
     
-    # Validate statuses (existing)
+    # Validate statuses
     if filters.get('statuses'):
         statuses = [s for s in filters['statuses'] if s in CONSUMER_STATUS]
         if statuses:
             validated['statuses'] = statuses
     
-    # Validate interests/categories (existing)
+    # Validate interests/categories
     if filters.get('interests'):
         interests = [i for i in filters['interests'] if i in CATEGORIES]
         if interests:
             validated['interests'] = interests
     
-    # Validate price range (existing)
+    # Validate price range
     if filters.get('price_range'):
         price_range = filters['price_range']
         if isinstance(price_range, dict) and price_range.get('enabled'):
@@ -557,7 +557,7 @@ def _validate_filters(filters):
                 except (ValueError, TypeError):
                     pass
     
-    # Validate percentage range (existing)
+    # Validate percentage range
     if filters.get('percentage_range'):
         percentage_range = filters['percentage_range']
         if isinstance(percentage_range, dict) and percentage_range.get('enabled'):

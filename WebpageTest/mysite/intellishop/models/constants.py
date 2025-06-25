@@ -79,7 +79,7 @@ TEXT_SEARCH_CONFIG = {
     'CASE_SENSITIVE': False,
     'MIN_WORD_LENGTH': 10,
     'MAX_RESULTS': 1000,
-    'SEARCH_OPERATOR': 'AND'  # 'AND' or 'OR'
+    'SEARCH_OPERATOR': 'AND'  # 'AND' or 'OR' - using AND for individual words
 }
 
 # Update FILTER_CONFIG to include text search
