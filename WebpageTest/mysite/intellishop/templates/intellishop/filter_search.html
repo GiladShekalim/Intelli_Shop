@@ -9,6 +9,11 @@
             <input type="text" placeholder="Write..." class="search-input">
             <i class="bi bi-search search-icon"></i>
         </div>
+        <!-- AI Filter Helper Button -->
+        <button id="ai-filter-helper-btn" class="btn-ai-helper" type="button" title="Explain what you are looking for.&#10;We will filter for you !">
+            <i class="bi bi-magic"></i>
+            <span class="btn-text">AI Filter Helper</span>
+        </button>
     </div>
 
     <!-- Filter Sections -->
@@ -358,6 +363,15 @@
 @media (max-width: 768px) {
     .filter-options {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .search-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-ai-helper {
+        width: 100%;
     }
 }
 
@@ -729,11 +743,101 @@
     min-width: 60px; /* Ensure consistent width */
     text-align: center;
 }
+
+/* === CSS for Back Button (Edit Filters) === */
+.custom-back-btn.right-arrow {
+    display: flex;
+    align-items: center;
+    background: #0a3764;
+    border: none;
+    border-radius: 40px;
+    color: #fff;
+    font-size: 2em;
+    font-weight: 400;
+    padding: 0.3em 1.2em 0.3em 0.6em;
+    cursor: pointer;
+    gap: 18px;
+    transition: background 0.2s;
+    margin: 0 auto 8px auto;
+    outline: none;
+}
+.custom-back-btn.right-arrow:hover {
+    background: #155a8a;
+}
+
+/* === CSS for Back Button Text === */
+.back-text {
+    letter-spacing: 0.04em;
+    font-weight: 400;
+    font-size: 0.8em;
+}
+
+/* === CSS for Back Button Circle === */
+.back-circle {
+    background: #fff;
+    color: #0a3764;
+    border-radius: 50%;
+    width: 2.4em;
+    height: 2.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.2em;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* === CSS for SVG Arrow === */
+.arrow-svg {
+    display: block;
+    width: 56%; 
+    height: 56%; 
+}
+
+#all-discounts-container {
+    margin-top: 8px !important;
+}
+
+/* AI Filter Helper Button Styles */
+.btn-ai-helper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    background: #6f42c1; /* Purple background for AI button */
+    color: white;
+    white-space: nowrap;
+}
+
+.btn-ai-helper:hover {
+    background: #5a32a3;
+}
+
+.btn-ai-helper.loading {
+    background: #5a32a3;
+    cursor: wait;
+}
+
+.btn-ai-helper.loading .btn-text {
+    content: "Processing...";
+}
+
+.btn-ai-helper i {
+    font-size: 1.1em;
+}
 </style>
 
 <script>
     // Check if the user is authenticated (set by Django context)
-    var isLoggedIn = {% if user.is_authenticated %} true {% else %} false {% endif %};
+    // var isLoggedIn = document.body.getAttribute('data-user-authenticated') === 'true';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle sections
@@ -818,9 +922,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced Apply button functionality
+    // Enhanced Apply button functionality (UPDATED)
     document.getElementById('apply-filters-btn').addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent any default form submission
+        e.preventDefault();
         const button = this;
         const buttonText = button.querySelector('.btn-text') || button;
         const container = document.getElementById('all-discounts-container');
@@ -828,7 +932,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         button.classList.add('loading');
         buttonText.textContent = 'Loading Please Wait ...';
-        container.innerHTML = ''; // Clear previous content
+        container.innerHTML = '';
 
         // Create loading div with spinner
         let loadingDiv = document.createElement('div');
@@ -841,6 +945,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Collect filter data
         const filters = collectFilterData();
+        localStorage.setItem('lastUsedFilters', JSON.stringify(filters));
+        
+        // Log the search type for debugging
+        const hasText = Boolean(filters.text_search);
+        const hasParameters = Boolean(
+            filters.statuses || 
+            filters.interests || 
+            filters.price_range || 
+            filters.percentage_range
+        );
+        
+        let searchType = "Show All";
+        if (hasText && hasParameters) {
+            searchType = "Combined Search";
+        } else if (hasText && !hasParameters) {
+            searchType = "Text-Only Search";
+        } else if (!hasText && hasParameters) {
+            searchType = "Parameters-Only Search";
+        }
+        
+        console.log(`Executing ${searchType} with filters:`, filters);
         
         // Create a promise that resolves after 3 seconds (minimum loading time)
         const minimumLoadingTime = new Promise(resolve => setTimeout(resolve, 3000));
@@ -868,14 +993,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (loadingDiv) loadingDiv.remove();
                 container.innerHTML = '';
 
+                // Hide filter/search UI (Write, Show All, Apply, Clear All)
+                const searchBar = document.querySelector('.search-bar');
+                if (searchBar) searchBar.style.display = 'none';
+                const showAllBtn = document.getElementById('show-all-btn');
+                if (showAllBtn) showAllBtn.style.display = 'none';
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) actionButtons.style.display = 'none';
+
                 // Add Back To Update Filters button above the results
                 let backBtn = document.createElement('button');
-                backBtn.textContent = '<- Back To Update Filters';
-                backBtn.className = 'btn btn-secondary back-to-filters-btn';
-                backBtn.style.margin = '20px auto 20px auto';
-                backBtn.style.display = 'block';
+                backBtn.className = 'custom-back-btn right-arrow';
+                backBtn.innerHTML = `
+                    <span class="back-text">Edit Filters</span>
+                    <span class="back-circle">
+                        <svg class="arrow-svg" viewBox="0 0 40 40" width="32" height="32">
+                            <line x1="32" y1="20" x2="8" y2="20" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="12" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="28" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                `;
                 backBtn.onclick = function() {
-                    window.location.reload(); // Reloads the page to restore filters UI
+                    window.location.reload();
                 };
                 container.parentNode.insertBefore(backBtn, container);
 
@@ -893,8 +1033,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Use the existing renderDiscountCards function
                 renderDiscountCards(data.discounts, container);
                 
-                // Add filter summary
-                const filterSummary = createFilterSummary(data.applied_filters, data.total_count);
+                // Add filter summary with search type
+                const filterSummary = createFilterSummary(
+                    data.applied_filters, 
+                    data.total_count, 
+                    data.search_type || searchType
+                );
                 container.insertBefore(filterSummary, container.firstChild);
             })
             .catch(error => {
@@ -913,25 +1057,38 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // Function to collect filter data
+    // Function to collect filter data (UPDATED)
     function collectFilterData() {
         const filters = {};
         
-        // Collect status filters
+        // Collect text search (NEW) - but clear it after collection for AI-triggered searches
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput && searchInput.value.trim()) {
+            filters.text_search = searchInput.value.trim();
+            // Clear the text field after collecting the data
+            searchInput.value = '';
+            // Reset search icon color
+            const searchIcon = searchInput.parentElement.querySelector('.search-icon');
+            if (searchIcon) {
+                searchIcon.style.color = '#666';
+            }
+        }
+        
+        // Collect status filters (existing)
         const selectedStatuses = Array.from(document.querySelectorAll('.filter-checkbox[id^="status-"]:checked'))
             .map(checkbox => checkbox.value);
         if (selectedStatuses.length > 0) {
             filters.statuses = selectedStatuses;
         }
-        
-        // Collect interest filters
+
+        // Collect interest filters (existing)
         const selectedInterests = Array.from(document.querySelectorAll('.filter-checkbox[id^="interest-"]:checked'))
             .map(checkbox => checkbox.value);
         if (selectedInterests.length > 0) {
             filters.interests = selectedInterests;
         }
         
-        // Collect price range filters
+        // Collect price range filters (existing)
         const enableValueFilters = document.getElementById('enable-value-filters');
         const priceRangeSlider = document.getElementById('price-range-slider');
         if (enableValueFilters && enableValueFilters.checked && priceRangeSlider) {
@@ -941,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
-        // Collect percentage range filters
+        // Collect percentage range filters (existing)
         const enablePercentageFilters = document.getElementById('enable-percentage-filters');
         const percentageRangeSlider = document.getElementById('percentage-range-slider');
         const selectedPercentageBucket = document.querySelector('.percentage-checkbox:checked');
@@ -963,8 +1120,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return filters;
     }
 
-    // Function to create filter summary
-    function createFilterSummary(appliedFilters, totalCount) {
+    // Function to create filter summary (UPDATED)
+    function createFilterSummary(appliedFilters, totalCount, searchType) {
         const summaryDiv = document.createElement('div');
         summaryDiv.className = 'filter-summary';
         summaryDiv.style.cssText = `
@@ -979,8 +1136,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let summaryText = `<strong>תוצאות חיפוש:</strong> נמצאו ${totalCount} הנחות`;
         
+        // Add search type indicator
+        if (searchType) {
+            summaryText += `<br><small><strong>סוג חיפוש:</strong> ${searchType}</small>`;
+        }
+        
         if (appliedFilters) {
             const appliedFiltersList = [];
+            
+            // Add text search to summary
+            if (appliedFilters.text_search) {
+                appliedFiltersList.push(`חיפוש טקסט: "${appliedFilters.text_search}"`);
+            }
             
             if (appliedFilters.statuses) {
                 appliedFiltersList.push(`סטטוס: ${appliedFilters.statuses.join(', ')}`);
@@ -1011,7 +1178,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (appliedFiltersList.length > 0) {
-                summaryText += `<br><small>פילטרים שהוחלו: ${appliedFiltersList.join(' | ')}</small>`;
+                summaryText += `<br><small><strong>פילטרים שהוחלו:</strong> ${appliedFiltersList.join(' | ')}</small>`;
             }
         }
         
@@ -1145,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     shortSpan.style.display = '';
                     fullSpan.style.display = 'none';
                     e.target.textContent = 'הצג עוד';
-                } else {
+            } else {
                     shortSpan.style.display = 'none';
                     fullSpan.style.display = '';
                     e.target.textContent = 'הצג פחות';
@@ -1198,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         button.classList.add('loading');
         buttonText.textContent = 'Loading Please Wait ...';
-        container.innerHTML = ''; // Clear previous content
+        container.innerHTML = '';
 
         // Create loading div with spinner
         let loadingDiv = document.createElement('div');
@@ -1228,17 +1395,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (loadingDiv) loadingDiv.remove();
                 container.innerHTML = '';
 
+                // Now remove filter/search UI (Show All, Apply, Clear All, Write...)
+                const searchBar = document.querySelector('.search-bar');
+                if (searchBar) searchBar.style.display = 'none';
+                button.style.display = 'none';
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) actionButtons.style.display = 'none';
+
                 // Add Back To Update Filters button above the results
                 let backBtn = document.createElement('button');
-                backBtn.textContent = '<- Back To Update Filters';
-                backBtn.className = 'btn btn-secondary back-to-filters-btn';
-                backBtn.style.margin = '20px auto 20px auto';
-                backBtn.style.display = 'block';
+                backBtn.className = 'custom-back-btn right-arrow';
+                backBtn.innerHTML = `
+                    <span class="back-text">Edit Filters</span>
+                    <span class="back-circle">
+                        <svg class="arrow-svg" viewBox="0 0 40 40" width="32" height="32">
+                            <line x1="32" y1="20" x2="8" y2="20" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="12" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="28" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                `;
                 backBtn.onclick = function() {
-                    window.location.reload(); // Reloads the page to restore filters UI
+                    window.location.reload();
                 };
                 container.parentNode.insertBefore(backBtn, container);
-
+                
                 if (!data.discounts || data.discounts.length === 0) {
                     container.innerHTML = `
                         <div class="no-results">
@@ -1398,6 +1579,349 @@ document.addEventListener('DOMContentLoaded', function() {
                 buttonText.textContent = 'Show All';
             });
     });
+
+    // Add search input event listeners (NEW)
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        // Add placeholder text
+        searchInput.placeholder = 'Search by title, description, coupon code...';
+        
+        // Add enter key support for quick search
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // Trigger the Apply button click
+                document.getElementById('apply-filters-btn').click();
+            }
+        });
+        
+        // Add real-time search indicator (optional)
+        searchInput.addEventListener('input', function() {
+            const hasText = this.value.trim().length > 0;
+            const searchIcon = this.parentElement.querySelector('.search-icon');
+            
+            if (hasText) {
+                searchIcon.style.color = '#007bff';
+            } else {
+                searchIcon.style.color = '#666';
+            }
+        });
+    }
+    
+    // Update clear button to also clear search input (NEW)
+    document.querySelector('.btn-clear').addEventListener('click', () => {
+        // Clear search input
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.value = '';
+            const searchIcon = searchInput.parentElement.querySelector('.search-icon');
+            searchIcon.style.color = '#666';
+        }
+        
+        // Clear old span-based filters (existing)
+        document.querySelectorAll('.filter-tag.selected').forEach(tag => {
+            tag.classList.remove('selected');
+        });
+        
+        // Clear new checkbox-based filters (existing)
+        document.querySelectorAll('.filter-checkbox:checked, .percentage-checkbox:checked').forEach(checkbox => {
+            checkbox.checked = false;
+            const label = document.querySelector(`label[for='${checkbox.id}'] span.percentage-label`) || 
+                          document.querySelector(`label[for='${checkbox.id}']`);
+            if (label) {
+                label.classList.remove('selected');
+            }
+        });
+    });
+
+    const savedFilters = localStorage.getItem('lastUsedFilters');
+    if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        // Restore status checkboxes
+        if (filters.statuses) {
+            filters.statuses.forEach(val => {
+                const cb = document.querySelector(`.filter-checkbox[id^="status-"][value="${val}"]`);
+                if (cb) cb.checked = true;
+            });
+        }
+        // Restore interest checkboxes
+        if (filters.interests) {
+            filters.interests.forEach(val => {
+                const cb = document.querySelector(`.filter-checkbox[id^="interest-"][value="${val}"]`);
+                if (cb) cb.checked = true;
+            });
+        }
+        // Restore price range
+        if (filters.price_range && filters.price_range.enabled) {
+            const enableValueFilters = document.getElementById('enable-value-filters');
+            const priceRangeSlider = document.getElementById('price-range-slider');
+            if (enableValueFilters) enableValueFilters.checked = true;
+            if (priceRangeSlider && filters.price_range.max_value) priceRangeSlider.value = filters.price_range.max_value;
+        }
+        // Restore percentage range
+        if (filters.percentage_range && filters.percentage_range.enabled) {
+            const enablePercentageFilters = document.getElementById('enable-percentage-filters');
+            if (enablePercentageFilters) enablePercentageFilters.checked = true;
+            if (filters.percentage_range.bucket) {
+                const radio = document.querySelector(`.percentage-checkbox[value="${filters.percentage_range.bucket}"]`);
+                if (radio) radio.checked = true;
+            }
+        }
+    }
+
+    // AI Filter Helper functionality
+    document.getElementById('ai-filter-helper-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const button = this;
+        const buttonText = button.querySelector('.btn-text');
+        const searchInput = document.querySelector('.search-input');
+        
+        // Get the user text
+        const userText = searchInput ? searchInput.value.trim() : '';
+        
+        if (!userText) {
+            alert('Please enter some text in the search field to use AI Filter Helper.');
+            return;
+        }
+        
+        // Show loading state
+        button.classList.add('loading');
+        buttonText.textContent = 'Processing...';
+        button.disabled = true;
+        
+        console.log('AI Filter Helper processing text:', userText);
+        
+        // Send request to AI Filter Helper endpoint
+        fetch('/ai_filter_helper/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                user_text: userText
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('AI Filter Helper response:', data);
+            
+            if (data.success && data.filters) {
+                // Clear the text field before applying filters
+                const searchInput = document.querySelector('.search-input');
+                if (searchInput) {
+                    searchInput.value = '';
+                    const searchIcon = searchInput.parentElement.querySelector('.search-icon');
+                    if (searchIcon) {
+                        searchIcon.style.color = '#666';
+                    }
+                }
+                
+                // Apply the extracted filters to the UI
+                applyFiltersToUI(data.filters);
+                
+                // Show success message
+                showNotification('AI filters applied successfully!', 'success');
+                
+                // Automatically trigger the Apply button for parameter-based search
+                setTimeout(() => {
+                    document.getElementById('apply-filters-btn').click();
+                }, 500);
+            } else {
+                showNotification('No relevant filters found for your text.', 'info');
+            }
+        })
+        .catch(error => {
+            console.error('AI Filter Helper error:', error);
+            showNotification('Failed to process AI filter request. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Remove loading state
+            button.classList.remove('loading');
+            buttonText.textContent = 'AI Filter Helper';
+            button.disabled = false;
+        });
+    });
+
+    // Function to apply filters to UI
+    function applyFiltersToUI(filters) {
+        console.log('Applying filters to UI:', filters);
+        
+        // Clear existing filters first
+        document.querySelectorAll('.filter-checkbox:checked, .percentage-checkbox:checked').forEach(checkbox => {
+            checkbox.checked = false;
+            const label = document.querySelector(`label[for='${checkbox.id}'] span.percentage-label`) || 
+                          document.querySelector(`label[for='${checkbox.id}']`);
+            if (label) {
+                label.classList.remove('selected');
+            }
+        });
+        
+        // Apply status filters
+        if (filters.statuses && Array.isArray(filters.statuses)) {
+            console.log('Applying status filters:', filters.statuses);
+            filters.statuses.forEach(status => {
+                const checkbox = document.querySelector(`.filter-checkbox[id^="status-"][value="${status}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    const label = document.querySelector(`label[for='${checkbox.id}']`);
+                    if (label) {
+                        label.classList.add('selected');
+                    }
+                    console.log(`✓ Applied status filter: ${status}`);
+                } else {
+                    console.log(`✗ Status filter not found: ${status}`);
+                }
+            });
+        }
+        
+        // Apply interest filters
+        if (filters.interests && Array.isArray(filters.interests)) {
+            console.log('Applying interest filters:', filters.interests);
+            filters.interests.forEach(interest => {
+                const checkbox = document.querySelector(`.filter-checkbox[id^="interest-"][value="${interest}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    const label = document.querySelector(`label[for='${checkbox.id}']`);
+                    if (label) {
+                        label.classList.add('selected');
+                    }
+                    console.log(`✓ Applied interest filter: ${interest}`);
+                } else {
+                    console.log(`✗ Interest filter not found: ${interest}`);
+                }
+            });
+        }
+        
+        // Apply price range filters
+        if (filters.price_range && filters.price_range.enabled) {
+            console.log('Applying price range filters:', filters.price_range);
+            const enableValueFilters = document.getElementById('enable-value-filters');
+            const priceRangeSlider = document.getElementById('price-range-slider');
+            
+            if (enableValueFilters) {
+                enableValueFilters.checked = true;
+                toggleFilterVisibility(enableValueFilters, document.getElementById('value-price-filter-section'));
+                console.log('✓ Enabled value filters checkbox');
+            }
+            
+            if (priceRangeSlider && filters.price_range.max_value) {
+                priceRangeSlider.value = filters.price_range.max_value;
+                const currentPriceValueSpan = document.querySelector('#value-price-filter-section .current-price-value');
+                if (currentPriceValueSpan) {
+                    currentPriceValueSpan.textContent = priceRangeSlider.value;
+                }
+                console.log(`✓ Set price range slider to: ${filters.price_range.max_value}`);
+            }
+        }
+        
+        // Apply percentage range filters - FIXED IMPLEMENTATION
+        if (filters.percentage_range && filters.percentage_range.enabled) {
+            console.log('Applying percentage range filters:', filters.percentage_range);
+            
+            // First, enable the percentage filters checkbox
+            const enablePercentageFilters = document.getElementById('enable-percentage-filters');
+            if (enablePercentageFilters) {
+                enablePercentageFilters.checked = true;
+                toggleFilterVisibility(enablePercentageFilters, document.getElementById('percentage-price-filter-section'));
+                console.log('✓ Enabled percentage filters checkbox');
+            } else {
+                console.log('✗ Enable percentage filters checkbox not found');
+            }
+            
+            // Then, select the appropriate radio button
+            if (filters.percentage_range.bucket) {
+                const radio = document.querySelector(`.percentage-checkbox[value="${filters.percentage_range.bucket}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    const label = document.querySelector(`label[for='${radio.id}'] span.percentage-label`);
+                    if (label) {
+                        label.classList.add('selected');
+                    }
+                    console.log(`✓ Selected percentage bucket: ${filters.percentage_range.bucket}`);
+                } else {
+                    console.log(`✗ Percentage bucket radio button not found: ${filters.percentage_range.bucket}`);
+                    console.log('Available percentage buckets:', Array.from(document.querySelectorAll('.percentage-checkbox')).map(r => r.value));
+                }
+            } else {
+                console.log('✗ No percentage bucket specified in filters');
+            }
+        } else {
+            console.log('No percentage range filters to apply');
+        }
+        
+        console.log('Finished applying filters to UI');
+    }
+
+    // Function to show notifications
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        // Set background color based on type
+        switch (type) {
+            case 'success':
+                notification.style.backgroundColor = '#28a745';
+                break;
+            case 'error':
+                notification.style.backgroundColor = '#dc3545';
+                break;
+            case 'info':
+            default:
+                notification.style.backgroundColor = '#17a2b8';
+                break;
+        }
+        
+        notification.textContent = message;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Add CSS animations for notifications
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
 });
 </script>
 {% endblock %}
+
+ritten_file>

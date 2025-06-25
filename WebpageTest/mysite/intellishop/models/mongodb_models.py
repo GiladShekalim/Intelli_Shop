@@ -1,6 +1,7 @@
 from bson import ObjectId
 import datetime
 import logging
+import re
 from jsonschema import validate, ValidationError
 import json
 import csv
@@ -228,7 +229,10 @@ class Coupon(MongoDBModel):
     @classmethod
     def get_filtered_coupons(cls, filters=None):
         """
-        Get coupons based on applied filters
+        Get coupons based on applied filters with three search scenarios:
+        1. Text-only: Find discounts where each word appears in text fields
+        2. Parameters-only: Filter by categories, statuses, price, percentage (AND logic)
+        3. Combined: Apply parameter filters first, then text search on filtered results
         
         Args:
             filters (dict): Dictionary containing filter criteria
@@ -239,21 +243,142 @@ class Coupon(MongoDBModel):
         if not filters:
             return cls.get_all()
         
-        query = cls._build_filter_query(filters)
-        return cls.find(query)
-    
+        # Determine search scenario
+        has_text = bool(filters.get('text_search'))
+        has_parameters = bool(
+            filters.get('statuses') or 
+            filters.get('interests') or 
+            filters.get('price_range') or 
+            filters.get('percentage_range')
+        )
+        
+        if has_text and has_parameters:
+            # Scenario 3: Combined search - parameters first, then text
+            return cls._combined_search(filters)
+        elif has_text and not has_parameters:
+            # Scenario 1: Text-only search
+            return cls._text_only_search(filters['text_search'])
+        elif not has_text and has_parameters:
+            # Scenario 2: Parameters-only search
+            return cls._parameters_only_search(filters)
+        else:
+            # No filters - return all
+            return cls.get_all()
+
     @classmethod
-    def _build_filter_query(cls, filters):
+    def _text_only_search(cls, search_text):
         """
-        Build MongoDB query based on filter criteria
+        Scenario 1: Text-only search
+        Find discounts where each individual word is found in text fields
         
         Args:
-            filters (dict): Filter criteria
+            search_text (str): Text to search for
+            
+        Returns:
+            list: Matching coupons
+        """
+        if not search_text or len(search_text.strip()) < FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
+            return cls.get_all()
+        
+        # Clean and prepare search text
+        search_text = search_text.strip()
+        
+        # Split into words
+        search_words = [word.strip() for word in search_text.split() if len(word.strip()) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']]
+        
+        if not search_words:
+            return cls.get_all()
+        
+        # Build query where each word must be found in at least one text field
+        word_conditions = []
+        searchable_fields = FILTER_CONFIG['SEARCHABLE_FIELDS']
+        
+        for word in search_words:
+            # For each word, it must appear in at least one of the searchable fields
+            field_conditions = []
+            for field in searchable_fields:
+                # Use simple case-insensitive regex pattern
+                field_conditions.append({field: {'$regex': word, '$options': 'i'}})
+            
+            # Word must be found in at least one field (OR logic for fields)
+            word_conditions.append({'$or': field_conditions})
+        
+        # All words must be found (AND logic for words)
+        if word_conditions:
+            query = {'$and': word_conditions}
+            return cls.find(query, limit=FILTER_CONFIG['TEXT_SEARCH']['MAX_RESULTS'])
+        
+        return []
+
+    @classmethod
+    def _parameters_only_search(cls, filters):
+        """
+        Scenario 2: Parameters-only search
+        Filter by categories, statuses, price, percentage with AND logic
+        
+        Args:
+            filters (dict): Parameter filters
+            
+        Returns:
+            list: Matching coupons
+        """
+        query = cls._build_parameter_query(filters)
+        return cls.find(query)
+
+    @classmethod
+    def _combined_search(cls, filters):
+        """
+        Scenario 3: Combined search
+        Apply parameter filters first, then text search on filtered results
+        
+        Args:
+            filters (dict): Combined filters
+            
+        Returns:
+            list: Matching coupons
+        """
+        # Build the complete query with both parameter and text filters
+        query = cls._build_parameter_query(filters)
+        
+        # Add text search conditions to the query
+        search_text = filters['text_search']
+        if search_text and len(search_text.strip()) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
+            search_text = search_text.strip()
+            search_words = [word.strip() for word in search_text.split() if len(word.strip()) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']]
+            
+            if search_words:
+                # Build text search conditions
+                word_conditions = []
+                searchable_fields = FILTER_CONFIG['SEARCHABLE_FIELDS']
+                
+                for word in search_words:
+                    field_conditions = []
+                    for field in searchable_fields:
+                        field_conditions.append({field: {'$regex': word, '$options': 'i'}})
+                    word_conditions.append({'$or': field_conditions})
+                
+                # Add text conditions to existing query
+                if word_conditions:
+                    if '$and' in query:
+                        query['$and'].extend(word_conditions)
+                    else:
+                        query['$and'] = word_conditions
+        
+        return cls.find(query, limit=FILTER_CONFIG['TEXT_SEARCH']['MAX_RESULTS'])
+
+    @classmethod
+    def _build_parameter_query(cls, filters):
+        """
+        Build MongoDB query for parameter-only filters
+        
+        Args:
+            filters (dict): Parameter filters
             
         Returns:
             dict: MongoDB query
         """
         query = {}
+        and_clauses = []
         
         # Status filters
         if filters.get('statuses'):
@@ -263,22 +388,53 @@ class Coupon(MongoDBModel):
         if filters.get('interests'):
             query['category'] = {'$in': filters['interests']}
         
-        # Price range filters (for fixed_amount type)
-        if filters.get('price_range'):
-            price_range = filters['price_range']
-            if price_range.get('enabled') and price_range.get('max_value') is not None:
-                query['$and'] = query.get('$and', [])
-                query['$and'].extend([
-                    {'discount_type': 'fixed_amount'},
-                    {'price': {'$lte': price_range['max_value']}}
-                ])
+        # Special case: Both price and percentage ranges are enabled
+        price_range_enabled = filters.get('price_range', {}).get('enabled', False)
+        percentage_range_enabled = filters.get('percentage_range', {}).get('enabled', False)
         
-        # Percentage range filters (bucket only)
-        if filters.get('percentage_range'):
+        if price_range_enabled and percentage_range_enabled:
+            # Create OR condition between price and percentage filters
+            or_conditions = []
+            
+            # Price range condition
+            price_range = filters['price_range']
+            if price_range.get('max_value') is not None:
+                price_condition = {
+                    'discount_type': 'fixed_amount',
+                    'price': {'$lte': price_range['max_value']}
+                }
+                or_conditions.append(price_condition)
+            
+            # Percentage range condition
             percentage_range = filters['percentage_range']
-            if percentage_range.get('enabled'):
+            if percentage_range.get('bucket'):
+                bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
+                if bucket_config:
+                    percentage_condition = {
+                        'discount_type': 'percentage',
+                        'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}
+                    }
+                    or_conditions.append(percentage_condition)
+            
+            # Add OR condition to query
+            if or_conditions:
+                query['$or'] = or_conditions
+        
+        else:
+            # Standard case: Only one or no range filter is enabled
+            # Price range filters (for fixed_amount type)
+            if price_range_enabled:
+                price_range = filters['price_range']
+                if price_range.get('max_value') is not None:
+                    and_clauses.extend([
+                        {'discount_type': 'fixed_amount'},
+                        {'price': {'$lte': price_range['max_value']}}
+                    ])
+            
+            # Percentage range filters (bucket only)
+            if percentage_range_enabled:
+                percentage_range = filters['percentage_range']
                 # Always filter by discount_type: 'percentage'
-                and_clauses = query.get('$and', [])
                 and_clauses.append({'discount_type': 'percentage'})
 
                 # If a bucket is selected, use its min/max
@@ -286,12 +442,30 @@ class Coupon(MongoDBModel):
                     bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
                     if bucket_config:
                         and_clauses.append({'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}})
-                # (Optional) If you want to support max_value slider as well, add here
-
-                query['$and'] = and_clauses
+        
+        # Add AND clauses to query if any exist
+        if and_clauses:
+            query['$and'] = and_clauses
         
         return query
-    
+
+    @classmethod
+    def search_coupons_by_text(cls, search_text, limit=None):
+        """
+        Search coupons by text across multiple fields (updated to use new logic)
+        
+        Args:
+            search_text (str): Text to search for
+            limit (int): Maximum number of results
+            
+        Returns:
+            list: Matching coupons
+        """
+        if not search_text:
+            return cls.get_all()
+        
+        return cls._text_only_search(search_text)
+
     @classmethod
     def get_filter_statistics(cls):
         """

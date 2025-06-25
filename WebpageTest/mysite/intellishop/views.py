@@ -12,6 +12,9 @@ from django.templatetags.static import static
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from intellishop.models.constants import FILTER_CONFIG
+import logging
+
+logger = logging.getLogger(__name__)
 
 def index(request):
     return render(request, 'intellishop/index.html')
@@ -435,17 +438,21 @@ def show_all_discounts(request):
 @csrf_exempt
 def filtered_discounts(request):
     """
-    Get filtered discounts based on applied criteria
+    Get filtered discounts based on applied criteria with three search scenarios:
+    1. Text-only: Find discounts where each word appears in text fields
+    2. Parameters-only: Filter by categories, statuses, price, percentage (AND logic)
+    3. Combined: Apply parameter filters first, then text search on filtered results
     
     Expected JSON payload:
     {
-        "statuses": ["Young", "Senior"],
-        "interests": ["Consumerism", "Travel and Vacation"],
-        "price_range": {
+        "text_search": "electronics discount",  # Optional
+        "statuses": ["Young", "Senior"],        # Optional
+        "interests": ["Consumerism", "Travel and Vacation"],  # Optional
+        "price_range": {                        # Optional
             "enabled": true,
             "max_value": 500
         },
-        "percentage_range": {
+        "percentage_range": {                   # Optional
             "enabled": true,
             "max_value": 50,
             "bucket": "between_30_40"
@@ -461,7 +468,27 @@ def filtered_discounts(request):
         # Validate filters
         validated_filters = _validate_filters(filters)
         
-        # Get filtered coupons
+        # Determine search type for logging/debugging
+        has_text = bool(validated_filters.get('text_search'))
+        has_parameters = bool(
+            validated_filters.get('statuses') or 
+            validated_filters.get('interests') or 
+            validated_filters.get('price_range') or 
+            validated_filters.get('percentage_range')
+        )
+        
+        if has_text and has_parameters:
+            search_type = "Combined Search"
+        elif has_text and not has_parameters:
+            search_type = "Text-Only Search"
+        elif not has_text and has_parameters:
+            search_type = "Parameters-Only Search"
+        else:
+            search_type = "Show All"
+        
+        logger.info(f"Executing {search_type} with filters: {validated_filters}")
+        
+        # Get filtered coupons using the new logic
         discounts = Coupon.get_filtered_coupons(validated_filters)
         
         # Convert ObjectId to string for JSON serialization
@@ -472,7 +499,8 @@ def filtered_discounts(request):
         return JsonResponse({
             'discounts': discounts,
             'total_count': len(discounts),
-            'applied_filters': validated_filters
+            'applied_filters': validated_filters,
+            'search_type': search_type
         })
         
     except json.JSONDecodeError:
@@ -486,7 +514,7 @@ def _validate_filters(filters):
     Validate and sanitize filter parameters
     
     Args:
-        filters (dict): Raw filter data
+        filters (dict): Raw filter data including text_search
         
     Returns:
         dict: Validated and sanitized filters
@@ -494,6 +522,12 @@ def _validate_filters(filters):
     from intellishop.models.constants import CONSUMER_STATUS, CATEGORIES, FILTER_CONFIG
     
     validated = {}
+    
+    # Validate text search
+    if filters.get('text_search'):
+        text_search = filters['text_search'].strip()
+        if text_search and len(text_search) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
+            validated['text_search'] = text_search
     
     # Validate statuses
     if filters.get('statuses'):
@@ -548,4 +582,100 @@ def _validate_filters(filters):
                 validated['percentage_range'] = validated_percentage
     
     return validated
+
+# Add new view for text-only search (optional)
+@csrf_exempt
+def search_discounts_by_text(request):
+    """
+    Search discounts by text only (for future use)
+    
+    Expected JSON payload:
+    {
+        "search_text": "electronics discount"
+    }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        search_text = data.get('search_text', '').strip()
+        
+        if not search_text:
+            return JsonResponse({'error': 'Search text is required'}, status=400)
+        
+        # Use the new search method
+        discounts = Coupon.search_coupons_by_text(search_text)
+        
+        # Convert ObjectId to string for JSON serialization
+        for discount in discounts:
+            if '_id' in discount:
+                discount['_id'] = str(discount['_id'])
+        
+        return JsonResponse({
+            'discounts': discounts,
+            'total_count': len(discounts),
+            'search_text': search_text
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in search_discounts_by_text: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+@csrf_exempt
+def ai_filter_helper(request):
+    """
+    AI Filter Helper endpoint that uses Groq API to extract filter parameters from user text.
+    
+    Expected JSON payload:
+    {
+        "user_text": "I want electronics discounts for students under 200 shekels"
+    }
+    
+    Returns:
+    {
+        "filters": {
+            "statuses": ["Student"],
+            "interests": ["electronics"],
+            "price_range": {"enabled": true, "max_value": 200}
+        },
+        "success": true
+    }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        user_text = data.get('user_text', '').strip()
+        
+        if not user_text:
+            return JsonResponse({'error': 'User text is required'}, status=400)
+        
+        # Import the AI filter helper utility
+        from intellishop.utils.groq_helper import extract_filters_from_text
+        
+        logger.info(f"AI Filter Helper request received for text: {user_text[:100]}...")
+        
+        # Extract filters using Groq API
+        extracted_filters = extract_filters_from_text(user_text)
+        
+        logger.info(f"AI Filter Helper extracted filters: {extracted_filters}")
+        
+        return JsonResponse({
+            'filters': extracted_filters,
+            'success': True,
+            'user_text': user_text
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in ai_filter_helper: {str(e)}")
+        return JsonResponse({
+            'error': 'Failed to process AI filter request',
+            'success': False
+        }, status=500)
 

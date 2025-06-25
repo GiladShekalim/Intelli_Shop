@@ -65,7 +65,24 @@ DISCOUNT_TYPE = [
     "Cost"
 ]
 
-# Filter configuration constants
+# Text search configuration
+TEXT_SEARCH_FIELDS = [
+    'title',
+    'description', 
+    'terms_and_conditions',
+    'coupon_code',
+    'club_name'
+]
+
+# Text search options
+TEXT_SEARCH_CONFIG = {
+    'CASE_SENSITIVE': False,
+    'MIN_WORD_LENGTH': 2,
+    'MAX_RESULTS': 1000,
+    'SEARCH_OPERATOR': 'AND'  # 'AND' or 'OR' - using AND for individual words
+}
+
+# Update FILTER_CONFIG to include text search
 FILTER_CONFIG = {
     'PERCENTAGE_BUCKETS': {
         'more_than_60': {'min': 60, 'max': 100},
@@ -82,7 +99,9 @@ FILTER_CONFIG = {
     'DEFAULT_PERCENTAGE_RANGE': {
         'min': 0,
         'max': 100
-    }
+    },
+    'TEXT_SEARCH': TEXT_SEARCH_CONFIG,
+    'SEARCHABLE_FIELDS': TEXT_SEARCH_FIELDS
 }
 
 # Helper function to get formatted strings for prompt templates
