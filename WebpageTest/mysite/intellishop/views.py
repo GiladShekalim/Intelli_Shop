@@ -438,17 +438,21 @@ def show_all_discounts(request):
 @csrf_exempt
 def filtered_discounts(request):
     """
-    Get filtered discounts based on applied criteria
+    Get filtered discounts based on applied criteria with three search scenarios:
+    1. Text-only: Find discounts where each word appears in text fields
+    2. Parameters-only: Filter by categories, statuses, price, percentage (AND logic)
+    3. Combined: Apply parameter filters first, then text search on filtered results
     
     Expected JSON payload:
     {
-        "statuses": ["Young", "Senior"],
-        "interests": ["Consumerism", "Travel and Vacation"],
-        "price_range": {
+        "text_search": "electronics discount",  # Optional
+        "statuses": ["Young", "Senior"],        # Optional
+        "interests": ["Consumerism", "Travel and Vacation"],  # Optional
+        "price_range": {                        # Optional
             "enabled": true,
             "max_value": 500
         },
-        "percentage_range": {
+        "percentage_range": {                   # Optional
             "enabled": true,
             "max_value": 50,
             "bucket": "between_30_40"
@@ -464,7 +468,27 @@ def filtered_discounts(request):
         # Validate filters
         validated_filters = _validate_filters(filters)
         
-        # Get filtered coupons
+        # Determine search type for logging/debugging
+        has_text = bool(validated_filters.get('text_search'))
+        has_parameters = bool(
+            validated_filters.get('statuses') or 
+            validated_filters.get('interests') or 
+            validated_filters.get('price_range') or 
+            validated_filters.get('percentage_range')
+        )
+        
+        if has_text and has_parameters:
+            search_type = "Combined Search"
+        elif has_text and not has_parameters:
+            search_type = "Text-Only Search"
+        elif not has_text and has_parameters:
+            search_type = "Parameters-Only Search"
+        else:
+            search_type = "Show All"
+        
+        logger.info(f"Executing {search_type} with filters: {validated_filters}")
+        
+        # Get filtered coupons using the new logic
         discounts = Coupon.get_filtered_coupons(validated_filters)
         
         # Convert ObjectId to string for JSON serialization
@@ -475,7 +499,8 @@ def filtered_discounts(request):
         return JsonResponse({
             'discounts': discounts,
             'total_count': len(discounts),
-            'applied_filters': validated_filters
+            'applied_filters': validated_filters,
+            'search_type': search_type
         })
         
     except json.JSONDecodeError:
@@ -498,25 +523,25 @@ def _validate_filters(filters):
     
     validated = {}
     
-    # Validate text search (NEW)
+    # Validate text search
     if filters.get('text_search'):
         text_search = filters['text_search'].strip()
         if text_search and len(text_search) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
             validated['text_search'] = text_search
     
-    # Validate statuses (existing)
+    # Validate statuses
     if filters.get('statuses'):
         statuses = [s for s in filters['statuses'] if s in CONSUMER_STATUS]
         if statuses:
             validated['statuses'] = statuses
     
-    # Validate interests/categories (existing)
+    # Validate interests/categories
     if filters.get('interests'):
         interests = [i for i in filters['interests'] if i in CATEGORIES]
         if interests:
             validated['interests'] = interests
     
-    # Validate price range (existing)
+    # Validate price range
     if filters.get('price_range'):
         price_range = filters['price_range']
         if isinstance(price_range, dict) and price_range.get('enabled'):
@@ -532,7 +557,7 @@ def _validate_filters(filters):
                 except (ValueError, TypeError):
                     pass
     
-    # Validate percentage range (existing)
+    # Validate percentage range
     if filters.get('percentage_range'):
         percentage_range = filters['percentage_range']
         if isinstance(percentage_range, dict) and percentage_range.get('enabled'):

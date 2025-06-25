@@ -873,9 +873,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced Apply button functionality
+    // Enhanced Apply button functionality (UPDATED)
     document.getElementById('apply-filters-btn').addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent any default form submission
+        e.preventDefault();
         const button = this;
         const buttonText = button.querySelector('.btn-text') || button;
         const container = document.getElementById('all-discounts-container');
@@ -883,7 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         button.classList.add('loading');
         buttonText.textContent = 'Loading Please Wait ...';
-        container.innerHTML = ''; // Clear previous content
+        container.innerHTML = '';
 
         // Create loading div with spinner
         let loadingDiv = document.createElement('div');
@@ -897,6 +897,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Collect filter data
         const filters = collectFilterData();
         localStorage.setItem('lastUsedFilters', JSON.stringify(filters));
+        
+        // Log the search type for debugging
+        const hasText = Boolean(filters.text_search);
+        const hasParameters = Boolean(
+            filters.statuses || 
+            filters.interests || 
+            filters.price_range || 
+            filters.percentage_range
+        );
+        
+        let searchType = "Show All";
+        if (hasText && hasParameters) {
+            searchType = "Combined Search";
+        } else if (hasText && !hasParameters) {
+            searchType = "Text-Only Search";
+        } else if (!hasText && hasParameters) {
+            searchType = "Parameters-Only Search";
+        }
+        
+        console.log(`Executing ${searchType} with filters:`, filters);
         
         // Create a promise that resolves after 3 seconds (minimum loading time)
         const minimumLoadingTime = new Promise(resolve => setTimeout(resolve, 3000));
@@ -964,8 +984,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Use the existing renderDiscountCards function
                 renderDiscountCards(data.discounts, container);
                 
-                // Add filter summary
-                const filterSummary = createFilterSummary(data.applied_filters, data.total_count);
+                // Add filter summary with search type
+                const filterSummary = createFilterSummary(
+                    data.applied_filters, 
+                    data.total_count, 
+                    data.search_type || searchType
+                );
                 container.insertBefore(filterSummary, container.firstChild);
             })
             .catch(error => {
@@ -1041,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to create filter summary (UPDATED)
-    function createFilterSummary(appliedFilters, totalCount) {
+    function createFilterSummary(appliedFilters, totalCount, searchType) {
         const summaryDiv = document.createElement('div');
         summaryDiv.className = 'filter-summary';
         summaryDiv.style.cssText = `
@@ -1056,10 +1080,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let summaryText = `<strong>תוצאות חיפוש:</strong> נמצאו ${totalCount} הנחות`;
         
+        // Add search type indicator
+        if (searchType) {
+            summaryText += `<br><small><strong>סוג חיפוש:</strong> ${searchType}</small>`;
+        }
+        
         if (appliedFilters) {
             const appliedFiltersList = [];
             
-            // Add text search to summary (NEW)
+            // Add text search to summary
             if (appliedFilters.text_search) {
                 appliedFiltersList.push(`חיפוש טקסט: "${appliedFilters.text_search}"`);
             }
