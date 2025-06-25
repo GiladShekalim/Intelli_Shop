@@ -1,7 +1,7 @@
 from bson import ObjectId
 import datetime
 import logging
-import re
+import re  # ADD THIS IMPORT
 from jsonschema import validate, ValidationError
 import json
 import csv
@@ -393,7 +393,7 @@ class Coupon(MongoDBModel):
         Build MongoDB query for parameter-only filters
         
         Args:
-            filters (dict): Parameter filters
+            filters (dict): Filter criteria including text_search
             
         Returns:
             dict: MongoDB query
