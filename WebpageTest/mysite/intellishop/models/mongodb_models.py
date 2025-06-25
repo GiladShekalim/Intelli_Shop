@@ -1,7 +1,7 @@
 from bson import ObjectId
 import datetime
 import logging
-import re
+import re  # ADD THIS IMPORT
 from jsonschema import validate, ValidationError
 import json
 import csv
@@ -393,12 +393,19 @@ class Coupon(MongoDBModel):
         Build MongoDB query for parameter-only filters
         
         Args:
-            filters (dict): Parameter filters
+            filters (dict): Filter criteria including text_search
             
         Returns:
             dict: MongoDB query
         """
         query = {}
+        
+        # Text search functionality
+        if filters.get('text_search'):
+            text_query = cls._build_text_search_query(filters['text_search'])
+            if text_query:
+                query['$and'] = query.get('$and', [])
+                query['$and'].append(text_query)
         
         # Status filters
         if filters.get('statuses'):
@@ -435,11 +442,55 @@ class Coupon(MongoDBModel):
                 query['$and'] = and_clauses
         
         return query
+    
+    @classmethod
+    def _build_text_search_query(cls, search_text):
+        """
+        Build MongoDB text search query
+        
+        Args:
+            search_text (str): Text to search for
+            
+        Returns:
+            dict: MongoDB text search query
+        """
+        if not search_text or len(search_text.strip()) < FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
+            return None
+        
+        # Clean and prepare search text
+        search_text = search_text.strip()
+        
+        # Split into words for more flexible searching
+        search_words = [word.strip() for word in search_text.split() if len(word.strip()) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']]
+        
+        if not search_words:
+            return None
+        
+        # Build regex patterns for each searchable field
+        search_conditions = []
+        searchable_fields = FILTER_CONFIG['SEARCHABLE_FIELDS']
+        
+        for field in searchable_fields:
+            field_conditions = []
+            for word in search_words:
+                # Case-insensitive regex search
+                regex_pattern = f'.*{re.escape(word)}.*'
+                field_conditions.append({field: {'$regex': regex_pattern, '$options': 'i'}})
+            
+            # Combine words for this field using OR
+            if field_conditions:
+                search_conditions.append({'$or': field_conditions})
+        
+        # Combine fields using OR (can be changed to AND if needed)
+        if search_conditions:
+            return {'$or': search_conditions}
+        
+        return None
 
     @classmethod
     def search_coupons_by_text(cls, search_text, limit=None):
         """
-        Search coupons by text across multiple fields (updated to use new logic)
+        Search coupons by text across multiple fields
         
         Args:
             search_text (str): Text to search for
@@ -451,8 +502,12 @@ class Coupon(MongoDBModel):
         if not search_text:
             return cls.get_all()
         
-        return cls._text_only_search(search_text)
-
+        query = cls._build_text_search_query(search_text)
+        if not query:
+            return []
+        
+        return cls.find(query, limit=limit or FILTER_CONFIG['TEXT_SEARCH']['MAX_RESULTS'])
+    
     @classmethod
     def get_filter_statistics(cls):
         """

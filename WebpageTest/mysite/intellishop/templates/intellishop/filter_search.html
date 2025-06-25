@@ -1064,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return filters;
     }
 
-    // Function to create filter summary (UPDATED)
+    // Function to create filter summary (UPDATED) (UPDATED)
     function createFilterSummary(appliedFilters, totalCount, searchType) {
         const summaryDiv = document.createElement('div');
         summaryDiv.className = 'filter-summary';
@@ -1088,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (appliedFilters) {
             const appliedFiltersList = [];
             
-            // Add text search to summary
+            // Add text search to summary (NEW)
             if (appliedFilters.text_search) {
                 appliedFiltersList.push(`חיפוש טקסט: "${appliedFilters.text_search}"`);
             }
