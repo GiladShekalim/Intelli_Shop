@@ -923,7 +923,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedStatuses.length > 0) {
             filters.statuses = selectedStatuses;
         }
-        
+
         // Collect interest filters
         const selectedInterests = Array.from(document.querySelectorAll('.filter-checkbox[id^="interest-"]:checked'))
             .map(checkbox => checkbox.value);
@@ -1145,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     shortSpan.style.display = '';
                     fullSpan.style.display = 'none';
                     e.target.textContent = 'הצג עוד';
-                } else {
+            } else {
                     shortSpan.style.display = 'none';
                     fullSpan.style.display = '';
                     e.target.textContent = 'הצג פחות';
@@ -1198,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         button.classList.add('loading');
         buttonText.textContent = 'Loading Please Wait ...';
-        container.innerHTML = ''; // Clear previous content
+        container.innerHTML = '';
 
         // Create loading div with spinner
         let loadingDiv = document.createElement('div');
@@ -1228,6 +1228,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (loadingDiv) loadingDiv.remove();
                 container.innerHTML = '';
 
+                // Now remove filter/search UI (Show All, Apply, Clear All, Write...)
+                const searchBar = document.querySelector('.search-bar');
+                if (searchBar) searchBar.style.display = 'none';
+                button.style.display = 'none';
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) actionButtons.style.display = 'none';
+
                 // Add Back To Update Filters button above the results
                 let backBtn = document.createElement('button');
                 backBtn.textContent = '<- Back To Update Filters';
@@ -1238,7 +1245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload(); // Reloads the page to restore filters UI
                 };
                 container.parentNode.insertBefore(backBtn, container);
-
+                
                 if (!data.discounts || data.discounts.length === 0) {
                     container.innerHTML = `
                         <div class="no-results">
