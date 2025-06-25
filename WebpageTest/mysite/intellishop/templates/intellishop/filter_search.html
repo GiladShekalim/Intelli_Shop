@@ -868,6 +868,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (loadingDiv) loadingDiv.remove();
                 container.innerHTML = '';
 
+                // Hide filter/search UI (Write, Show All, Apply, Clear All)
+                const searchBar = document.querySelector('.search-bar');
+                if (searchBar) searchBar.style.display = 'none';
+                const showAllBtn = document.getElementById('show-all-btn');
+                if (showAllBtn) showAllBtn.style.display = 'none';
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) actionButtons.style.display = 'none';
+
                 // Add Back To Update Filters button above the results
                 let backBtn = document.createElement('button');
                 backBtn.textContent = '<- Back To Update Filters';
