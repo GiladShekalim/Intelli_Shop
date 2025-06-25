@@ -1764,6 +1764,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Apply status filters
         if (filters.statuses && Array.isArray(filters.statuses)) {
+            console.log('Applying status filters:', filters.statuses);
             filters.statuses.forEach(status => {
                 const checkbox = document.querySelector(`.filter-checkbox[id^="status-"][value="${status}"]`);
                 if (checkbox) {
@@ -1772,12 +1773,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (label) {
                         label.classList.add('selected');
                     }
+                    console.log(`✓ Applied status filter: ${status}`);
+                } else {
+                    console.log(`✗ Status filter not found: ${status}`);
                 }
             });
         }
         
         // Apply interest filters
         if (filters.interests && Array.isArray(filters.interests)) {
+            console.log('Applying interest filters:', filters.interests);
             filters.interests.forEach(interest => {
                 const checkbox = document.querySelector(`.filter-checkbox[id^="interest-"][value="${interest}"]`);
                 if (checkbox) {
@@ -1786,18 +1791,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (label) {
                         label.classList.add('selected');
                     }
+                    console.log(`✓ Applied interest filter: ${interest}`);
+                } else {
+                    console.log(`✗ Interest filter not found: ${interest}`);
                 }
             });
         }
         
         // Apply price range filters
         if (filters.price_range && filters.price_range.enabled) {
+            console.log('Applying price range filters:', filters.price_range);
             const enableValueFilters = document.getElementById('enable-value-filters');
             const priceRangeSlider = document.getElementById('price-range-slider');
             
             if (enableValueFilters) {
                 enableValueFilters.checked = true;
                 toggleFilterVisibility(enableValueFilters, document.getElementById('value-price-filter-section'));
+                console.log('✓ Enabled value filters checkbox');
             }
             
             if (priceRangeSlider && filters.price_range.max_value) {
@@ -1806,18 +1816,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (currentPriceValueSpan) {
                     currentPriceValueSpan.textContent = priceRangeSlider.value;
                 }
+                console.log(`✓ Set price range slider to: ${filters.price_range.max_value}`);
             }
         }
         
-        // Apply percentage range filters
+        // Apply percentage range filters - FIXED IMPLEMENTATION
         if (filters.percentage_range && filters.percentage_range.enabled) {
-            const enablePercentageFilters = document.getElementById('enable-percentage-filters');
+            console.log('Applying percentage range filters:', filters.percentage_range);
             
+            // First, enable the percentage filters checkbox
+            const enablePercentageFilters = document.getElementById('enable-percentage-filters');
             if (enablePercentageFilters) {
                 enablePercentageFilters.checked = true;
                 toggleFilterVisibility(enablePercentageFilters, document.getElementById('percentage-price-filter-section'));
+                console.log('✓ Enabled percentage filters checkbox');
+            } else {
+                console.log('✗ Enable percentage filters checkbox not found');
             }
             
+            // Then, select the appropriate radio button
             if (filters.percentage_range.bucket) {
                 const radio = document.querySelector(`.percentage-checkbox[value="${filters.percentage_range.bucket}"]`);
                 if (radio) {
@@ -1826,9 +1843,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (label) {
                         label.classList.add('selected');
                     }
+                    console.log(`✓ Selected percentage bucket: ${filters.percentage_range.bucket}`);
+                } else {
+                    console.log(`✗ Percentage bucket radio button not found: ${filters.percentage_range.bucket}`);
+                    console.log('Available percentage buckets:', Array.from(document.querySelectorAll('.percentage-checkbox')).map(r => r.value));
                 }
+            } else {
+                console.log('✗ No percentage bucket specified in filters');
             }
+        } else {
+            console.log('No percentage range filters to apply');
         }
+        
+        console.log('Finished applying filters to UI');
     }
 
     // Function to show notifications

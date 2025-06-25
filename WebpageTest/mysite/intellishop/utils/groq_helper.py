@@ -59,11 +59,13 @@ Available filter fields and their possible values:
 - For percentage_range: ANY mention of percentages, discounts, or "off" should trigger percentage_range
 - For price_range: ANY mention of amounts, prices, or costs should trigger price_range
 
-**PERCENTAGE DETECTION RULES:**
+**PERCENTAGE DETECTION RULES - CRITICAL:**
 - If user mentions ANY percentage (e.g., "20% off", "discount", "sale", "reduced price"), set percentage_range
 - Choose the most appropriate bucket based on the percentage mentioned
 - If no specific percentage is mentioned but discount is implied, use "up_to_20" as default
 - Keywords that should trigger percentage_range: "discount", "off", "sale", "reduced", "percentage", "%", "save"
+- ALWAYS include a valid bucket name from the available buckets list
+- If unsure about percentage, default to "up_to_20" bucket
 
 **COMPREHENSIVE CATEGORY MATCHING:**
 - "electronics" → include ["electronics", "Consumerism", "Tech"]
@@ -77,16 +79,16 @@ Available filter fields and their possible values:
 
 **EXAMPLE RESPONSES:**
 User: "I want electronics discounts for students under 200 shekels"
-Response: {{"statuses": ["Student", "Young", "Tech"], "interests": ["electronics", "Consumerism", "Tech"], "price_range": {{"enabled": true, "max_value": 200}}}}
+Response: {{"statuses": ["Student", "Young", "Tech"], "interests": ["electronics", "Consumerism", "Tech"], "price_range": {{"enabled": true, "max_value": 200}}, "percentage_range": {{"enabled": true, "bucket": "up_to_20"}}}}
 
 User: "Show me travel discounts with 30% or more off"
 Response: {{"interests": ["Travel and Vacation", "Culture and Leisure"], "percentage_range": {{"enabled": true, "bucket": "between_30_40"}}}}
 
 User: "Family discounts for home and garden"
-Response: {{"statuses": ["Family", "Parent", "Homeowner"], "interests": ["home", "lifestyle", "Consumerism"]}}
+Response: {{"statuses": ["Family", "Parent", "Homeowner"], "interests": ["home", "lifestyle", "Consumerism"], "percentage_range": {{"enabled": true, "bucket": "up_to_20"}}}}
 
 User: "Student discounts on books"
-Response: {{"statuses": ["Student", "Young"], "interests": ["books", "Consumerism"]}}
+Response: {{"statuses": ["Student", "Young"], "interests": ["books", "Consumerism"], "percentage_range": {{"enabled": true, "bucket": "up_to_20"}}}}
 
 User: "Senior discounts with 50% off"
 Response: {{"statuses": ["Senior", "Retiree"], "percentage_range": {{"enabled": true, "bucket": "between_50_60"}}}}
@@ -196,7 +198,24 @@ def extract_filters_from_text(user_text: str, max_retries: int = 2) -> Dict[str,
                         'enabled': True,
                         'bucket': selected_bucket
                     }
-                    logger.info(f"Added missing percentage_range with bucket: {selected_bucket}")
+                    logger.info(f"✓ Added missing percentage_range with bucket: {selected_bucket}")
+                else:
+                    # Default to up_to_20 if no specific bucket can be determined
+                    validated_filters['percentage_range'] = {
+                        'enabled': True,
+                        'bucket': 'up_to_20'
+                    }
+                    logger.info("✓ Added default percentage_range with 'up_to_20' bucket")
+            
+            # Additional check: if percentage_range exists but has no bucket, add one
+            if validated_filters.get('percentage_range') and validated_filters['percentage_range'].get('enabled') and not validated_filters['percentage_range'].get('bucket'):
+                selected_bucket = select_percentage_bucket(user_text)
+                if selected_bucket:
+                    validated_filters['percentage_range']['bucket'] = selected_bucket
+                    logger.info(f"✓ Added missing bucket to existing percentage_range: {selected_bucket}")
+                else:
+                    validated_filters['percentage_range']['bucket'] = 'up_to_20'
+                    logger.info("✓ Added default bucket 'up_to_20' to existing percentage_range")
             
             logger.info(f"Successfully extracted filters: {validated_filters}")
             return validated_filters
@@ -242,12 +261,14 @@ def validate_extracted_filters(filters: Dict[str, Any]) -> Dict[str, Any]:
         statuses = [s for s in filters['statuses'] if s in CONSUMER_STATUS]
         if statuses:
             validated['statuses'] = statuses
+            logger.info(f"Validated statuses: {statuses}")
     
     # Validate interests/categories
     if 'interests' in filters and isinstance(filters['interests'], list):
         interests = [i for i in filters['interests'] if i in CATEGORIES]
         if interests:
             validated['interests'] = interests
+            logger.info(f"Validated interests: {interests}")
     
     # Validate price_range
     if 'price_range' in filters and isinstance(filters['price_range'], dict):
@@ -260,12 +281,15 @@ def validate_extracted_filters(filters: Dict[str, Any]) -> Dict[str, Any]:
                         'enabled': True,
                         'max_value': max_value
                     }
+                    logger.info(f"Validated price_range: {validated['price_range']}")
             except (ValueError, TypeError):
-                pass
+                logger.warning(f"Invalid price_range max_value: {price_range.get('max_value')}")
     
-    # Validate percentage_range - improved validation
+    # Validate percentage_range - improved validation with better logging
     if 'percentage_range' in filters and isinstance(filters['percentage_range'], dict):
         percentage_range = filters['percentage_range']
+        logger.info(f"Processing percentage_range: {percentage_range}")
+        
         if percentage_range.get('enabled'):
             validated_percentage = {'enabled': True}
             
@@ -273,11 +297,40 @@ def validate_extracted_filters(filters: Dict[str, Any]) -> Dict[str, Any]:
             bucket = percentage_range.get('bucket')
             if bucket and bucket in FILTER_CONFIG['PERCENTAGE_BUCKETS']:
                 validated_percentage['bucket'] = bucket
-                logger.info(f"Validated percentage bucket: {bucket}")
+                logger.info(f"✓ Validated percentage bucket: {bucket}")
             else:
-                # If no valid bucket but percentage_range is enabled, set a default
+                # If no valid bucket but percentage_range is enabled, try to infer one
                 logger.warning(f"Invalid or missing percentage bucket: {bucket}. Available buckets: {list(FILTER_CONFIG['PERCENTAGE_BUCKETS'].keys())}")
-                # Don't include percentage_range if no valid bucket
+                
+                # Try to infer a bucket from max_value if present
+                if 'max_value' in percentage_range:
+                    try:
+                        max_value = float(percentage_range['max_value'])
+                        if 0 <= max_value <= 100:
+                            # Map max_value to appropriate bucket
+                            if max_value >= 60:
+                                inferred_bucket = 'more_than_60'
+                            elif max_value >= 50:
+                                inferred_bucket = 'between_50_60'
+                            elif max_value >= 40:
+                                inferred_bucket = 'between_40_50'
+                            elif max_value >= 30:
+                                inferred_bucket = 'between_30_40'
+                            elif max_value >= 20:
+                                inferred_bucket = 'between_20_30'
+                            else:
+                                inferred_bucket = 'up_to_20'
+                            
+                            validated_percentage['bucket'] = inferred_bucket
+                            logger.info(f"✓ Inferred percentage bucket from max_value {max_value}: {inferred_bucket}")
+                        else:
+                            logger.warning(f"Invalid max_value for percentage: {max_value}")
+                    except (ValueError, TypeError):
+                        logger.warning(f"Invalid max_value format: {percentage_range.get('max_value')}")
+                else:
+                    # Default to up_to_20 if no bucket and no max_value
+                    validated_percentage['bucket'] = 'up_to_20'
+                    logger.info("✓ Defaulting to 'up_to_20' bucket for percentage_range")
             
             # Validate max_value if present
             if 'max_value' in percentage_range:
@@ -285,13 +338,16 @@ def validate_extracted_filters(filters: Dict[str, Any]) -> Dict[str, Any]:
                     max_value = float(percentage_range['max_value'])
                     if 0 <= max_value <= 100:
                         validated_percentage['max_value'] = max_value
+                        logger.info(f"✓ Validated percentage max_value: {max_value}")
                 except (ValueError, TypeError):
-                    pass
+                    logger.warning(f"Invalid percentage max_value: {percentage_range.get('max_value')}")
             
             # Only include if we have a valid bucket
             if 'bucket' in validated_percentage:
                 validated['percentage_range'] = validated_percentage
-                logger.info(f"Final validated percentage_range: {validated_percentage}")
+                logger.info(f"✓ Final validated percentage_range: {validated_percentage}")
+            else:
+                logger.warning("✗ Percentage range enabled but no valid bucket found")
     
     logger.info(f"Final validated filters: {validated}")
     return validated
