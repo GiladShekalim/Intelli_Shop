@@ -729,6 +729,57 @@
     min-width: 60px; /* Ensure consistent width */
     text-align: center;
 }
+
+/* === CSS for Back Button (Edit Filters) === */
+.custom-back-btn.right-arrow {
+    display: flex;
+    align-items: center;
+    background: #0a3764;
+    border: none;
+    border-radius: 40px;
+    color: #fff;
+    font-size: 2em;
+    font-weight: 400;
+    padding: 0.3em 1.2em 0.3em 0.6em;
+    cursor: pointer;
+    gap: 18px;
+    transition: background 0.2s;
+    margin: 20px auto 20px auto;
+    outline: none;
+}
+.custom-back-btn.right-arrow:hover {
+    background: #155a8a;
+}
+
+/* === CSS for Back Button Text === */
+.back-text {
+    letter-spacing: 0.04em;
+    font-weight: 400;
+    font-size: 0.8em;
+}
+
+/* === CSS for Back Button Circle === */
+.back-circle {
+    background: #fff;
+    color: #0a3764;
+    border-radius: 50%;
+    width: 2.4em;
+    height: 2.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.2em;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* === CSS for SVG Arrow === */
+.arrow-svg {
+    display: block;
+    width: 80%;
+    height: 80%;
+}
 </style>
 
 <script>
@@ -879,12 +930,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Add Back To Update Filters button above the results
                 let backBtn = document.createElement('button');
-                backBtn.textContent = '<- Back To Update Filters';
-                backBtn.className = 'btn btn-secondary back-to-filters-btn';
-                backBtn.style.margin = '20px auto 20px auto';
-                backBtn.style.display = 'block';
+                backBtn.className = 'custom-back-btn right-arrow';
+                backBtn.innerHTML = `
+                    <span class="back-text">Edit Filters</span>
+                    <span class="back-circle">
+                        <svg class="arrow-svg" viewBox="0 0 40 40" width="32" height="32">
+                            <line x1="32" y1="20" x2="8" y2="20" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="12" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="28" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                `;
                 backBtn.onclick = function() {
-                    window.location.reload(); // Reloads the page to restore filters UI
+                    window.location.reload();
                 };
                 container.parentNode.insertBefore(backBtn, container);
 
@@ -1246,12 +1304,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Add Back To Update Filters button above the results
                 let backBtn = document.createElement('button');
-                backBtn.textContent = '<- Back To Update Filters';
-                backBtn.className = 'btn btn-secondary back-to-filters-btn';
-                backBtn.style.margin = '20px auto 20px auto';
-                backBtn.style.display = 'block';
+                backBtn.className = 'custom-back-btn right-arrow';
+                backBtn.innerHTML = `
+                    <span class="back-text">Edit Filters</span>
+                    <span class="back-circle">
+                        <svg class="arrow-svg" viewBox="0 0 40 40" width="32" height="32">
+                            <line x1="32" y1="20" x2="8" y2="20" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="12" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="8" y1="20" x2="18" y2="28" stroke="#0a3764" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                `;
                 backBtn.onclick = function() {
-                    window.location.reload(); // Reloads the page to restore filters UI
+                    window.location.reload();
                 };
                 container.parentNode.insertBefore(backBtn, container);
                 
