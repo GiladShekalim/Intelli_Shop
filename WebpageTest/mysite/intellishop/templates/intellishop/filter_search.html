@@ -841,6 +841,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Collect filter data
         const filters = collectFilterData();
+        localStorage.setItem('lastUsedFilters', JSON.stringify(filters));
         
         // Create a promise that resolves after 3 seconds (minimum loading time)
         const minimumLoadingTime = new Promise(resolve => setTimeout(resolve, 3000));
@@ -1413,6 +1414,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 buttonText.textContent = 'Show All';
             });
     });
+
+    const savedFilters = localStorage.getItem('lastUsedFilters');
+    if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        // Restore status checkboxes
+        if (filters.statuses) {
+            filters.statuses.forEach(val => {
+                const cb = document.querySelector(`.filter-checkbox[id^="status-"][value="${val}"]`);
+                if (cb) cb.checked = true;
+            });
+        }
+        // Restore interest checkboxes
+        if (filters.interests) {
+            filters.interests.forEach(val => {
+                const cb = document.querySelector(`.filter-checkbox[id^="interest-"][value="${val}"]`);
+                if (cb) cb.checked = true;
+            });
+        }
+        // Restore price range
+        if (filters.price_range && filters.price_range.enabled) {
+            const enableValueFilters = document.getElementById('enable-value-filters');
+            const priceRangeSlider = document.getElementById('price-range-slider');
+            if (enableValueFilters) enableValueFilters.checked = true;
+            if (priceRangeSlider && filters.price_range.max_value) priceRangeSlider.value = filters.price_range.max_value;
+        }
+        // Restore percentage range
+        if (filters.percentage_range && filters.percentage_range.enabled) {
+            const enablePercentageFilters = document.getElementById('enable-percentage-filters');
+            if (enablePercentageFilters) enablePercentageFilters.checked = true;
+            if (filters.percentage_range.bucket) {
+                const radio = document.querySelector(`.percentage-checkbox[value="${filters.percentage_range.bucket}"]`);
+                if (radio) radio.checked = true;
+            }
+        }
+    }
 });
 </script>
 {% endblock %}
