@@ -12,6 +12,9 @@ from django.templatetags.static import static
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from intellishop.models.constants import FILTER_CONFIG
+import logging
+
+logger = logging.getLogger(__name__)
 
 def index(request):
     return render(request, 'intellishop/index.html')
@@ -486,7 +489,7 @@ def _validate_filters(filters):
     Validate and sanitize filter parameters
     
     Args:
-        filters (dict): Raw filter data
+        filters (dict): Raw filter data including text_search
         
     Returns:
         dict: Validated and sanitized filters
@@ -495,19 +498,25 @@ def _validate_filters(filters):
     
     validated = {}
     
-    # Validate statuses
+    # Validate text search (NEW)
+    if filters.get('text_search'):
+        text_search = filters['text_search'].strip()
+        if text_search and len(text_search) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
+            validated['text_search'] = text_search
+    
+    # Validate statuses (existing)
     if filters.get('statuses'):
         statuses = [s for s in filters['statuses'] if s in CONSUMER_STATUS]
         if statuses:
             validated['statuses'] = statuses
     
-    # Validate interests/categories
+    # Validate interests/categories (existing)
     if filters.get('interests'):
         interests = [i for i in filters['interests'] if i in CATEGORIES]
         if interests:
             validated['interests'] = interests
     
-    # Validate price range
+    # Validate price range (existing)
     if filters.get('price_range'):
         price_range = filters['price_range']
         if isinstance(price_range, dict) and price_range.get('enabled'):
@@ -523,7 +532,7 @@ def _validate_filters(filters):
                 except (ValueError, TypeError):
                     pass
     
-    # Validate percentage range
+    # Validate percentage range (existing)
     if filters.get('percentage_range'):
         percentage_range = filters['percentage_range']
         if isinstance(percentage_range, dict) and percentage_range.get('enabled'):
@@ -548,4 +557,45 @@ def _validate_filters(filters):
                 validated['percentage_range'] = validated_percentage
     
     return validated
+
+# Add new view for text-only search (optional)
+@csrf_exempt
+def search_discounts_by_text(request):
+    """
+    Search discounts by text only (for future use)
+    
+    Expected JSON payload:
+    {
+        "search_text": "electronics discount"
+    }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        search_text = data.get('search_text', '').strip()
+        
+        if not search_text:
+            return JsonResponse({'error': 'Search text is required'}, status=400)
+        
+        # Use the new search method
+        discounts = Coupon.search_coupons_by_text(search_text)
+        
+        # Convert ObjectId to string for JSON serialization
+        for discount in discounts:
+            if '_id' in discount:
+                discount['_id'] = str(discount['_id'])
+        
+        return JsonResponse({
+            'discounts': discounts,
+            'total_count': len(discounts),
+            'search_text': search_text
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in search_discounts_by_text: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
 

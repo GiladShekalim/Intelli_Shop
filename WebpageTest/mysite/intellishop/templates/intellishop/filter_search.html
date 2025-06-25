@@ -984,25 +984,31 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // Function to collect filter data
+    // Function to collect filter data (UPDATED)
     function collectFilterData() {
         const filters = {};
         
-        // Collect status filters
+        // Collect text search (NEW)
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput && searchInput.value.trim()) {
+            filters.text_search = searchInput.value.trim();
+        }
+        
+        // Collect status filters (existing)
         const selectedStatuses = Array.from(document.querySelectorAll('.filter-checkbox[id^="status-"]:checked'))
             .map(checkbox => checkbox.value);
         if (selectedStatuses.length > 0) {
             filters.statuses = selectedStatuses;
         }
 
-        // Collect interest filters
+        // Collect interest filters (existing)
         const selectedInterests = Array.from(document.querySelectorAll('.filter-checkbox[id^="interest-"]:checked'))
             .map(checkbox => checkbox.value);
         if (selectedInterests.length > 0) {
             filters.interests = selectedInterests;
         }
         
-        // Collect price range filters
+        // Collect price range filters (existing)
         const enableValueFilters = document.getElementById('enable-value-filters');
         const priceRangeSlider = document.getElementById('price-range-slider');
         if (enableValueFilters && enableValueFilters.checked && priceRangeSlider) {
@@ -1012,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
-        // Collect percentage range filters
+        // Collect percentage range filters (existing)
         const enablePercentageFilters = document.getElementById('enable-percentage-filters');
         const percentageRangeSlider = document.getElementById('percentage-range-slider');
         const selectedPercentageBucket = document.querySelector('.percentage-checkbox:checked');
@@ -1034,7 +1040,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return filters;
     }
 
-    // Function to create filter summary
+    // Function to create filter summary (UPDATED)
     function createFilterSummary(appliedFilters, totalCount) {
         const summaryDiv = document.createElement('div');
         summaryDiv.className = 'filter-summary';
@@ -1052,6 +1058,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (appliedFilters) {
             const appliedFiltersList = [];
+            
+            // Add text search to summary (NEW)
+            if (appliedFilters.text_search) {
+                appliedFiltersList.push(`חיפוש טקסט: "${appliedFilters.text_search}"`);
+            }
             
             if (appliedFilters.statuses) {
                 appliedFiltersList.push(`סטטוס: ${appliedFilters.statuses.join(', ')}`);
@@ -1482,6 +1493,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.remove('loading');
                 buttonText.textContent = 'Show All';
             });
+    });
+
+    // Add search input event listeners (NEW)
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        // Add placeholder text
+        searchInput.placeholder = 'Search by title, description, coupon code...';
+        
+        // Add enter key support for quick search
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // Trigger the Apply button click
+                document.getElementById('apply-filters-btn').click();
+            }
+        });
+        
+        // Add real-time search indicator (optional)
+        searchInput.addEventListener('input', function() {
+            const hasText = this.value.trim().length > 0;
+            const searchIcon = this.parentElement.querySelector('.search-icon');
+            
+            if (hasText) {
+                searchIcon.style.color = '#007bff';
+            } else {
+                searchIcon.style.color = '#666';
+            }
+        });
+    }
+    
+    // Update clear button to also clear search input (NEW)
+    document.querySelector('.btn-clear').addEventListener('click', () => {
+        // Clear search input
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.value = '';
+            const searchIcon = searchInput.parentElement.querySelector('.search-icon');
+            searchIcon.style.color = '#666';
+        }
+        
+        // Clear old span-based filters (existing)
+        document.querySelectorAll('.filter-tag.selected').forEach(tag => {
+            tag.classList.remove('selected');
+        });
+        
+        // Clear new checkbox-based filters (existing)
+        document.querySelectorAll('.filter-checkbox:checked, .percentage-checkbox:checked').forEach(checkbox => {
+            checkbox.checked = false;
+            const label = document.querySelector(`label[for='${checkbox.id}'] span.percentage-label`) || 
+                          document.querySelector(`label[for='${checkbox.id}']`);
+            if (label) {
+                label.classList.remove('selected');
+            }
+        });
     });
 
     const savedFilters = localStorage.getItem('lastUsedFilters');
