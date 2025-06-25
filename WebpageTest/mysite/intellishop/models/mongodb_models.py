@@ -297,8 +297,8 @@ class Coupon(MongoDBModel):
             # For each word, it must appear in at least one of the searchable fields
             field_conditions = []
             for field in searchable_fields:
-                regex_pattern = f'.*{re.escape(word)}.*'
-                field_conditions.append({field: {'$regex': regex_pattern, '$options': 'i'}})
+                # Use simple case-insensitive regex pattern
+                field_conditions.append({field: {'$regex': word, '$options': 'i'}})
             
             # Word must be found in at least one field (OR logic for fields)
             word_conditions.append({'$or': field_conditions})
@@ -337,55 +337,34 @@ class Coupon(MongoDBModel):
         Returns:
             list: Matching coupons
         """
-        # Step 1: Apply parameter filters
-        parameter_query = cls._build_parameter_query(filters)
-        parameter_results = cls.find(parameter_query)
+        # Build the complete query with both parameter and text filters
+        query = cls._build_parameter_query(filters)
         
-        if not parameter_results:
-            return []
-        
-        # Step 2: Apply text search on parameter-filtered results
+        # Add text search conditions to the query
         search_text = filters['text_search']
-        if not search_text or len(search_text.strip()) < FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
-            return parameter_results
-        
-        # Clean and prepare search text
-        search_text = search_text.strip()
-        search_words = [word.strip() for word in search_text.split() if len(word.strip()) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']]
-        
-        if not search_words:
-            return parameter_results
-        
-        # Filter parameter results by text search
-        searchable_fields = FILTER_CONFIG['SEARCHABLE_FIELDS']
-        filtered_results = []
-        
-        for coupon in parameter_results:
-            # Check if all words are found in the coupon
-            all_words_found = True
+        if search_text and len(search_text.strip()) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']:
+            search_text = search_text.strip()
+            search_words = [word.strip() for word in search_text.split() if len(word.strip()) >= FILTER_CONFIG['TEXT_SEARCH']['MIN_WORD_LENGTH']]
             
-            for word in search_words:
-                word_found = False
+            if search_words:
+                # Build text search conditions
+                word_conditions = []
+                searchable_fields = FILTER_CONFIG['SEARCHABLE_FIELDS']
                 
-                # Check each searchable field for the word
-                for field in searchable_fields:
-                    field_value = coupon.get(field, '')
-                    if isinstance(field_value, list):
-                        # Handle array fields like club_name
-                        field_value = ' '.join(field_value)
-                    
-                    if field_value and word.lower() in str(field_value).lower():
-                        word_found = True
-                        break
+                for word in search_words:
+                    field_conditions = []
+                    for field in searchable_fields:
+                        field_conditions.append({field: {'$regex': word, '$options': 'i'}})
+                    word_conditions.append({'$or': field_conditions})
                 
-                if not word_found:
-                    all_words_found = False
-                    break
-            
-            if all_words_found:
-                filtered_results.append(coupon)
+                # Add text conditions to existing query
+                if word_conditions:
+                    if '$and' in query:
+                        query['$and'].extend(word_conditions)
+                    else:
+                        query['$and'] = word_conditions
         
-        return filtered_results
+        return cls.find(query, limit=FILTER_CONFIG['TEXT_SEARCH']['MAX_RESULTS'])
 
     @classmethod
     def _build_parameter_query(cls, filters):
@@ -399,6 +378,7 @@ class Coupon(MongoDBModel):
             dict: MongoDB query
         """
         query = {}
+        and_clauses = []
         
         # Status filters
         if filters.get('statuses'):
@@ -412,8 +392,7 @@ class Coupon(MongoDBModel):
         if filters.get('price_range'):
             price_range = filters['price_range']
             if price_range.get('enabled') and price_range.get('max_value') is not None:
-                query['$and'] = query.get('$and', [])
-                query['$and'].extend([
+                and_clauses.extend([
                     {'discount_type': 'fixed_amount'},
                     {'price': {'$lte': price_range['max_value']}}
                 ])
@@ -423,7 +402,6 @@ class Coupon(MongoDBModel):
             percentage_range = filters['percentage_range']
             if percentage_range.get('enabled'):
                 # Always filter by discount_type: 'percentage'
-                and_clauses = query.get('$and', [])
                 and_clauses.append({'discount_type': 'percentage'})
 
                 # If a bucket is selected, use its min/max
@@ -431,8 +409,10 @@ class Coupon(MongoDBModel):
                     bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
                     if bucket_config:
                         and_clauses.append({'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}})
-
-                query['$and'] = and_clauses
+        
+        # Add AND clauses to query if any exist
+        if and_clauses:
+            query['$and'] = and_clauses
         
         return query
 

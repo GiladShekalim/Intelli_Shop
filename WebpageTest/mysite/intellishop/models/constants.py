@@ -77,7 +77,7 @@ TEXT_SEARCH_FIELDS = [
 # Text search options
 TEXT_SEARCH_CONFIG = {
     'CASE_SENSITIVE': False,
-    'MIN_WORD_LENGTH': 10,
+    'MIN_WORD_LENGTH': 2,
     'MAX_RESULTS': 1000,
     'SEARCH_OPERATOR': 'AND'  # 'AND' or 'OR' - using AND for individual words
 }
