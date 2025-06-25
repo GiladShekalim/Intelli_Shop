@@ -420,28 +420,47 @@ class Coupon(MongoDBModel):
             if or_conditions:
                 query['$or'] = or_conditions
         
-        else:
-            # Standard case: Only one or no range filter is enabled
-            # Price range filters (for fixed_amount type)
+        elif price_range_enabled or percentage_range_enabled:
+            # Only one range filter is enabled - show both discount types
+            # but apply the range filter only to the relevant type
+            or_conditions = []
+            
+            # Always include percentage discounts (without range filter)
+            or_conditions.append({'discount_type': 'percentage'})
+            
+            # Always include fixed_amount discounts (without range filter)
+            or_conditions.append({'discount_type': 'fixed_amount'})
+            
+            # Add the range filter as an additional condition
             if price_range_enabled:
                 price_range = filters['price_range']
                 if price_range.get('max_value') is not None:
-                    and_clauses.extend([
-                        {'discount_type': 'fixed_amount'},
-                        {'price': {'$lte': price_range['max_value']}}
-                    ])
+                    # For fixed_amount discounts, apply the price filter
+                    and_clauses.append({
+                        '$or': [
+                            {'discount_type': 'percentage'},  # Percentage discounts (no price filter)
+                            {
+                                'discount_type': 'fixed_amount',
+                                'price': {'$lte': price_range['max_value']}
+                            }
+                        ]
+                    })
             
-            # Percentage range filters (bucket only)
-            if percentage_range_enabled:
+            elif percentage_range_enabled:
                 percentage_range = filters['percentage_range']
-                # Always filter by discount_type: 'percentage'
-                and_clauses.append({'discount_type': 'percentage'})
-
-                # If a bucket is selected, use its min/max
                 if percentage_range.get('bucket'):
                     bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
                     if bucket_config:
-                        and_clauses.append({'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}})
+                        # For percentage discounts, apply the percentage filter
+                        and_clauses.append({
+                            '$or': [
+                                {'discount_type': 'fixed_amount'},  # Fixed amount discounts (no percentage filter)
+                                {
+                                    'discount_type': 'percentage',
+                                    'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}
+                                }
+                            ]
+                        })
         
         # Add AND clauses to query if any exist
         if and_clauses:
