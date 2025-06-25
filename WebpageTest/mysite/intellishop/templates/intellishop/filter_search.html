@@ -873,9 +873,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced Apply button functionality
+    // Enhanced Apply button functionality (UPDATED)
     document.getElementById('apply-filters-btn').addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent any default form submission
+        e.preventDefault();
         const button = this;
         const buttonText = button.querySelector('.btn-text') || button;
         const container = document.getElementById('all-discounts-container');
@@ -883,7 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         button.classList.add('loading');
         buttonText.textContent = 'Loading Please Wait ...';
-        container.innerHTML = ''; // Clear previous content
+        container.innerHTML = '';
 
         // Create loading div with spinner
         let loadingDiv = document.createElement('div');
@@ -1064,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return filters;
     }
 
-    // Function to create filter summary (UPDATED) (UPDATED)
+    // Function to create filter summary (UPDATED)
     function createFilterSummary(appliedFilters, totalCount, searchType) {
         const summaryDiv = document.createElement('div');
         summaryDiv.className = 'filter-summary';
