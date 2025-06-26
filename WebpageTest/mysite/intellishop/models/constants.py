@@ -19,7 +19,8 @@ JSON_SCHEMA = """{{
   "usage_limit": "integer",
   "coupon_code": "string",
   "provider_link": "string",
-  "consumer_statuses": ["string"]
+  "consumer_statuses": ["string"],
+  "favorites": ["string"]
 }}"""
 
 # Available categories for discounts
@@ -117,3 +118,10 @@ def get_discount_type_string():
 def get_filter_config():
     """Get filter configuration for consistent usage across the application"""
     return FILTER_CONFIG 
+
+# Add to constants.py
+FAVORITES_CONFIG = {
+    'MAX_FAVORITES': 100,  # Maximum number of favorites per user
+    'FIELD_NAME': 'favorites',
+    'ID_FIELD': 'discount_id'
+}

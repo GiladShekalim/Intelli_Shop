@@ -97,6 +97,7 @@ class User(MongoDBModel):
             'age': age,
             'location': location,
             'hobbies': hobbies,
+            'favorites': [],  # NEW: Array of discount_id strings
             'created_at': datetime.datetime.now()
         }
         return cls.insert_one(user_data)
@@ -115,6 +116,36 @@ class User(MongoDBModel):
     def get_by_id(cls, user_id):
         """Get a user by ID"""
         return cls.find_one({'_id': ObjectId(user_id)})
+
+    @classmethod
+    def add_favorite(cls, user_id, discount_id):
+        """Add a discount to user's favorites"""
+        return cls.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$addToSet': {'favorites': discount_id}}  # $addToSet prevents duplicates
+        )
+
+    @classmethod
+    def remove_favorite(cls, user_id, discount_id):
+        """Remove a discount from user's favorites"""
+        return cls.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$pull': {'favorites': discount_id}}
+        )
+
+    @classmethod
+    def get_favorites(cls, user_id):
+        """Get user's favorite discount IDs"""
+        user = cls.find_one({'_id': ObjectId(user_id)})
+        return user.get('favorites', []) if user else []
+
+    @classmethod
+    def is_favorite(cls, user_id, discount_id):
+        """Check if a discount is in user's favorites"""
+        user = cls.find_one({'_id': ObjectId(user_id)})
+        if user and 'favorites' in user:
+            return discount_id in user['favorites']
+        return False
 
 # Updated Coupon model with new schema
 class Coupon(MongoDBModel):
