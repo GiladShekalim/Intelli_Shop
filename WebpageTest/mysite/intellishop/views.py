@@ -407,6 +407,7 @@ def coupon_code_view(request, code):
 
 # Favorites Page
 def favorites_view(request):
+    """Display user's favorite coupons"""
     # Check if user is logged in
     user_id = request.session.get('user_id')
     if not user_id:
@@ -415,13 +416,21 @@ def favorites_view(request):
     # Get user from MongoDB
     user = User.find_one({'_id': ObjectId(user_id)})
     if not user:
-        # If user somehow doesn't exist despite having a session user_id, redirect to login
         return redirect('login')
 
-    # from the database and pass them to the template context.
+    # Get user's favorite discount IDs
+    favorite_ids = user.get('favorites', [])
+    
+    # Get actual coupon data for favorite IDs
+    favorite_coupons = []
+    if favorite_ids:
+        # Use $in operator to get all favorite coupons in one query
+        favorite_coupons = Coupon.find({'discount_id': {'$in': favorite_ids}})
+    
     context = {
-        'user': user, # Pass the user object to the template
-        'favorite_items': [] # Replace with actual favorite items
+        'user': user,
+        'favorite_coupons': favorite_coupons,
+        'favorite_count': len(favorite_coupons)
     }
     return render(request, 'intellishop/favorites.html', context)
 
@@ -625,57 +634,95 @@ def search_discounts_by_text(request):
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
 @csrf_exempt
-def ai_filter_helper(request):
-    """
-    AI Filter Helper endpoint that uses Groq API to extract filter parameters from user text.
-    
-    Expected JSON payload:
-    {
-        "user_text": "I want electronics discounts for students under 200 shekels"
-    }
-    
-    Returns:
-    {
-        "filters": {
-            "statuses": ["Student"],
-            "interests": ["electronics"],
-            "price_range": {"enabled": true, "max_value": 200}
-        },
-        "success": true
-    }
-    """
+def add_favorite_view(request):
+    """Add a discount to user's favorites"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
     try:
+        # Check if user is logged in
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'User not authenticated'}, status=401)
+        
         data = json.loads(request.body)
-        user_text = data.get('user_text', '').strip()
+        discount_id = data.get('discount_id')
         
-        if not user_text:
-            return JsonResponse({'error': 'User text is required'}, status=400)
+        if not discount_id:
+            return JsonResponse({'error': 'discount_id is required'}, status=400)
         
-        # Import the AI filter helper utility
-        from intellishop.utils.groq_helper import extract_filters_from_text
+        # Verify discount exists
+        coupon = Coupon.find_one({'discount_id': discount_id})
+        if not coupon:
+            return JsonResponse({'error': 'Discount not found'}, status=404)
         
-        logger.info(f"AI Filter Helper request received for text: {user_text[:100]}...")
+        # Add to favorites
+        result = User.add_favorite(user_id, discount_id)
         
-        # Extract filters using Groq API
-        extracted_filters = extract_filters_from_text(user_text)
-        
-        logger.info(f"AI Filter Helper extracted filters: {extracted_filters}")
-        
-        return JsonResponse({
-            'filters': extracted_filters,
-            'success': True,
-            'user_text': user_text
-        })
-        
+        if result:
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Added to favorites',
+                'discount_id': discount_id
+            })
+        else:
+            return JsonResponse({'error': 'Failed to add to favorites'}, status=500)
+            
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
-        logger.error(f"Error in ai_filter_helper: {str(e)}")
-        return JsonResponse({
-            'error': 'Failed to process AI filter request',
-            'success': False
-        }, status=500)
+        logger.error(f"Error in add_favorite_view: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+@csrf_exempt
+def remove_favorite_view(request):
+    """Remove a discount from user's favorites"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        # Check if user is logged in
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'User not authenticated'}, status=401)
+        
+        data = json.loads(request.body)
+        discount_id = data.get('discount_id')
+        
+        if not discount_id:
+            return JsonResponse({'error': 'discount_id is required'}, status=400)
+        
+        # Remove from favorites
+        result = User.remove_favorite(user_id, discount_id)
+        
+        if result:
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Removed from favorites',
+                'discount_id': discount_id
+            })
+        else:
+            return JsonResponse({'error': 'Failed to remove from favorites'}, status=500)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in remove_favorite_view: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+@csrf_exempt
+def check_favorite_view(request, discount_id):
+    """Check if a discount is in user's favorites"""
+    try:
+        # Check if user is logged in
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'is_favorite': False})
+        
+        is_favorite = User.is_favorite(user_id, discount_id)
+        return JsonResponse({'is_favorite': is_favorite})
+        
+    except Exception as e:
+        logger.error(f"Error in check_favorite_view: {str(e)}")
+        return JsonResponse({'is_favorite': False})
 
