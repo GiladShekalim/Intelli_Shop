@@ -836,9 +836,53 @@
 </style>
 
 <script>
-    // Check if the user is authenticated (set by Django context)
-    // var isLoggedIn = document.body.getAttribute('data-user-authenticated') === 'true';
+// --- GLOBAL SCOPE ---
+function toggleFavorite(discountId, iconElement) {
+    const isFavorite = iconElement.classList.contains('favorite-active');
+    const url = isFavorite ? '/remove_favorite/' : '/add_favorite/';
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({discount_id: discountId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            if (isFavorite) {
+                iconElement.classList.remove('favorite-active');
+                iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Remove', 'Add');
+            } else {
+                iconElement.classList.add('favorite-active');
+                iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
+            }
+        } else {
+            alert('Failed to update favorites: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update favorites');
+    });
+}
 
+function checkFavoriteStatus(discountId, iconElement) {
+    fetch(`/check_favorite/${discountId}/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.is_favorite) {
+            iconElement.classList.add('favorite-active');
+            iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
+        }
+    })
+    .catch(error => {
+        console.error('Error checking favorite status:', error);
+    });
+}
+
+// --- DOMContentLoaded for event delegation and other logic ---
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle sections
     const headers = document.querySelectorAll('.section-header');
@@ -1287,7 +1331,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         Discount Link
                     </a>
                     <div class="like-icon-col">
-                        <span class="like-fav-text">Favorites <span class="like-icon" title="Click To Save">&#10084;</span> Add</span>
+                        <span class="like-fav-text">Favorites 
+                            <span class="like-icon" title="Click To Save" data-discount-id="${discount.discount_id}" onclick="toggleFavorite('${discount.discount_id}', this)">&#10084;</span> 
+                            Add
+                        </span>
                     </div>
                 </div>
                 <hr>
@@ -1520,7 +1567,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 Discount Link
                             </a>
                             <div class="like-icon-col">
-                                <span class="like-fav-text">Favorites <span class="like-icon" title="Click To Save">&#10084;</span> Add</span>
+                                <span class="like-fav-text">Favorites 
+                                    <span class="like-icon" title="Click To Save" data-discount-id="${discount.discount_id}" onclick="toggleFavorite('${discount.discount_id}', this)">&#10084;</span> 
+                                    Add
+                                </span>
                             </div>
                         </div>
                         <hr>
@@ -1920,6 +1970,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(style);
+
+    // === GLOBAL FAVORITES FUNCTIONS ===
+    function toggleFavorite(discountId, iconElement) {
+        const isFavorite = iconElement.classList.contains('favorite-active');
+        const url = isFavorite ? '/remove_favorite/' : '/add_favorite/';
+        const method = 'POST';
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({discount_id: discountId})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if (isFavorite) {
+                    iconElement.classList.remove('favorite-active');
+                    iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Remove', 'Add');
+                } else {
+                    iconElement.classList.add('favorite-active');
+                    iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
+                }
+            } else {
+                alert('Failed to update favorites: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update favorites');
+        });
+    }
+
+    function checkFavoriteStatus(discountId, iconElement) {
+        fetch(`/check_favorite/${discountId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_favorite) {
+                iconElement.classList.add('favorite-active');
+                iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking favorite status:', error);
+        });
+    }
+
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('like-icon')) {
+            const discountId = e.target.getAttribute('data-discount-id');
+            toggleFavorite(discountId, e.target);
+        }
+    });
 });
 </script>
 {% endblock %}
