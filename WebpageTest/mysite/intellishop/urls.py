@@ -19,6 +19,7 @@ urlpatterns = [
     path('show_all_discounts/', views.show_all_discounts, name='show_all_discounts'),
     path('filtered_discounts/', views.filtered_discounts, name='filtered_discounts'),
     path('search_discounts/', views.search_discounts_by_text, name='search_discounts_by_text'),
+    path('ai_filter_helper/', views.ai_filter_helper, name='ai_filter_helper'),
     path('add_favorite/', views.add_favorite_view, name='add_favorite'),
     path('remove_favorite/', views.remove_favorite_view, name='remove_favorite'),
     path('check_favorite/<str:discount_id>/', views.check_favorite_view, name='check_favorite'),
