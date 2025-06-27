@@ -342,9 +342,9 @@
     justify-content: center;
     gap: 8px;
     transition: all 0.3s ease;
-    min-height: 44px; /* Ensure consistent height */
-    background: #007bff; /* Add background color */
-    color: white; /* Add text color */
+    min-height: 44px;
+    background: #007bff;
+    color: white;
 }
 
 .btn-apply.loading {
@@ -375,287 +375,20 @@
     }
 }
 
-.discount-card {
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 15px;
-    margin: 10px 0;
-    background: #fafbfc;
-    direction: rtl;
-    text-align: right;
-    font-family: "Segoe UI", Arial, "Noto Sans Hebrew", "Open Sans", sans-serif;
-    display: flex; /* Use flexbox for the card to arrange top and bottom rows */
-    flex-direction: column; /* Stack the top flex row and bottom row vertically */
-}
-
-.discount-flex-row {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: flex-start;
-    gap: 24px;
-    margin-bottom: 12px;
-    flex-wrap: nowrap; /* Prevent wrapping of image and details column */
-}
-
-.discount-image-col {
-    flex: 0 0 400px; /* Increased fixed width for the image column (twice the original size) */
-    display: flex;
-    align-items: flex-start; /* Align image to the top */
-    justify-content: center;
-}
-
-.discount-image-col img {
-    max-width: 100%; /* Ensure image scales within its container */
-    height: auto; /* Maintain aspect ratio */
-    border-radius: 8px;
-}
-
-.discount-details-col {
-    flex: 1 1 0; /* Allow details to grow and shrink */
-    min-width: 0; /* Prevent content overflow */
-}
-
-.discount-bottom-row {
-    display: flex;
-    justify-content: center; /* Center the items horizontally */
-    align-items: center; /* Vertically align items in the middle */
-    margin-top: 10px;
-    gap: 100px; /* Increased space between the items */
-    flex-wrap: wrap; /* Allow wrapping if the container is too narrow */
-}
-
-/* Ensure direct children of discount-bottom-row are flex items and don't shrink unexpectedly */
-.discount-bottom-row > div, .discount-bottom-row > a {
-    flex-shrink: 0;
-    display: flex; /* Ensure flex properties apply */
-    align-items: center; /* Vertically center content within each item */
-}
-
-/* Keep or adjust existing styles for individual items as needed */
-.price-type-col {
-    display: flex;
-    flex-direction: row-reverse; /* Keep price and label RTL */
-    align-items: center;
-    gap: 12px; /* Space between price and label */
-}
-
-.like-icon-col {
-    display: flex;
-    align-items: center;
-    gap: 6px; /* Space between text and icon */
-}
-
-.site-link-btn {
-    display: inline-block;
-    background: #ffb347; /* Light orange background */
-    color: #fff; /* White text for better contrast */
-    text-decoration: none;
-    padding: 8px 16px; /* Adjusted padding */
-}
-
-.site-link-btn:hover {
-    background: #ffa327; /* Slightly darker orange on hover */
-}
-
-/* Styles for the new Provider Link button */
-.site-link-btn.provider-link-btn {
-    background: #d84368; /* A shade of pink/magenta from the provided image */
-    color: white; /* White text for contrast */
-}
-
-.site-link-btn.provider-link-btn:hover {
-    background: #c33a5d; /* Darker shade on hover */
-}
-
-/* Remove any old group styles that might interfere */
-.bottom-left-group, .bottom-right-group, .bottom-left-item, .bottom-middle-item, .bottom-right-item, .buttons-and-price-group, .bottom-buttons-group {
-     display: unset; /* Remove flex/grid display from previous attempts */
-     /* You might need to inspect your current styles and unset other conflicting properties if the layout is still off */
-}
-
-.price-label-big {
-    margin-bottom: 0;
-    background: #007bff; /* Fixed color instead of template literal */
-    color: white;
-    padding: 3px 9px;
-    border-radius: 16px;
-    font-size: 1em;
-    font-weight: bold;
-    display: inline-block;
-    vertical-align: middle;
-}
-.price-value-big {
-    margin-bottom: 0;
-    font-size:2.2em;
-    font-weight:bold;
-    color:#333;
-    display:inline-block;
-    vertical-align:middle;
-    margin-right:12px;
-}
-.discount-title {
-    font-size: 2em;
-    font-weight: bold;
-    background: linear-gradient(90deg, #f0f2f5 60%, #ffe082 100%);
-    padding: 8px 18px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    display: inline-block;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    letter-spacing: 0.02em;
-    vertical-align: middle;
-}
-.discount-meta {
-    font-size: 0.55em;
-    color: #555;
-    margin-right: 18px;
-    vertical-align: middle;
-}
-.meta-item {
-    margin-left: 18px;
-    display: inline-block;
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 2px 10px;
-    margin-bottom: 2px;
-    font-weight: 500;
-}
-.expired-label {
-    color: #fff;
-    background: #e53935;
-    border-radius: 6px;
-    padding: 2px 10px;
-    font-size: 1em;
-    font-weight: bold;
-    margin-top: 4px;
-    display: inline-block;
-    box-shadow: 0 1px 4px rgba(229,57,53,0.08);
-    letter-spacing: 0.03em;
-}
-.copy-code-btn {
-    background: #ff9800; /* Orange background */
-    color: #fff; /* White text */
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-    user-select: none; /* Prevent text selection */
-    display: inline-block; /* Ensure it acts like a button */
-    font-size: 1em;
-    white-space: nowrap; /* Prevent text from wrapping */
-}
-.copy-code-btn:hover {
-    background: #f57c00; /* Darker orange on hover */
-}
-.copy-code-btn.copied {
-    background: #4caf50; /* Green when copied */
-    text-align: center;
-}
-
-/* Loading Spinner Styles */
-.loading-spinner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    color: #333;
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 20px 0;
-    border: 1px solid #dee2e6;
-}
-
-.spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #e9ecef;
-    border-radius: 50%;
-    border-top-color: #007bff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* No Results Message */
-.no-results {
-    text-align: center;
-    padding: 40px 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin: 20px 0;
-}
-
-.no-results i {
-    font-size: 48px;
-    color: #6c757d;
-    margin-bottom: 16px;
-}
-
-.no-results p {
-    color: #495057;
-    font-size: 1.1em;
-    margin: 0;
-}
-
-/* Error Message */
-.error-message {
-    text-align: center;
-    padding: 20px;
-    background: #fff3f3;
-    border: 1px solid #ffcdd2;
-    border-radius: 8px;
-    margin: 20px 0;
-    color: #d32f2f;
-}
-
-.error-message i {
-    font-size: 24px;
-    margin-bottom: 8px;
-}
-
-.buttons-and-price-group, .bottom-buttons-group {
-    /* These groups are no longer needed for the new structure, can be removed or repurposed if other styles depend on them */
-    display: flex;
-    align-items: center;
-    gap: 10px; /* Space between elements */
-}
-
-.like-icon {
-    font-size: 1.6em;
-    color: #ff0000; /* Red color for the icon */
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.2s;
-}
-.like-icon:hover {
-    color: #cc0000; /* Slightly darker red on hover */
-}
-.like-fav-text {
-    font-size: 1.2em;
-    font-weight: 500;
-    color: #ff6666; /* Light red color for the text */
-    display: flex; /* Make the span a flex container */
-    align-items: center; /* Vertically center items */
-}
-
 /* Price Range Slider Styles */
 .price-range-slider-container,
 .percentage-range-slider-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 70%; /* Adjusted from 80% to make the bar shorter */
-    margin: 0 auto; /* Center the container */
+    width: 70%;
+    margin: 0 auto;
 }
 
 .price-range-slider,
 .percentage-range-slider {
     flex: 1;
-    margin: 0 10px; /* Add some margin to separate from labels */
+    margin: 0 10px;
 }
 
 .min-price-label,
@@ -667,21 +400,21 @@
 
 /* Add styling for selected filter labels */
 .filter-label.selected {
-    background-color: #0d6efd !important; /* Bootstrap primary blue */
+    background-color: #0d6efd !important;
     color: white !important;
 }
 
 /* Adjustments for the new filter-label style with btn-outline-secondary for default look */
 .btn-outline-secondary.filter-label {
     background-color: #f0f2f5;
-    border-color: #f0f2f5; /* Match background for a seamless look */
+    border-color: #f0f2f5;
     color: #495057;
     font-weight: normal;
-    border-radius: 8px; /* Slightly rounded corners */
+    border-radius: 8px;
 }
 
 .btn-outline-secondary.filter-label:hover {
-    background-color: #e4e6e9; /* Slightly darker grey on hover */
+    background-color: #e4e6e9;
     border-color: #e4e6e9;
     color: #495057;
 }
@@ -696,16 +429,16 @@
 /* Add styling for percentage filter labels */
 .percentage-options-list {
     display: flex;
-    flex-direction: row; /* Change to row */
-    flex-wrap: wrap; /* Allow wrapping */
-    gap: 8px; /* Slightly increase gap for bigger tags */
-    justify-content: center; /* Center the options horizontally */
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
 }
 
 .percentage-filter-item {
-    display: inline-block; /* Allow items to sit side-by-side */
+    display: inline-block;
     cursor: pointer;
-    margin-bottom: 0; /* Remove vertical margin to keep in one row */
+    margin-bottom: 0;
 }
 
 .percentage-label {
@@ -716,8 +449,8 @@
     color: #495057;
     font-weight: normal;
     border-radius: 8px;
-    padding: 8px 12px; /* Increased padding for bigger tags */
-    font-size: 1em; /* Increased font size */
+    padding: 8px 12px;
+    font-size: 1em;
 }
 
 .percentage-label:hover {
@@ -734,13 +467,13 @@
 /* Styles for current slider values */
 .current-price-value,
 .current-percentage-value {
-    background-color: #0d6efd; /* Bootstrap primary blue */
+    background-color: #0d6efd;
     color: white;
     padding: 4px 8px;
     border-radius: 5px;
     font-weight: bold;
-    margin-left: 10px; /* Space from the slider */
-    min-width: 60px; /* Ensure consistent width */
+    margin-left: 10px;
+    min-width: 60px;
     text-align: center;
 }
 
@@ -812,7 +545,7 @@
     font-weight: 500;
     transition: all 0.3s ease;
     min-height: 44px;
-    background: #6f42c1; /* Purple background for AI button */
+    background: #6f42c1;
     color: white;
     white-space: nowrap;
 }
@@ -837,50 +570,7 @@
 
 <script>
 // --- GLOBAL SCOPE ---
-function toggleFavorite(discountId, iconElement) {
-    const isFavorite = iconElement.classList.contains('favorite-active');
-    const url = isFavorite ? '/remove_favorite/' : '/add_favorite/';
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({discount_id: discountId})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            if (isFavorite) {
-                iconElement.classList.remove('favorite-active');
-                iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Remove', 'Add');
-            } else {
-                iconElement.classList.add('favorite-active');
-                iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
-            }
-        } else {
-            alert('Failed to update favorites: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to update favorites');
-    });
-}
-
-function checkFavoriteStatus(discountId, iconElement) {
-    fetch(`/check_favorite/${discountId}/`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.is_favorite) {
-            iconElement.classList.add('favorite-active');
-            iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
-        }
-    })
-    .catch(error => {
-        console.error('Error checking favorite status:', error);
-    });
-}
+// All coupon-related functions are now handled by CouponUtils
 
 // --- DOMContentLoaded for event delegation and other logic ---
 document.addEventListener('DOMContentLoaded', function() {
@@ -1019,7 +709,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': CouponUtils.getCookie('csrftoken')
             },
             body: JSON.stringify(filters)
         })
@@ -1232,174 +922,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Enhanced renderDiscountCards function (reusable for both Show All and Apply)
     function renderDiscountCards(discounts, container) {
-        if (!discounts || discounts.length === 0) {
-            container.innerHTML = `
-                <div class="no-results">
-                    <i class="bi bi-emoji-frown"></i>
-                    <p>No discounts found at the moment.</p>
-                </div>
-            `;
-            return;
-        }
-
-        discounts.forEach(discount => {
-            const div = document.createElement('div');
-            div.className = 'discount-card';
-
-            // Determine label and color
-            let priceLabel = '';
-            let priceColor = '';
-            let type = discount.discount_type || discount.price_type || '';
-            
-            if (['fixed_amount', 'fixed_price', 'amount', 'fixed'].includes(type)) {
-                priceLabel = 'מחיר סופי';
-                priceColor = '#007bff'; // blue
-            } else if (type === 'percentage' || type === '%') {
-                priceLabel = '% הנחה';
-                priceColor = '#28a745'; // green
-            } else {
-                priceLabel = '';
-                priceColor = '#6c757d'; // gray
-            }
-
-            // Show more logic for description and terms
-            function getShowMoreHtml(text, idPrefix) {
-                const maxLength = 250;
-                if (!text) return '';
-                if (text.length <= maxLength) {
-                    return `<span>${text}</span>`;
-                }
-                const shortText = text.slice(0, maxLength) + '...';
-                return `
-                    <span id="${idPrefix}-short">${shortText}</span>
-                    <span id="${idPrefix}-full" style="display:none;">${text}</span>
-                    <a href="#" class="show-more-link" data-id="${idPrefix}">הצג עוד</a>
-                `;
-            }
-
-            div.innerHTML = `
-                <div class="discount-flex-row">
-                    <div class="discount-image-col">
-                        <img src="${discount.image_link}" alt="${discount.title}" style="max-width:400px; max-height:400px; border-radius:8px;">
-                    </div>
-                    <div class="discount-details-col">
-                        <h4 class="discount-title">${discount.title}
-                            <span class="discount-meta">
-                                ${discount.valid_until ? (() => {
-                                    let expired = false;
-                                    let dateStr = discount.valid_until;
-                                    let now = new Date();
-                                    let dateObj = new Date(dateStr);
-                                    if (!isNaN(dateObj.getTime()) && dateStr.length >= 8) {
-                                        expired = dateObj < new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                                    }
-                                    return `<span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: ${dateStr}
-                                        ${expired ? `<div class='expired-label'>פג תוקף</div>` : ''}
-                                    </span>`;
-                                })() : ''}
-                                ${discount.usage_limit ? `<span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: ${discount.usage_limit}</span>` : ''}
-                            </span>
-                        </h4>
-                        <div class="desc-block">
-                            <strong>תיאור:</strong>
-                            <div>${getShowMoreHtml(discount.description, `desc-${discount.discount_id}`)}</div>
-                        </div>
-                        <div class="terms-block" style="margin-top:10px;">
-                            <strong>תנאים והגבלות:</strong>
-                            <div>${getShowMoreHtml(discount.terms_and_conditions, `terms-${discount.discount_id}`)}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="discount-bottom-row">
-                    <div class="price-type-col">
-                        <span class="price-label-big" style="background:${priceColor};color:white;padding:3px 9px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
-                            ${priceLabel}
-                        </span>
-                        <span class="price-value-big" style="font-size:2.2em;font-weight:bold;color:#333;display:inline-block;vertical-align:middle;margin-right:12px;">${discount.price}</span>
-                    </div>
-                    ${discount.coupon_code ? `
-                        <div class="copy-code-btn" data-code="${discount.coupon_code}">
-                            Copy Code Coupon
-                        </div>
-                    ` : ''}
-                    ${discount.provider_link ? `
-                        <a href="${discount.provider_link}" target="_blank" class="site-link-btn provider-link-btn">
-                            Go To Provider
-                        </a>
-                    ` : ''}
-                    <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
-                        Discount Link
-                    </a>
-                    <div class="like-icon-col">
-                        <span class="like-fav-text">Favorites 
-                            <span class="like-icon" title="Click To Save" data-discount-id="${discount.discount_id}" onclick="toggleFavorite('${discount.discount_id}', this)">&#10084;</span> 
-                            Add
-                        </span>
-                    </div>
-                </div>
-                <hr>
-            `;
-            container.appendChild(div);
+        // Use the shared CouponUtils function
+        CouponUtils.renderCouponCards(discounts, container, {
+            showFavoriteControls: true,
+            showRemoveFavorite: false
         });
-
-        // Add event delegation for show more/less and copy functionality
-        addEventDelegation(container);
-    }
-
-    // Function to add event delegation
-    function addEventDelegation(container) {
-        container.addEventListener('click', function(e) {
-            // Show more/less functionality
-            if (e.target.classList.contains('show-more-link')) {
-                e.preventDefault();
-                const id = e.target.getAttribute('data-id');
-                const shortSpan = document.getElementById(`${id}-short`);
-                const fullSpan = document.getElementById(`${id}-full`);
-                if (shortSpan.style.display === 'none') {
-                    shortSpan.style.display = '';
-                    fullSpan.style.display = 'none';
-                    e.target.textContent = 'הצג עוד';
-            } else {
-                    shortSpan.style.display = 'none';
-                    fullSpan.style.display = '';
-                    e.target.textContent = 'הצג פחות';
-                }
-            }
-            
-            // Copy coupon code functionality
-            if (e.target.classList.contains('copy-code-btn')) {
-                const code = e.target.getAttribute('data-code');
-                if (code) {
-                    navigator.clipboard.writeText(code).then(() => {
-                        const originalText = e.target.textContent;
-                        e.target.textContent = '! Copied';
-                        e.target.classList.add('copied');
-                        setTimeout(() => {
-                            e.target.textContent = originalText;
-                            e.target.classList.remove('copied');
-                        }, 2000);
-                    }).catch(err => {
-                        console.error('Failed to copy:', err);
-                    });
-                }
-            }
-        });
-    }
-
-    // Function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
     }
 
     // Enhanced Show All button (now uses the shared renderDiscountCards function)
@@ -1477,141 +1004,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                data.discounts.forEach(discount => {
-                    const div = document.createElement('div');
-                    div.className = 'discount-card';
-
-                    // Determine label and color
-                    let priceLabel = '';
-                    let priceColor = '';
-                    let type = discount.discount_type || discount.price_type || '';
-                    console.log('Discount:', discount.title, 'type:', type, 'discount_type:', discount.discount_type, 'price_type:', discount.price_type);
-                    if (['fixed_amount', 'fixed_price', 'amount', 'fixed'].includes(type)) {
-                        priceLabel = 'מחיר סופי';
-                        priceColor = '#007bff'; // blue
-                    } else if (type === 'percentage' || type === '%') {
-                        priceLabel = '% הנחה';
-                        priceColor = '#28a745'; // green
-                    } else {
-                        priceLabel = ''; // DO NOT SHOW PRICE LABEL -> LINK FOR WEBSITE
-                        priceColor = '#6c757d'; // gray
-                    }
-
-                    // Show more logic for description and terms
-                    function getShowMoreHtml(text, idPrefix) {
-                        const maxLength = 250;
-                        if (!text) return '';
-                        if (text.length <= maxLength) {
-                            return `<span>${text}</span>`;
-                        }
-                        const shortText = text.slice(0, maxLength) + '...';
-                        return `
-                            <span id="${idPrefix}-short">${shortText}</span>
-                            <span id="${idPrefix}-full" style="display:none;">${text}</span>
-                            <a href="#" class="show-more-link" data-id="${idPrefix}">הצג עוד</a>
-                        `;
-                    }
-
-                    div.innerHTML = `
-                        <div class="discount-flex-row">
-                            <div class="discount-image-col">
-                                <img src="${discount.image_link}" alt="${discount.title}" style="max-width:400px; max-height:400px; border-radius:8px;">
-                            </div>
-                            <div class="discount-details-col">
-                                <h4 class="discount-title">${discount.title}
-                                    <span class="discount-meta">
-                                        ${discount.valid_until ? (() => {
-                                            // Parse date (assume format YYYY-MM-DD)
-                                            let expired = false;
-                                            let dateStr = discount.valid_until;
-                                            let now = new Date();
-                                            let dateObj = new Date(dateStr);
-                                            if (!isNaN(dateObj.getTime()) && dateStr.length >= 8) {
-                                                expired = dateObj < new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                                            }
-                                            return `<span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: ${dateStr}
-                                                ${expired ? `<div class='expired-label'>פג תוקף</div>` : ''}
-                                            </span>`;
-                                        })() : ''}
-                                        ${discount.usage_limit ? `<span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: ${discount.usage_limit}</span>` : ''}
-                                    </span>
-                                </h4>
-                                <div class="desc-block">
-                                    <strong>תיאור:</strong>
-                                    <div>${getShowMoreHtml(discount.description, `desc-${discount.discount_id}`)}</div>
-                                </div>
-                                <div class="terms-block" style="margin-top:10px;">
-                                    <strong>תנאים והגבלות:</strong>
-                                    <div>${getShowMoreHtml(discount.terms_and_conditions, `terms-${discount.discount_id}`)}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="discount-bottom-row">
-                            <div class="price-type-col">
-                                <span class="price-label-big" style="background:${priceColor};color:white;padding:3px 9px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
-                                    ${priceLabel}
-                                </span>
-                                <span class="price-value-big" style="font-size:2.2em;font-weight:bold;color:#333;display:inline-block;vertical-align:middle;margin-right:12px;">${discount.price}</span>
-                            </div>
-                            ${discount.coupon_code ? `
-                                <div class="copy-code-btn" data-code="${discount.coupon_code}">
-                                    Copy Code Coupon
-                                </div>
-                            ` : ''}
-                            ${discount.provider_link ? `
-                                <a href="${discount.provider_link}" target="_blank" class="site-link-btn provider-link-btn">
-                                    Go To Provider
-                                </a>
-                            ` : ''}
-                            <a href="${discount.discount_link}" target="_blank" class="site-link-btn">
-                                Discount Link
-                            </a>
-                            <div class="like-icon-col">
-                                <span class="like-fav-text">Favorites 
-                                    <span class="like-icon" title="Click To Save" data-discount-id="${discount.discount_id}" onclick="toggleFavorite('${discount.discount_id}', this)">&#10084;</span> 
-                                    Add
-                                </span>
-                            </div>
-                        </div>
-                        <hr>
-                    `;
-                    container.appendChild(div);
-                });
-
-                // Add event delegation for show more/less
-                document.getElementById('all-discounts-container').addEventListener('click', function(e) {
-                    if (e.target.classList.contains('show-more-link')) {
-                        e.preventDefault();
-                        const id = e.target.getAttribute('data-id');
-                        const shortSpan = document.getElementById(`${id}-short`);
-                        const fullSpan = document.getElementById(`${id}-full`);
-                        if (shortSpan.style.display === 'none') {
-                            shortSpan.style.display = '';
-                            fullSpan.style.display = 'none';
-                            e.target.textContent = 'הצג עוד';
-                        } else {
-                            shortSpan.style.display = 'none';
-                            fullSpan.style.display = '';
-                            e.target.textContent = 'הצג פחות';
-                        }
-                    }
-                    // Add event delegation for copy coupon code
-                    if (e.target.classList.contains('copy-code-btn')) {
-                        const code = e.target.getAttribute('data-code');
-                        if (code) {
-                            navigator.clipboard.writeText(code).then(() => {
-                                const originalText = e.target.textContent;
-                                e.target.textContent = '! Copied';
-                                e.target.classList.add('copied');
-                                setTimeout(() => {
-                                    e.target.textContent = originalText;
-                                    e.target.classList.remove('copied');
-                                }, 2000);
-                            }).catch(err => {
-                                console.error('Failed to copy:', err);
-                            });
-                        }
-                    }
+                // Use the shared CouponUtils function to render coupons
+                CouponUtils.renderCouponCards(data.discounts, container, {
+                    showFavoriteControls: true,
+                    showRemoveFavorite: false
                 });
             })
             .catch(error => {
@@ -1746,7 +1142,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': CouponUtils.getCookie('csrftoken')
             },
             body: JSON.stringify({
                 user_text: userText
@@ -1776,19 +1172,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 applyFiltersToUI(data.filters);
                 
                 // Show success message
-                showNotification('AI filters applied successfully!', 'success');
+                CouponUtils.showNotification('AI filters applied successfully!', 'success');
                 
                 // Automatically trigger the Apply button for parameter-based search
                 setTimeout(() => {
                     document.getElementById('apply-filters-btn').click();
                 }, 500);
             } else {
-                showNotification('No relevant filters found for your text.', 'info');
+                CouponUtils.showNotification('No relevant filters found for your text.', 'info');
             }
         })
         .catch(error => {
             console.error('AI Filter Helper error:', error);
-            showNotification('Failed to process AI filter request. Please try again.', 'error');
+            CouponUtils.showNotification('Failed to process AI filter request. Please try again.', 'error');
         })
         .finally(() => {
             // Remove loading state
@@ -1798,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Function to apply filters to UI
+    // Function to apply filters to UI (keeping this as it's specific to filter UI)
     function applyFiltersToUI(filters) {
         console.log('Applying filters to UI:', filters);
         
@@ -1908,121 +1304,11 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Finished applying filters to UI');
     }
 
-    // Function to show notifications
-    function showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            max-width: 300px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideIn 0.3s ease-out;
-        `;
-        
-        // Set background color based on type
-        switch (type) {
-            case 'success':
-                notification.style.backgroundColor = '#28a745';
-                break;
-            case 'error':
-                notification.style.backgroundColor = '#dc3545';
-                break;
-            case 'info':
-            default:
-                notification.style.backgroundColor = '#17a2b8';
-                break;
-        }
-        
-        notification.textContent = message;
-        
-        // Add to page
-        document.body.appendChild(notification);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease-in';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    }
-
-    // Add CSS animations for notifications
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
-
-    // === GLOBAL FAVORITES FUNCTIONS ===
-    function toggleFavorite(discountId, iconElement) {
-        const isFavorite = iconElement.classList.contains('favorite-active');
-        const url = isFavorite ? '/remove_favorite/' : '/add_favorite/';
-        const method = 'POST';
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({discount_id: discountId})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                if (isFavorite) {
-                    iconElement.classList.remove('favorite-active');
-                    iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Remove', 'Add');
-                } else {
-                    iconElement.classList.add('favorite-active');
-                    iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
-                }
-            } else {
-                alert('Failed to update favorites: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to update favorites');
-        });
-    }
-
-    function checkFavoriteStatus(discountId, iconElement) {
-        fetch(`/check_favorite/${discountId}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.is_favorite) {
-                iconElement.classList.add('favorite-active');
-                iconElement.parentElement.innerHTML = iconElement.parentElement.innerHTML.replace('Add', 'Remove');
-            }
-        })
-        .catch(error => {
-            console.error('Error checking favorite status:', error);
-        });
-    }
-
-    document.body.addEventListener('click', function(e) {
-        if (e.target.classList.contains('like-icon')) {
-            const discountId = e.target.getAttribute('data-discount-id');
-            toggleFavorite(discountId, e.target);
-        }
+    // Initialize coupon utilities
+    CouponUtils.initialize({
+        enableFavorites: true,
+        enableCopyCode: true,
+        enableRemoveFavorite: false
     });
 });
 </script>

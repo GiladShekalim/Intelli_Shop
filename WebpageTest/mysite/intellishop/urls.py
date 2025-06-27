@@ -23,5 +23,7 @@ urlpatterns = [
     path('add_favorite/', views.add_favorite_view, name='add_favorite'),
     path('remove_favorite/', views.remove_favorite_view, name='remove_favorite'),
     path('check_favorite/<str:discount_id>/', views.check_favorite_view, name='check_favorite'),
+    path('debug_favorites/', views.debug_favorites, name='debug_favorites'),
+    path('debug_page/', views.debug_favorites_page, name='debug_favorites_page'),
 ] 
 
