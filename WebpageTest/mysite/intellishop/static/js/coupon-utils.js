@@ -195,6 +195,98 @@ window.CouponUtils = {
     },
 
     /**
+     * Debug function to log DOM structure around favorite icon
+     * @param {HTMLElement} iconElement - The heart icon element
+     */
+    _debugFavoriteStructure: function(iconElement) {
+        console.log('=== Favorite DOM Structure Debug ===');
+        console.log('Icon element:', iconElement);
+        console.log('Icon classes:', iconElement.className);
+        console.log('Icon parent:', iconElement.parentElement);
+        
+        if (iconElement.parentElement) {
+            console.log('Parent classes:', iconElement.parentElement.className);
+            console.log('Parent text content:', iconElement.parentElement.textContent);
+            console.log('Parent innerHTML:', iconElement.parentElement.innerHTML);
+            console.log('Parent children:', iconElement.parentElement.children);
+        }
+        
+        console.log('=== End Debug ===');
+    },
+
+    /**
+     * Safely update favorite text in the DOM
+     * @param {HTMLElement} iconElement - The heart icon element
+     * @param {boolean} isFavorite - Whether the item should be marked as favorite
+     */
+    _updateFavoriteText: function(iconElement, isFavorite) {
+        try {
+            // Try multiple approaches to find and update the text
+            const parentElement = iconElement.parentElement;
+            if (!parentElement) {
+                console.warn('No parent element found for favorite icon');
+                this._debugFavoriteStructure(iconElement);
+                return false;
+            }
+
+            // Approach 1: Update the entire parent element's text content
+            if (parentElement.textContent) {
+                if (isFavorite) {
+                    parentElement.textContent = parentElement.textContent.replace('Add', 'Remove');
+                } else {
+                    parentElement.textContent = parentElement.textContent.replace('Remove', 'Add');
+                }
+                return true;
+            }
+
+            // Approach 2: Look for specific text nodes
+            const textNodes = Array.from(parentElement.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+            for (const textNode of textNodes) {
+                if (isFavorite && textNode.textContent.includes('Add')) {
+                    textNode.textContent = textNode.textContent.replace('Add', 'Remove');
+                    return true;
+                } else if (!isFavorite && textNode.textContent.includes('Remove')) {
+                    textNode.textContent = textNode.textContent.replace('Remove', 'Add');
+                    return true;
+                }
+            }
+
+            // Approach 3: Look for span elements with text
+            const textSpans = parentElement.querySelectorAll('span');
+            for (const span of textSpans) {
+                if (span !== iconElement && span.textContent) {
+                    if (isFavorite && span.textContent.includes('Add')) {
+                        span.textContent = span.textContent.replace('Add', 'Remove');
+                        return true;
+                    } else if (!isFavorite && span.textContent.includes('Remove')) {
+                        span.textContent = span.textContent.replace('Remove', 'Add');
+                        return true;
+                    }
+                }
+            }
+
+            // Approach 4: Fallback - replace the entire parent element content
+            const discountId = iconElement.getAttribute('data-discount-id');
+            if (discountId) {
+                const newContent = isFavorite ? 
+                    `Favorites <span class="like-icon favorite-active" title="Click To Remove" data-discount-id="${discountId}">&#10084;</span> Remove` :
+                    `Favorites <span class="like-icon" title="Click To Add" data-discount-id="${discountId}">&#10084;</span> Add`;
+                
+                parentElement.innerHTML = newContent;
+                return true;
+            }
+
+            console.warn('Could not find text to update in favorite element');
+            this._debugFavoriteStructure(iconElement);
+            return false;
+        } catch (error) {
+            console.warn('Error updating favorite text:', error);
+            this._debugFavoriteStructure(iconElement);
+            return false;
+        }
+    },
+
+    /**
      * Toggle favorite status for a coupon
      * @param {string} discountId - The discount ID
      * @param {HTMLElement} iconElement - The heart icon element
@@ -224,14 +316,19 @@ window.CouponUtils = {
             console.log(`toggleFavorite: Response data:`, data);
             if (data.status === 'success') {
                 // Safely update the DOM
-                const uiUpdateSuccess = this.updateFavoriteUI(iconElement, !isFavorite);
-                
-                // Show appropriate message
-                if (uiUpdateSuccess) {
+                try {
+                    if (isFavorite) {
+                        iconElement.classList.remove('favorite-active');
+                        this._updateFavoriteText(iconElement, false);
+                    } else {
+                        iconElement.classList.add('favorite-active');
+                        this._updateFavoriteText(iconElement, true);
+                    }
                     this.showNotification(data.message || 'Favorite updated successfully', 'success');
-                } else {
-                    // If UI update failed but backend succeeded, show a different message
-                    this.showNotification('Favorite updated successfully (refresh page to see changes)', 'success');
+                } catch (domError) {
+                    console.warn('DOM update failed, but operation was successful:', domError);
+                    // Even if DOM update fails, show success message since the backend operation succeeded
+                    this.showNotification(data.message || 'Favorite updated successfully', 'success');
                 }
             } else {
                 console.error('toggleFavorite: Server returned error:', data.error);
@@ -245,78 +342,6 @@ window.CouponUtils = {
     },
 
     /**
-     * Update the favorite UI safely
-     * @param {HTMLElement} iconElement - The heart icon element
-     * @param {boolean} isFavorite - Whether the item should be marked as favorite
-     * @returns {boolean} - Whether the UI update was successful
-     */
-    updateFavoriteUI: function(iconElement, isFavorite) {
-        try {
-            // Check if the icon element still exists
-            if (!iconElement) {
-                console.warn('updateFavoriteUI: Icon element not found, skipping UI update');
-                return false;
-            }
-
-            // Update the icon class
-            if (isFavorite) {
-                iconElement.classList.add('favorite-active');
-            } else {
-                iconElement.classList.remove('favorite-active');
-            }
-
-            // Find the parent element that contains the text
-            let parentElement = iconElement.parentElement;
-            
-            // Look for the text element in different possible structures
-            let textElement = null;
-            
-            // Try to find the text within the same parent
-            if (parentElement && parentElement.textContent) {
-                textElement = parentElement;
-            } else {
-                // Look for a sibling or parent that contains the text
-                const possibleParents = [
-                    iconElement.parentElement,
-                    iconElement.parentElement?.parentElement,
-                    iconElement.closest('.like-fav-text'),
-                    iconElement.closest('.like-icon-col')
-                ];
-                
-                for (const parent of possibleParents) {
-                    if (parent && parent.textContent && (parent.textContent.includes('Add') || parent.textContent.includes('Remove'))) {
-                        textElement = parent;
-                        break;
-                    }
-                }
-            }
-
-            if (textElement) {
-                // Safely update the text
-                if (isFavorite) {
-                    if (textElement.innerHTML.includes('Add')) {
-                        textElement.innerHTML = textElement.innerHTML.replace('Add', 'Remove');
-                    }
-                } else {
-                    if (textElement.innerHTML.includes('Remove')) {
-                        textElement.innerHTML = textElement.innerHTML.replace('Remove', 'Add');
-                    }
-                }
-                console.log(`updateFavoriteUI: Successfully updated text for favorite state: ${isFavorite}`);
-                return true;
-            } else {
-                console.warn('updateFavoriteUI: Could not find text element to update');
-                return false;
-            }
-            
-        } catch (error) {
-            console.error('updateFavoriteUI: Error updating UI:', error);
-            // Don't show error to user since the backend operation was successful
-            return false;
-        }
-    },
-
-    /**
      * Check favorite status for a coupon
      * @param {string} discountId - The discount ID
      * @param {HTMLElement} iconElement - The heart icon element
@@ -326,8 +351,12 @@ window.CouponUtils = {
         .then(response => response.json())
         .then(data => {
             if (data.is_favorite) {
-                // Use the safe UI update method
-                this.updateFavoriteUI(iconElement, true);
+                try {
+                    iconElement.classList.add('favorite-active');
+                    this._updateFavoriteText(iconElement, true);
+                } catch (domError) {
+                    console.warn('DOM update failed during status check:', domError);
+                }
             }
         })
         .catch(error => {
@@ -361,13 +390,38 @@ window.CouponUtils = {
         .then(data => {
             console.log(`removeFavorite: Response data:`, data);
             if (data.status === 'success') {
-                // Safely remove the card from the page
-                this.removeFavoriteCard(iconElement);
-                
-                // Update favorite count
-                this.updateFavoriteCount();
-                
-                this.showNotification(data.message || 'Removed from favorites', 'success');
+                // Safely update the DOM
+                try {
+                    // Remove the entire card from the page
+                    const card = iconElement.closest('.favorite-item');
+                    if (card) {
+                        card.remove();
+                        console.log('Card removed from DOM');
+                    } else {
+                        console.warn('Could not find .favorite-item card to remove');
+                    }
+                    
+                    // Update favorite count
+                    const countElement = document.querySelector('.user-welcome p:nth-child(3)');
+                    if (countElement) {
+                        const countMatch = countElement.textContent.match(/\d+/);
+                        if (countMatch) {
+                            const currentCount = parseInt(countMatch[0]);
+                            countElement.innerHTML = `<strong>Total Favorites:</strong> ${currentCount - 1}`;
+                            
+                            // Show empty state if no more favorites
+                            if (currentCount - 1 === 0) {
+                                location.reload(); // Reload to show empty state
+                            }
+                        }
+                    }
+                    
+                    this.showNotification(data.message || 'Removed from favorites', 'success');
+                } catch (domError) {
+                    console.warn('DOM update failed, but operation was successful:', domError);
+                    // Even if DOM update fails, show success message since the backend operation succeeded
+                    this.showNotification(data.message || 'Removed from favorites', 'success');
+                }
             } else {
                 console.error('removeFavorite: Server returned error:', data.error);
                 this.showNotification('Failed to remove from favorites: ' + (data.error || 'Unknown error'), 'error');
@@ -377,54 +431,6 @@ window.CouponUtils = {
             console.error('removeFavorite: Fetch error:', error);
             this.showNotification('Failed to remove from favorites: ' + error.message, 'error');
         });
-    },
-
-    /**
-     * Safely remove a favorite card from the page
-     * @param {HTMLElement} iconElement - The heart icon element
-     */
-    removeFavoriteCard: function(iconElement) {
-        try {
-            // Find the card element (could be .favorite-item or .discount-card)
-            const card = iconElement.closest('.favorite-item') || iconElement.closest('.discount-card');
-            
-            if (card) {
-                card.remove();
-                console.log('removeFavoriteCard: Successfully removed card from page');
-            } else {
-                console.warn('removeFavoriteCard: Could not find card element to remove');
-            }
-        } catch (error) {
-            console.error('removeFavoriteCard: Error removing card:', error);
-        }
-    },
-
-    /**
-     * Update the favorite count display
-     */
-    updateFavoriteCount: function() {
-        try {
-            const countElement = document.querySelector('.user-welcome p:nth-child(3)');
-            if (countElement) {
-                const currentText = countElement.textContent;
-                const match = currentText.match(/\d+/);
-                if (match) {
-                    const currentCount = parseInt(match[0]);
-                    const newCount = Math.max(0, currentCount - 1);
-                    countElement.innerHTML = `<strong>Total Favorites:</strong> ${newCount}`;
-                    
-                    // Show empty state if no more favorites
-                    if (newCount === 0) {
-                        console.log('updateFavoriteCount: No more favorites, reloading page');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('updateFavoriteCount: Error updating count:', error);
-        }
     },
 
     /**
@@ -583,17 +589,6 @@ window.CouponUtils = {
                 }
             });
         }
-    },
-
-    /**
-     * Refresh the page after a short delay (fallback for complex DOM structures)
-     * @param {number} delay - Delay in milliseconds before refresh
-     */
-    refreshPageAfterDelay: function(delay = 1000) {
-        setTimeout(() => {
-            console.log('refreshPageAfterDelay: Refreshing page to show updated favorites');
-            location.reload();
-        }, delay);
     }
 };
 
