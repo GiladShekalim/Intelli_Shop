@@ -707,32 +707,39 @@ def add_favorite_view(request):
         # Check if user is logged in
         user_id = request.session.get('user_id')
         if not user_id:
+            logger.warning("add_favorite_view: User not authenticated")
             return JsonResponse({'error': 'User not authenticated'}, status=401)
         
         data = json.loads(request.body)
         discount_id = data.get('discount_id')
         
         if not discount_id:
+            logger.warning("add_favorite_view: discount_id is required")
             return JsonResponse({'error': 'discount_id is required'}, status=400)
         
         # Verify discount exists
         coupon = Coupon.find_one({'discount_id': discount_id})
         if not coupon:
+            logger.warning(f"add_favorite_view: Discount not found - {discount_id}")
             return JsonResponse({'error': 'Discount not found'}, status=404)
         
         # Add to favorites
         result = User.add_favorite(user_id, discount_id)
         
-        if result:
+        # Check if the update was successful (MongoDB UpdateResult has modified_count)
+        if result and hasattr(result, 'modified_count') and result.modified_count >= 0:
+            logger.info(f"add_favorite_view: Successfully added {discount_id} to favorites for user {user_id}")
             return JsonResponse({
                 'status': 'success',
                 'message': 'Added to favorites',
                 'discount_id': discount_id
             })
         else:
+            logger.error(f"add_favorite_view: Failed to add {discount_id} to favorites for user {user_id}")
             return JsonResponse({'error': 'Failed to add to favorites'}, status=500)
             
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error(f"add_favorite_view: JSON decode error - {str(e)}")
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         logger.error(f"Error in add_favorite_view: {str(e)}")
@@ -748,27 +755,33 @@ def remove_favorite_view(request):
         # Check if user is logged in
         user_id = request.session.get('user_id')
         if not user_id:
+            logger.warning("remove_favorite_view: User not authenticated")
             return JsonResponse({'error': 'User not authenticated'}, status=401)
         
         data = json.loads(request.body)
         discount_id = data.get('discount_id')
         
         if not discount_id:
+            logger.warning("remove_favorite_view: discount_id is required")
             return JsonResponse({'error': 'discount_id is required'}, status=400)
         
         # Remove from favorites
         result = User.remove_favorite(user_id, discount_id)
         
-        if result:
+        # Check if the update was successful (MongoDB UpdateResult has modified_count)
+        if result and hasattr(result, 'modified_count') and result.modified_count >= 0:
+            logger.info(f"remove_favorite_view: Successfully removed {discount_id} from favorites for user {user_id}")
             return JsonResponse({
                 'status': 'success',
                 'message': 'Removed from favorites',
                 'discount_id': discount_id
             })
         else:
+            logger.error(f"remove_favorite_view: Failed to remove {discount_id} from favorites for user {user_id}")
             return JsonResponse({'error': 'Failed to remove from favorites'}, status=500)
             
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error(f"remove_favorite_view: JSON decode error - {str(e)}")
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         logger.error(f"Error in remove_favorite_view: {str(e)}")
@@ -844,4 +857,34 @@ def ai_filter_helper(request):
             'error': 'Failed to process AI filter request',
             'success': False
         }, status=500)
+
+@csrf_exempt
+def debug_favorites(request):
+    """Debug endpoint to check session and CSRF token"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        user_id = request.session.get('user_id')
+        csrf_token = request.META.get('CSRF_COOKIE')
+        
+        debug_info = {
+            'user_id': user_id,
+            'csrf_token': csrf_token,
+            'session_keys': list(request.session.keys()),
+            'method': request.method,
+            'headers': dict(request.headers),
+            'cookies': dict(request.COOKIES)
+        }
+        
+        return JsonResponse(debug_info)
+        
+    except Exception as e:
+        logger.error(f"Error in debug_favorites: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+@csrf_exempt
+def debug_favorites_page(request):
+    """Debug page for testing favorites functionality"""
+    return render(request, 'intellishop/debug_favorites.html')
 

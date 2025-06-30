@@ -1,0 +1,156 @@
+{% extends 'intellishop/index_home_original.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Favorites Debug Page</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Session Info</h3>
+            <div id="session-info" class="alert alert-info">
+                Loading session info...
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h3>Test Favorite Functionality</h3>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Test Coupon</h5>
+                    <p class="card-text">This is a test coupon for debugging favorites functionality.</p>
+                    <div class="like-icon-col">
+                        <span class="like-fav-text">Favorites 
+                            <span class="like-icon" title="Click To Add" data-discount-id="test-coupon-123">&#10084;</span> 
+                            Add
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="testAddFavorite()">Test Add Favorite</button>
+                <button class="btn btn-secondary" onclick="testRemoveFavorite()">Test Remove Favorite</button>
+                <button class="btn btn-info" onclick="checkDebugInfo()">Check Debug Info</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3>Console Log</h3>
+            <div id="console-log" class="bg-dark text-light p-3" style="height: 300px; overflow-y: auto; font-family: monospace;">
+                <div>Console output will appear here...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Override console.log to also display in the page
+const originalLog = console.log;
+const originalError = console.error;
+const originalWarn = console.warn;
+
+function addToConsoleLog(message, type = 'log') {
+    const consoleDiv = document.getElementById('console-log');
+    const timestamp = new Date().toLocaleTimeString();
+    const color = type === 'error' ? '#ff6b6b' : type === 'warn' ? '#ffd93d' : '#6bcf7f';
+    consoleDiv.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+    consoleDiv.scrollTop = consoleDiv.scrollHeight;
+}
+
+console.log = function(...args) {
+    originalLog.apply(console, args);
+    addToConsoleLog(args.join(' '), 'log');
+};
+
+console.error = function(...args) {
+    originalError.apply(console, args);
+    addToConsoleLog(args.join(' '), 'error');
+};
+
+console.warn = function(...args) {
+    originalWarn.apply(console, args);
+    addToConsoleLog(args.join(' '), 'warn');
+};
+
+// Load session info on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkDebugInfo();
+    
+    // Initialize coupon utilities
+    CouponUtils.initialize({
+        enableFavorites: true,
+        enableCopyCode: false,
+        enableRemoveFavorite: false
+    });
+});
+
+function checkDebugInfo() {
+    fetch('/debug_favorites/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('session-info').innerHTML = `
+                <strong>User ID:</strong> ${data.user_id || 'Not logged in'}<br>
+                <strong>CSRF Token:</strong> ${data.csrf_token || 'Not found'}<br>
+                <strong>Session Keys:</strong> ${data.session_keys.join(', ') || 'None'}<br>
+                <strong>Method:</strong> ${data.method}<br>
+                <strong>Cookies:</strong> ${Object.keys(data.cookies).join(', ') || 'None'}
+            `;
+            console.log('Debug info:', data);
+        })
+        .catch(error => {
+            console.error('Error fetching debug info:', error);
+            document.getElementById('session-info').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        });
+}
+
+function testAddFavorite() {
+    console.log('Testing add favorite...');
+    const testData = {discount_id: 'test-coupon-123'};
+    
+    fetch('/add_favorite/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CouponUtils.getCookie('csrftoken')
+        },
+        body: JSON.stringify(testData)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function testRemoveFavorite() {
+    console.log('Testing remove favorite...');
+    const testData = {discount_id: 'test-coupon-123'};
+    
+    fetch('/remove_favorite/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CouponUtils.getCookie('csrftoken')
+        },
+        body: JSON.stringify(testData)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %} 

@@ -313,6 +313,7 @@
     </style>
 
     <script>
+        // Initialize coupon utilities with remove favorite functionality
         document.addEventListener('DOMContentLoaded', function() {
             // Handle favorite removal
             document.querySelectorAll('.like-icon.favorite-active').forEach(icon => {
@@ -349,69 +350,5 @@
                 });
             });
         });
-
-        function removeFavorite(discountId, iconElement) {
-            fetch('/remove_favorite/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({discount_id: discountId})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Remove the entire card from the page
-                    const card = iconElement.closest('.favorite-item');
-                    card.remove();
-                    
-                    // Update favorite count
-                    const countElement = document.querySelector('.user-welcome p:nth-child(3)');
-                    const currentCount = parseInt(countElement.textContent.match(/\d+/)[0]);
-                    countElement.innerHTML = `<strong>Total Favorites:</strong> ${currentCount - 1}`;
-                    
-                    // Show empty state if no more favorites
-                    if (currentCount - 1 === 0) {
-                        location.reload(); // Reload to show empty state
-                    }
-                } else {
-                    alert('Failed to remove from favorites: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to remove from favorites');
-            });
-        }
-
-        function copyToClipboard(text, buttonElement) {
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = buttonElement.textContent;
-                buttonElement.textContent = '! Copied';
-                buttonElement.classList.add('copied');
-                setTimeout(() => {
-                    buttonElement.textContent = originalText;
-                    buttonElement.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-            });
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
     </script>
 {% endblock %}
