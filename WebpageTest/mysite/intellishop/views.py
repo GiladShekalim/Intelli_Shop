@@ -271,41 +271,70 @@ def aliexpress_coupons(request):
     
     return render(request, 'intellishop/coupon_for_aliexpress.html', {'error': 'Coupon not found'})
 
-def coupon_detail(request, store):
-    # Dictionary mapping store slugs to their display names
-    store_names = {
-        'lastprice': 'Lastprice / לאסט פרייס',
-        'liberty': 'Liberty / ליברטי',
-        'weshoes': 'Weshoes / ווישוז',
-        'twentyfourseven': 'Twenty Four Seven / טוונטי פור סבן',
-        'renuar': 'Renuar / רנואר',
-        'castro': 'Castro / קסטרו',
-        '365': '365 / שלוש שישים וחמש',
-        'ace': 'ACE / אייס',
-        'shoresh': 'Shoresh / שורש',
-        'zer4u': 'ZER4U / זר פור יו',
-        'hosamtov': 'Hosam Tov / חוסם טוב',
-        'nautica': 'Nautica / נאוטיקה',
-        'dynamica': 'Dynamica / דינמיקה',
-        'magnolia': 'Magnolia Jeans / מגנוליה ג\'ינס',
-        'intimaya': 'Intimaya / אינטימיה',
-        'noizz': 'NOIZZ / נויז',
-        'replay': 'Replay / ריפליי',
-        'olam': 'Olam Hakitniyot / עולם הקטניות',
-        'timberland': 'Timberland / טימברלנד',
-        'children': 'Children\'s Place / צ\'ילדרן',
-        'sebras': 'Sebras / סברס'
-    }
-    
-    # Get the full name from the dictionary, or use a formatted version of the store slug if not found
-    store_name = store_names.get(store, store.replace('-', ' ').title())
-    
-    context = {
-        'store_name': store_name,
-        'message': 'No coupons found'
-    }
-    return render(request, 'intellishop/coupon_detail.html', context)
+def get_club_names(request):
+    """Get all unique club names from the database for the Stores dropdown"""
+    try:
+        # Get all unique club names from the coupons collection
+        collection = Coupon.get_collection()
+        if collection is None:
+            return JsonResponse({'clubs': []})
+        
+        # Use aggregation to get unique club names
+        pipeline = [
+            {'$unwind': '$club_name'},  # Unwind the array
+            {'$group': {'_id': '$club_name'}},  # Group by club name
+            {'$sort': {'_id': 1}}  # Sort alphabetically
+        ]
+        
+        unique_clubs = list(collection.aggregate(pipeline))
+        clubs = [club['_id'] for club in unique_clubs if club['_id']]
+        
+        return JsonResponse({'clubs': clubs})
+    except Exception as e:
+        logger.error(f"Error getting club names: {str(e)}")
+        return JsonResponse({'clubs': []})
 
+def coupon_detail(request, club_name):
+    """Display coupons for a specific club/provider"""
+    try:
+        # Check if user is logged in
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return redirect('login')
+        
+        # Get user from MongoDB
+        user = User.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            return redirect('login')
+        
+        # Get coupons for this specific club - search within the club_name array
+        club_coupons = Coupon.find({'club_name': {'$in': [club_name]}})
+        
+        # Convert ObjectId to string for JSON serialization
+        for coupon in club_coupons:
+            if '_id' in coupon:
+                coupon['_id'] = str(coupon['_id'])
+        
+        # Format club name for display (capitalize first letter)
+        display_name = club_name.title()
+        
+        context = {
+            'user': user,
+            'club_name': display_name,
+            'club_coupons': club_coupons,
+            'coupon_count': len(club_coupons)
+        }
+        
+        return render(request, 'intellishop/club_coupons.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in coupon_detail for club {club_name}: {str(e)}")
+        return render(request, 'intellishop/club_coupons.html', {
+            'club_name': club_name.title(),
+            'club_coupons': [],
+            'coupon_count': 0,
+            'error': 'Error loading coupons'
+        })
 
 # FILTER PAGE
 def filter_search(request):

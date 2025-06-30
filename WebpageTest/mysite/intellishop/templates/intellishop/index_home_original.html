@@ -245,27 +245,8 @@
                             Stores
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="nav-stores" id="stores-dropdown">
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='lastprice' %}">Lastprice / לאסט פרייס</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='liberty' %}">Liberty / ליברטי</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='weshoes' %}">Weshoes / ווישוז</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='twentyfourseven' %}">Twenty Four Seven / טוונטי פור סבן</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='renuar' %}">Renuar / רנואר</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='castro' %}">Castro / קסטרו</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='365' %}">365 / שלוש שישים וחמש</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='ace' %}">ACE / אייס</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='shoresh' %}">Shoresh / שורש</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='zer4u' %}">ZER4U / זר פור יו</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='hosamtov' %}">Hosam Tov / חוסם טוב</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='nautica' %}">Nautica / נאוטיקה</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='dynamica' %}">Dynamica / דינמיקה</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='magnolia' %}">Magnolia Jeans / מגנוליה ג'ינס</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='intimaya' %}">Intimaya / אינטימיה</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='noizz' %}">NOIZZ / נויז</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='replay' %}">Replay / ריפליי</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='olam' %}">Olam Hakitniyot / עולם הקטניות</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='timberland' %}">Timberland / טימברלנד</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='children' %}">Children's Place / צ'ילדרן</a></li>
-                            <li><a class="dropdown-item" href="{% url 'coupon_detail' store='sebras' %}">Sebras / סברס</a></li>
+                            <!-- Dynamic content will be loaded here -->
+                            <li><div class="dropdown-item text-muted">Loading stores...</div></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -529,7 +510,37 @@
                     notificationPopover.hide();
                 }
             });
+
+            // Load stores dynamically
+            loadStores();
         });
+
+        function loadStores() {
+            fetch('/api/club_names/')
+                .then(response => response.json())
+                .then(data => {
+                    const storesDropdown = document.getElementById('stores-dropdown');
+                    if (data.clubs && data.clubs.length > 0) {
+                        storesDropdown.innerHTML = '';
+                        data.clubs.forEach(club => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.className = 'dropdown-item';
+                            a.href = `/club/${club}/`;
+                            a.textContent = club.charAt(0).toUpperCase() + club.slice(1); // Capitalize first letter
+                            li.appendChild(a);
+                            storesDropdown.appendChild(li);
+                        });
+                    } else {
+                        storesDropdown.innerHTML = '<li><div class="dropdown-item text-muted">No stores available</div></li>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading stores:', error);
+                    const storesDropdown = document.getElementById('stores-dropdown');
+                    storesDropdown.innerHTML = '<li><div class="dropdown-item text-muted">Error loading stores</div></li>';
+                });
+        }
     </script>
 
     <script>

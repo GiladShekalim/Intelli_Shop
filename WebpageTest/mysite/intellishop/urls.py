@@ -10,7 +10,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('base/', views.template, name='template'),
     path('coupon_for_aliexpress/', views.aliexpress_coupons, name='aliexpress_coupons'),
-    path('coupon/<str:store>/', views.coupon_detail, name='coupon_detail'),
+    path('club/<str:club_name>/', views.coupon_detail, name='coupon_detail'),
     path('filter_search/', views.filter_search, name='filter_search'),
     path('profile/', views.profile_view, name='profile'),
     path('logout/', views.logout_view, name='logout'),
@@ -23,5 +23,6 @@ urlpatterns = [
     path('add_favorite/', views.add_favorite_view, name='add_favorite'),
     path('remove_favorite/', views.remove_favorite_view, name='remove_favorite'),
     path('check_favorite/<str:discount_id>/', views.check_favorite_view, name='check_favorite'),
+    path('api/club_names/', views.get_club_names, name='get_club_names'),
 ] 
 
