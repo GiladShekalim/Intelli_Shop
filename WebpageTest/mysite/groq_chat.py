@@ -4,13 +4,16 @@ from groq import Groq
 import json
 import logging
 import time
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 import re
 from intellishop.models.constants import (
     JSON_SCHEMA, 
     get_categories_string,
     get_consumer_status_string,
-    get_discount_type_string
+    get_discount_type_string,
+    CATEGORIES,
+    CONSUMER_STATUS,
+    DISCOUNT_TYPE
 )
 import glob
 import sys
@@ -27,25 +30,32 @@ You must return a valid JSON object that follows this schema:
 The input data may contain Hebrew text. this is valubale information, focus only on extracting the required information.
 
 Instructions for processing fields:
-- discount_id: No change required. If "N/A", set to empty string.
-- title: No change required. If "N/A", set to empty string.
-- price: Extract the discount amount from the description field as an integer value.
+price: Extract the discount amount from the description field,title,terms_and_conditions, and this will be the value of the price filed.
   - fixed_amount: Must be > 0
   - percentage: Must be 1-100
   - buy_one_get_one: Must be 1
   - Cost: Must be > 0
-- discount_type: Extract from the description field. Assign one value only from: {DISCOUNT_TYPE}
-- description: No change required. If "N/A", set to empty string.
-- image_link: No change required. If "N/A", set to empty string.
-- discount_link: No change required. If "N/A", set to empty string.
-- terms_and_conditions: No change required. If "N/A", set to "See provider website for details".
-- club_name: No change required. If "N/A", set to an empty array.
+- discount_type: Extract from the description field,title,terms_and_conditions. Assign one value only from: {DISCOUNT_TYPE}
 - category: Analyze the title and description and select relevant categories from: {CATEGORIES}
-- consumer_statuses: Analyze the title and description and select relevant statuses from: {CONSUMER_STATUS}
-- valid_until: No change required. If "N/A", set to empty string.
-- usage_limit: No change required. If "N/A", set to null.
-- coupon_code: No change required. If "N/A", set to empty string.
-- provider_link: No change required. If "N/A", set to empty string.
+- consumer_statuses: Analyze the title and description and select most reasanble possible realeted relevant statuses from the following list: {CONSUMER_STATUS}
+
+
+**Ultra-Critical Mandate: Zero Tolerance for Field Alteration**
+Copy every field listed below exactly as provided—character by character, word by word, letter by letter. Do not modify, abbreviate, summarize, or otherwise alter any content except as explicitly permitted below. Any unauthorized change will be treated as a severe violation.
+Field-Specific Requirements:
+discount_id:Do not change.If value is "N/A", replace with an empty string.
+title:Do not change.If value is "N/A", replace with an empty string.
+description:Do not change.If value is "N/A", replace with an empty string.
+image_link:Do not change.If value is "N/A", replace with an empty string.
+discount_link:Do not change.If value is "N/A", replace with an empty string.
+terms_and_conditions:Do not change.If value is "N/A", replace with "See provider website for details".
+club_name:Do not change.If value is "N/A", replace with an empty array.
+valid_until:Do not change.If value is "N/A", replace with an empty string.
+usage_limit:Do not change.If value is "N/A", replace with null.
+coupon_code:Do not change.If value is "N/A", replace with an empty string.
+provider_link:Do not change.If value is "N/A", replace with an empty string.
+***Final Warning: Any operation that does not follow these instructions verbatim is unacceptable. There is no margin for error. All processing must be performed with absolute precision.***
+
 
 **IMPORTANT:**
 - Return ONLY a valid JSON object, with NO extra text, code fences, or comments.
@@ -55,7 +65,59 @@ Instructions for processing fields:
 - If a field is missing or not applicable, use the default value as specified in the schema.
 - Do not invent or guess field names. Only use those in the schema.
 - Before returning, validate your output to ensure it is valid JSON and matches the schema exactly.
-- Return ONLY a valid JSON object with all fields from the schema and NOTHING ELSE."""
+- Return ONLY a valid JSON object with all fields from the schema and NOTHING ELSE.
+**CRITICAL:**
+- if price is 0 search for the price in the description field,title,terms_and_conditions again!
+price, discount_type, category, consumer_statuses - MUST MUST MUST CONTAIN A VALUE AS DEFINED, IF NOT, SEND OBJECT AGAIN.
+- make sure Original discount titles are not being modified
+- make sure Provider links are not changed
+- make sure each ID has unique discount IDs
+- make sure data is not lost during processing
+- generated values are logically correct.
+- generated fields are not empty.
+
+Critical Example: Input and Expected Output
+Input json:
+{{
+  "club_name": "hot",
+  "category": "Consumerism",
+  "discount_id": "6",
+  "title": "מארזי נקיון ופארם",
+  "price": "20% הנחה",
+  "discount_type": "percentage",
+  "description": "פרטי ההטבה: הנחה על כלל המגוון באתר s2h\n20% הנחת קופון + 10% הנחה בחיוב על היתרה\n\nאתר s2h -כל מותגי הניקיון לבית במקום אחד! מגוון עשיר של מותגים מובילים לניקיון הבית ובישום הבית: פיניש, ווניש, קולון, סיליט, איירוויק ועוד.\n\nמימוש ההטבה: באמצעות קוד H525 באתר הספק. יש לשלם בכרטיס אשראי המשויך למועדון הוט בלבד.\nההנחה בחיוב תינתן אוטומטית למשלמים בכרטיס אשראי הוט. הנחה זו ניתנת על הסכום המשולם בפועל בכרטיס האשראי.\nאת ההנחה ניתן יהיה לראות בפרטי חיוב כרטיס האשראי (סטייטמנט) שם יופיע הזיכוי בגובה ההנחה, ולא בקופה בעת התשלום.",
+  "terms_and_conditions": "20% הנחה + 10% הנחה בחיוב על היתרה מהתשלום בפועל לאחר ההנחה. סה\"כ הנחה אפקטיבית: 28%\nמימוש ההטבה באתר הספק, באמצעות קוד קופון: H525 בין התאריכים: 14-31.5.25 או עד גמר המלאי – המוקדם מביניהם. יש לשלם בכרטיס אשראי המשויך למועדון הוט.\n\n- תקף בקניה מעל 20 ₪\n- כולל כפל מבצעים\n- עלות משלוח משתנה בהתאם למוצרים\n- לא כולל כפל קופונים או מועדונים.\n- מינימום 300 יח' למבצע - המלאי מוגבל. \n- הספק רשאי לסיים את המבצע בכל עת וללא הודעה מראש. \n- התמונות להמחשה בלבד. ט.ל.ח.",
+  "discount_link": "https://www.hot.co.il/%D7%94%D7%98%D7%91%D7%94/56476/%D7%9E%D7%90%D7%A8%D7%96%D7%99-%D7%A0%D7%A7%D7%99%D7%95%D7%9F-%D7%95%D7%A4%D7%90%D7%A8%D7%9D",
+  "image_link": "https://cdn.hot.co.il/media/b487107d-aa98-4a4f-911f-8d7b5d5f208c.jpg",
+  "provider_link": "https://s2h.co.il/",
+  "coupon_code": "H525",
+  "valid_until": "31.5.25",
+  "usage_limit": 1,
+  "location": "Israel"
+}}
+Expected Output (Strictly According to Your Critical Demand)
+Only the fields explicitly listed in your original demand, copied exactly, except for the "N/A" replacements.
+No new fields, no changes to field types unless "N/A" is present.
+
+Expected Output json:
+{{
+  "discount_id": "6",
+  "title": "מארזי נקיון ופארם",
+  "description": "פרטי ההטבה: הנחה על כלל המגוון באתר s2h\n20% הנחת קופון + 10% הנחה בחיוב על היתרה\n\nאתר s2h -כל מותגי הניקיון לבית במקום אחד! מגוון עשיר של מותגים מובילים לניקיון הבית ובישום הבית: פיניש, ווניש, קולון, סיליט, איירוויק ועוד.\n\nמימוש ההטבה: באמצעות קוד H525 באתר הספק. יש לשלם בכרטיס אשראי המשויך למועדון הוט בלבד.\nההנחה בחיוב תינתן אוטומטית למשלמים בכרטיס אשראי הוט. הנחה זו ניתנת על הסכום המשולם בפועל בכרטיס האשראי.\nאת ההנחה ניתן יהיה לראות בפרטי חיוב כרטיס האשראי (סטייטמנט) שם יופיע הזיכוי בגובה ההנחה, ולא בקופה בעת התשלום.",
+  "image_link": "https://cdn.hot.co.il/media/b487107d-aa98-4a4f-911f-8d7b5d5f208c.jpg",
+  "discount_link": "https://www.hot.co.il/%D7%94%D7%98%D7%91%D7%94/56476/%D7%9E%D7%90%D7%A8%D7%96%D7%99-%D7%A0%D7%A7%D7%99%D7%95%D7%9F-%D7%95%D7%A4%D7%90%D7%A8%D7%9D",
+  "terms_and_conditions": "20% הנחה + 10% הנחה בחיוב על היתרה מהתשלום בפועל לאחר ההנחה. סה\"כ הנחה אפקטיבית: 28%\nמימוש ההטבה באתר הספק, באמצעות קוד קופון: H525 בין התאריכים: 14-31.5.25 או עד גמר המלאי – המוקדם מביניהם. יש לשלם בכרטיס אשראי המשויך למועדון הוט.\n\n- תקף בקניה מעל 20 ₪\n- כולל כפל מבצעים\n- עלות משלוח משתנה בהתאם למוצרים\n- לא כולל כפל קופונים או מועדונים.\n- מינימום 300 יח' למבצע - המלאי מוגבל. \n- הספק רשאי לסיים את המבצע בכל עת וללא הודעה מראש. \n- התמונות להמחשה בלבד. ט.ל.ח.",
+  "club_name": "hot",
+  "valid_until": "31.5.25",
+  "usage_limit": 1,
+  "coupon_code": "H525",
+  "provider_link": "https://s2h.co.il/"
+}}
+Important Notes
+No new fields are added.
+Fields are copied exactly, no changes except for "N/A" replacements (not present in this example).
+If you want club_name as an array, you must specify this in your demand, but your original instruction only says to set to an empty array if "N/A".
+If you want to add consumer_statuses or process price, you must explicitly state this in your requirements."""
 
 # Load environment variables
 load_dotenv()
@@ -97,16 +159,127 @@ if not os.path.exists(CONSTANTS_PATH):
     logger.error(f"constants.py not found at {CONSTANTS_PATH}. Please ensure this file exists.")
     sys.exit(1)
 
-def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -> Dict[str, Any]:
+def validate_discount_data(discount: Dict[str, Any], original_discount: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    """
+    Validate the generated discount data against schema constraints and business rules.
+    
+    Args:
+        discount: The generated discount object to validate
+        original_discount: The original discount object for comparison
+        
+    Returns:
+        Tuple of (is_valid, list_of_validation_errors)
+    """
+    errors = []
+    
+    # Required fields that must be present
+    required_fields = [
+        'discount_id', 'title', 'price', 'discount_type', 'description',
+        'image_link', 'discount_link', 'terms_and_conditions', 'club_name',
+        'category', 'valid_until', 'usage_limit', 'coupon_code', 
+        'provider_link', 'consumer_statuses', 'favorites'
+    ]
+    
+    # Check all required fields are present
+    for field in required_fields:
+        if field not in discount:
+            errors.append(f"Missing required field: {field}")
+    
+    if errors:
+        return False, errors
+    
+    # Validate price constraints based on discount_type
+    price = discount.get('price', 0)
+    discount_type = discount.get('discount_type', '')
+    
+    if discount_type == 'fixed_amount' and price <= 0:
+        errors.append(f"fixed_amount discount type requires price > 0, got: {price}")
+    elif discount_type == 'percentage' and (price < 1 or price > 100):
+        errors.append(f"percentage discount type requires price between 1-100, got: {price}")
+    elif discount_type == 'buy_one_get_one' and price != 1:
+        errors.append(f"buy_one_get_one discount type requires price = 1, got: {price}")
+    elif discount_type == 'Cost' and price <= 0:
+        errors.append(f"Cost discount type requires price > 0, got: {price}")
+    
+    # Validate discount_type is from allowed values
+    if discount_type not in DISCOUNT_TYPE:
+        errors.append(f"Invalid discount_type: {discount_type}. Must be one of: {DISCOUNT_TYPE}")
+    
+    # Validate category is from allowed values and not empty
+    category = discount.get('category', [])
+    if not isinstance(category, list) or len(category) == 0:
+        errors.append(f"category must be a non-empty array, got: {category}")
+    else:
+        invalid_categories = [cat for cat in category if cat not in CATEGORIES]
+        if invalid_categories:
+            errors.append(f"Invalid categories: {invalid_categories}. Must be from: {CATEGORIES}")
+    
+    # Validate consumer_statuses is from allowed values and not empty
+    consumer_statuses = discount.get('consumer_statuses', [])
+    if not isinstance(consumer_statuses, list) or len(consumer_statuses) == 0:
+        errors.append(f"consumer_statuses must be a non-empty array, got: {consumer_statuses}")
+    else:
+        invalid_statuses = [status for status in consumer_statuses if status not in CONSUMER_STATUS]
+        if invalid_statuses:
+            errors.append(f"Invalid consumer_statuses: {invalid_statuses}. Must be from: {CONSUMER_STATUS}")
+    
+    # Validate club_name is an array
+    club_name = discount.get('club_name', [])
+    if not isinstance(club_name, list):
+        errors.append(f"club_name must be an array, got: {type(club_name)}")
+    
+    # Validate favorites is an array
+    favorites = discount.get('favorites', [])
+    if not isinstance(favorites, list):
+        errors.append(f"favorites must be an array, got: {type(favorites)}")
+    
+    # Validate string fields are not None
+    string_fields = ['title', 'description', 'image_link', 'discount_link', 
+                    'terms_and_conditions', 'coupon_code', 'provider_link']
+    for field in string_fields:
+        value = discount.get(field)
+        if value is None:
+            errors.append(f"{field} cannot be None, must be a string")
+    
+    # Validate usage_limit is integer or null
+    usage_limit = discount.get('usage_limit')
+    if usage_limit is not None and not isinstance(usage_limit, int):
+        errors.append(f"usage_limit must be an integer or null, got: {type(usage_limit)}")
+    
+    # Business rule: Original title should not be modified
+    original_title = original_discount.get('title', '')
+    current_title = discount.get('title', '')
+    if original_title and current_title != original_title:
+        errors.append(f"Original title should not be modified. Original: '{original_title}', Current: '{current_title}'")
+    
+    # Business rule: Provider link should not be changed
+    original_provider_link = original_discount.get('provider_link', '')
+    current_provider_link = discount.get('provider_link', '')
+    if original_provider_link and current_provider_link != original_provider_link:
+        errors.append(f"Provider link should not be changed. Original: '{original_provider_link}', Current: '{current_provider_link}'")
+    
+    # Business rule: If price is 0, it's likely a failure in extraction
+    if price == 0:
+        errors.append("Price is 0, likely failed to extract price from description/title/terms")
+    
+    # Business rule: discount_id should not be empty
+    if not discount.get('discount_id'):
+        errors.append("discount_id cannot be empty")
+    
+    return len(errors) == 0, errors
+
+def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) -> Dict[str, Any]:
     """
     Send a discount object to Groq API using JSON Mode and get back an edited version.
+    Includes comprehensive validation with up to 10 retries.
+    Changes model after 3 consecutive validation failures for the same object.
     
     Args:
         discount: A discount object from the JSON file
-        max_retries: Maximum number of retry attempts (default: 2)
+        max_retries: Maximum number of retry attempts (default: 10)
         
     Returns:
-        The edited discount object from Groq
+        The edited discount object from Groq, or original if all retries fail
     """
     global current_model_index  # Use the global variable
     
@@ -123,13 +296,15 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
     user_message = f"Please edit each indvidual field for the following discount object as described in the instructions:\n{json.dumps(discount, indent=2, ensure_ascii=False)}"
     
     retry_count = 0
+    validation_failures_count = 0  # Track consecutive validation failures
+    
     while retry_count <= max_retries:
         try:
             client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
             current_model = models[current_model_index]
             
             # Log when sending a new object to the API with discount ID
-            logger.info(f"Sending discount ID: {discount_id} to Groq API using model: {current_model}")
+            logger.info(f"Sending discount ID: {discount_id} to Groq API using model: {current_model} (attempt {retry_count + 1}/{max_retries + 1})")
             
             chat_completion = client.chat.completions.create(
                 messages=[
@@ -143,7 +318,50 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
             
             # With JSON Mode, we can directly parse the response content
             response_content = chat_completion.choices[0].message.content
-            return json.loads(response_content)
+            edited_discount = json.loads(response_content)
+            
+            # Validate the response
+            is_valid, validation_errors = validate_discount_data(edited_discount, discount)
+            
+            if is_valid:
+                logger.info(f"✅ Discount ID {discount_id} successfully processed and validated")
+                return edited_discount
+            else:
+                validation_failures_count += 1
+                logger.warning(f"❌ Validation failed for discount ID {discount_id} (attempt {retry_count + 1}, validation failure #{validation_failures_count}):")
+                for error in validation_errors:
+                    logger.warning(f"  - {error}")
+                
+                # Change model after 3 consecutive validation failures
+                if validation_failures_count >= 3:
+                    prev_model = models[current_model_index]
+                    current_model_index = (current_model_index + 1) % len(models)
+                    new_model = models[current_model_index]
+                    logger.info(f"🔄 3 consecutive validation failures: Switching model from {prev_model} to {new_model} for discount ID: {discount_id}")
+                    validation_failures_count = 0  # Reset counter for new model
+                    time.sleep(1)  # Brief pause before trying the new model
+                
+                if retry_count < max_retries:
+                    retry_count += 1
+                    logger.info(f"Retrying discount ID {discount_id} (attempt {retry_count + 1}/{max_retries + 1})")
+                    time.sleep(2)  # Add delay before retry
+                    continue
+                else:
+                    logger.error(f"❌ All {max_retries + 1} attempts failed for discount ID {discount_id}. Using original discount.")
+                    return discount
+                
+        except json.JSONDecodeError as e:
+            error_message = f"JSON decode error for discount ID {discount_id}: {str(e)}"
+            logger.warning(f"❌ {error_message}")
+            
+            if retry_count < max_retries:
+                retry_count += 1
+                logger.info(f"Retrying discount ID {discount_id} due to JSON error (attempt {retry_count + 1}/{max_retries + 1})")
+                time.sleep(2)
+                continue
+            else:
+                logger.error(f"❌ All {max_retries + 1} attempts failed for discount ID {discount_id}. Using original discount.")
+                return discount
                 
         except Exception as e:
             error_message = f"Error processing discount with ID {discount_id}: {str(e)}"
@@ -162,17 +380,14 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 2) -
             
             if retry_count < max_retries:
                 retry_count += 1
-                # Log specifically when making the second retry attempt
-                if retry_count == 2:
-                    logger.info(f"Making final retry (attempt {retry_count} of {max_retries}) for discount ID: {discount_id}")
-                else:
-                    logger.warning(f"{error_message}\nRetrying attempt {retry_count} of {max_retries}...")
+                logger.warning(f"{error_message}\nRetrying attempt {retry_count} of {max_retries}...")
                 time.sleep(2)  # Add a slightly longer delay before retrying
             else:
                 logger.error(f"{error_message}\nMax retries exceeded. Using original discount.")
                 return discount
-    return discount
     
+    return discount
+
 # TODO: 
 # create a copy file of the original coupons list.
 # the copy file will contain the list of objects with a change - ID is generated.
@@ -209,22 +424,32 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
         if (i+1) % 10 == 0 or i+1 == total_discounts:
             logger.debug(f"Progress: {i+1}/{total_discounts} discounts processed")
         
-        # Process with Groq with retry mechanism
-        edited_discount = process_discount_with_groq(discount, max_retries=2)
+        # Process with Groq with retry mechanism (up to 10 attempts)
+        edited_discount = process_discount_with_groq(discount, max_retries=10)
         
-        # Check if the discount is the original one (indicating failed processing)
+        # Check if the discount is the original one (indicating failed processing after all retries)
         if edited_discount is discount:
-            logger.warning(f"Failed to enhance discount ID: {discount_id}")
+            logger.warning(f"❌ Failed to enhance discount ID: {discount_id} after all retry attempts")
             deprecated_discount_ids.append(discount_id)
             continue
         
-        # successfully processed, add it to our list
+        # Validate the final result one more time before adding to enhanced list
+        is_valid, validation_errors = validate_discount_data(edited_discount, discount)
+        if not is_valid:
+            logger.error(f"❌ Final validation failed for discount ID: {discount_id}")
+            for error in validation_errors:
+                logger.error(f"  - {error}")
+            deprecated_discount_ids.append(discount_id)
+            continue
+        
+        # Successfully processed and validated, add it to our list
         enhanced_discounts.append(edited_discount)
+        logger.info(f"✅ Successfully enhanced discount ID: {discount_id}")
         
         # Add a small delay to avoid rate limits
         time.sleep(1)
     
-    # Save successfull enhanced discounts
+    # Save successfully enhanced discounts
     with open(output_file_path, 'w', encoding='utf-8') as f:
         json.dump(enhanced_discounts, f, ensure_ascii=False, indent=2)
     
