@@ -81,8 +81,9 @@ def test_mongodb_connection():
         logger.error(f"Failed to connect to MongoDB: {e}")
         return False
     finally:
-        if 'client' in locals():
-            client.close()
+        db_manager = DatabaseManager.get_instance()
+        if db_manager._client is not None:
+            db_manager._client.close()
 
 def find_json_and_csv_files(data_dir_path=None):
     """Find all JSON and CSV files in the data directory and its subdirectories"""
@@ -125,11 +126,13 @@ def find_json_and_csv_files(data_dir_path=None):
         for file in files:
             file_path = os.path.join(root, file)
             if file.lower().endswith('.json'):
-                json_files.append(file_path)
+                # Only include JSON files that start with "enhanced_"
+                if file.startswith('enhanced_'):
+                    json_files.append(file_path)
             elif file.lower().endswith('.csv'):
                 csv_files.append(file_path)
     
-    logger.info(f"Found {len(json_files)} JSON files and {len(csv_files)} CSV files")
+    logger.info(f"Found {len(json_files)} enhanced JSON files and {len(csv_files)} CSV files")
     
     return json_files, csv_files
 

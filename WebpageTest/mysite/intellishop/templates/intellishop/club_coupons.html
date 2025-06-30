@@ -1,0 +1,456 @@
+{% extends 'intellishop/index_home_original.html' %}
+
+{% block content %}
+    <section class="py-5">
+        <div>
+            <div class="user-welcome p-4 bg-light rounded shadow-sm mb-4" style="border-left: 4px solid #28a745;">
+                <h2>{{ club_name }} Discounts<span class="text-primary ms-3">🏪</span></h2>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Total Discounts:</strong> {{ coupon_count }}</p>
+                
+                {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <hr class="mb-4">
+
+            <!-- Club Coupons List -->
+            {% if club_coupons %}
+                <div class="favorites-container">
+                    {% for coupon in club_coupons %}
+                        <div class="discount-card favorite-item" data-discount-id="{{ coupon.discount_id }}">
+                            <div class="discount-flex-row">
+                                <div class="discount-image-col">
+                                    {% if coupon.image_link %}
+                                        <img src="{{ coupon.image_link }}" alt="{{ coupon.title }}" style="max-width:400px; max-height:400px; border-radius:8px;">
+                                    {% else %}
+                                        <div class="placeholder-logo">
+                                            <i class="bi bi-image" style="font-size: 2rem; color: #ccc;"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="discount-details-col">
+                                    <h4 class="discount-title">{{ coupon.title }}
+                                        <span class="discount-meta">
+                                            {% if coupon.valid_until %}
+                                                <span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: {{ coupon.valid_until }}
+                                                    {% if coupon.expired %}
+                                                        <span class='expired-label'>פג תוקף</span>
+                                                    {% endif %}
+                                                </span>
+                                            {% endif %}
+                                            {% if coupon.usage_limit %}
+                                                <span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: {{ coupon.usage_limit }}</span>
+                                            {% endif %}
+                                        </span>
+                                    </h4>
+                                    <div class="desc-block">
+                                        <strong>תיאור:</strong>
+                                        <div>
+                                            {% if coupon.description|length > 250 %}
+                                                <span id="desc-{{ coupon.discount_id }}-short">{{ coupon.description|slice:":250" }}...</span>
+                                                <span id="desc-{{ coupon.discount_id }}-full" style="display:none;">{{ coupon.description }}</span>
+                                                <a href="#" class="show-more-link" data-id="desc-{{ coupon.discount_id }}">הצג עוד</a>
+                                            {% else %}
+                                                <span>{{ coupon.description }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="terms-block" style="margin-top:10px;">
+                                        <strong>תנאים והגבלות:</strong>
+                                        <div>
+                                            {% if coupon.terms_and_conditions|length > 250 %}
+                                                <span id="terms-{{ coupon.discount_id }}-short">{{ coupon.terms_and_conditions|slice:":250" }}...</span>
+                                                <span id="terms-{{ coupon.discount_id }}-full" style="display:none;">{{ coupon.terms_and_conditions }}</span>
+                                                <a href="#" class="show-more-link" data-id="terms-{{ coupon.discount_id }}">הצג עוד</a>
+                                            {% else %}
+                                                <span>{{ coupon.terms_and_conditions }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="discount-bottom-row">
+                                <div class="price-type-col">
+                                    <span class="price-label-big" style="background:{% if coupon.discount_type == 'percentage' %}#28a745{% else %}#007bff{% endif %};color:white;padding:3px 9px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
+                                        {% if coupon.discount_type == 'percentage' %}% הנחה{% else %}מחיר סופי{% endif %}
+                                    </span>
+                                    <span class="price-value-big">{{ coupon.price }}</span>
+                                </div>
+                                {% if coupon.coupon_code %}
+                                    <div class="copy-code-btn" data-code="{{ coupon.coupon_code }}">
+                                        Copy Code Coupon
+                                    </div>
+                                {% endif %}
+                                {% if coupon.provider_link %}
+                                    <a href="{{ coupon.provider_link }}" target="_blank" class="site-link-btn provider-link-btn">
+                                        Go To Provider
+                                    </a>
+                                {% endif %}
+                                <a href="{{ coupon.discount_link }}" target="_blank" class="site-link-btn">
+                                    Discount Link
+                                </a>
+                                <div class="like-icon-col">
+                                    <span class="like-fav-text">Favorites <span class="like-icon" title="Click To Add/Remove" data-discount-id="{{ coupon.discount_id }}">&#10084;</span> Add/Remove</span>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-favorites-message text-center py-5">
+                    <i class="bi bi-shop" style="font-size: 4rem; color: #ccc;"></i>
+                    <h3 class="mt-3">No Discounts Found</h3>
+                    <p class="text-muted">No discounts are currently available for {{ club_name }}.</p>
+                    <a href="{% url 'filter_search' %}" class="btn btn-primary">Browse All Discounts</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <style>
+        .favorite-active {
+            color: #ff0000 !important;
+        }
+        .no-favorites-message {
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .user-welcome {
+            margin: 32px auto;
+            max-width: 900px;
+            background: #fafbfc;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-left: 4px solid #28a745;
+        }
+        .favorites-container {
+            width: 100%;
+            max-width: none;
+            padding: 0;
+        }
+        .discount-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #fafbfc;
+            direction: rtl;
+            text-align: right;
+            font-family: "Segoe UI", Arial, "Noto Sans Hebrew", "Open Sans", sans-serif;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .discount-flex-row {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: flex-start;
+            gap: 24px;
+            margin-bottom: 12px;
+            flex-wrap: nowrap;
+            justify-content: flex-end;
+        }
+        .discount-title {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f0f2f5 60%, #ffe082 100%);
+            padding: 8px 18px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            letter-spacing: 0.02em;
+            vertical-align: middle;
+        }
+        .discount-meta {
+            font-size: 0.55em;
+            color: #555;
+            margin-right: 18px;
+            vertical-align: middle;
+        }
+        .meta-item {
+            margin-left: 18px;
+            display: inline-block;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 2px 10px;
+            margin-bottom: 2px;
+            font-weight: 500;
+        }
+        .expired-label {
+            color: #fff;
+            background: #e53935;
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-size: 1em;
+            font-weight: bold;
+            margin-top: 4px;
+            display: inline-block;
+            box-shadow: 0 1px 4px rgba(229,57,53,0.08);
+            letter-spacing: 0.03em;
+        }
+        .discount-image-col {
+            flex: 0 0 400px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .discount-image-col img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .placeholder-logo {
+            width: 400px;
+            height: 300px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .discount-details-col {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        .discount-bottom-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            gap: 100px;
+            flex-wrap: wrap;
+        }
+        .discount-bottom-row > div, .discount-bottom-row > a {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+        .price-type-col {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            gap: 12px;
+        }
+        .like-icon-col {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .site-link-btn {
+            display: inline-block;
+            background: #ffb347;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+        }
+        .site-link-btn:hover {
+            background: #ffa327;
+        }
+        .site-link-btn.provider-link-btn {
+            background: #d84368;
+            color: white;
+        }
+        .site-link-btn.provider-link-btn:hover {
+            background: #c33a5d;
+        }
+        .price-label-big {
+            margin-bottom: 0;
+            background: #007bff;
+            color: white;
+            padding: 3px 9px;
+            border-radius: 16px;
+            font-size: 1em;
+            font-weight: bold;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .price-value-big {
+            margin-bottom: 0;
+            font-size:2.2em;
+            font-weight:bold;
+            color:#333;
+            display:inline-block;
+            vertical-align:middle;
+            margin-right:12px;
+        }
+        .like-icon {
+            font-size: 1.6em;
+            color: #ccc;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        .like-icon:hover {
+            color: #ff0000;
+        }
+        .like-fav-text {
+            font-size: 1.2em;
+            font-weight: 500;
+            color: #666;
+            display: flex;
+            align-items: center;
+        }
+        .copy-code-btn {
+            background: #ff9800;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+            display: inline-block;
+            font-size: 1em;
+            white-space: nowrap;
+        }
+        .copy-code-btn:hover {
+            background: #f57c00;
+        }
+        .copy-code-btn.copied {
+            background: #4caf50;
+            text-align: center;
+        }
+        /* Remove extra margin for compactness */
+        .discount-card, .discount-bottom-row {
+            margin-bottom: 0 !important;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle favorite toggling
+            document.querySelectorAll('.like-icon').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const discountId = this.getAttribute('data-discount-id');
+                    toggleFavorite(discountId, this);
+                });
+            });
+
+            // Handle copy coupon code
+            document.querySelectorAll('.copy-code-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const code = this.getAttribute('data-code');
+                    copyToClipboard(code, this);
+                });
+            });
+
+            // Handle show more/less for description and terms
+            document.querySelectorAll('.show-more-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.getAttribute('data-id');
+                    const shortSpan = document.getElementById(id + '-short');
+                    const fullSpan = document.getElementById(id + '-full');
+                    if (shortSpan.style.display === 'none') {
+                        shortSpan.style.display = '';
+                        fullSpan.style.display = 'none';
+                        this.textContent = 'הצג עוד';
+                    } else {
+                        shortSpan.style.display = 'none';
+                        fullSpan.style.display = '';
+                        this.textContent = 'הצג פחות';
+                    }
+                });
+            });
+
+            // Check favorite status for all coupons
+            checkAllFavoriteStatus();
+        });
+
+        function toggleFavorite(discountId, iconElement) {
+            const isFavorite = iconElement.classList.contains('favorite-active');
+            const url = isFavorite ? '/remove_favorite/' : '/add_favorite/';
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({discount_id: discountId})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (isFavorite) {
+                        iconElement.classList.remove('favorite-active');
+                        iconElement.style.color = '#ccc';
+                    } else {
+                        iconElement.classList.add('favorite-active');
+                        iconElement.style.color = '#ff0000';
+                    }
+                } else {
+                    alert('Failed to update favorites: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update favorites');
+            });
+        }
+
+        function checkAllFavoriteStatus() {
+            document.querySelectorAll('.like-icon').forEach(icon => {
+                const discountId = icon.getAttribute('data-discount-id');
+                checkFavoriteStatus(discountId, icon);
+            });
+        }
+
+        function checkFavoriteStatus(discountId, iconElement) {
+            fetch(`/check_favorite/${discountId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_favorite) {
+                    iconElement.classList.add('favorite-active');
+                    iconElement.style.color = '#ff0000';
+                } else {
+                    iconElement.classList.remove('favorite-active');
+                    iconElement.style.color = '#ccc';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking favorite status:', error);
+            });
+        }
+
+        function copyToClipboard(text, buttonElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = buttonElement.textContent;
+                buttonElement.textContent = '! Copied';
+                buttonElement.classList.add('copied');
+                setTimeout(() => {
+                    buttonElement.textContent = originalText;
+                    buttonElement.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %} 
