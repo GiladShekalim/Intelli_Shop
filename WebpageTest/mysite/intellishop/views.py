@@ -30,44 +30,79 @@ def index_home(request):
     if not user:
         return redirect('login')
 
-    # Get path to JSON file
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    json_path = os.path.join(base_dir, 'intellishop', 'data', 'coupon_samples.json')
+    # Build filters based on user preferences
+    filters = {}
     
-    # Add fallback path if the primary one doesn't exist
-    if not os.path.exists(json_path):
-        alt_json_path = os.path.join(base_dir, 'data', 'coupon_samples.json')
-        if os.path.exists(alt_json_path):
-            json_path = alt_json_path
+    # Add user statuses to filters
+    user_statuses = user.get('status', [])
+    if user_statuses:
+        filters['statuses'] = user_statuses
     
-    # Load ONLY the coupons from the JSON file
-    formatted_coupons = []
+    # Add user hobbies/interests to filters
+    user_hobbies = user.get('hobbies', [])
+    if user_hobbies:
+        filters['interests'] = user_hobbies
     
+    # Get filtered coupons from MongoDB
+    filtered_coupons = []
     try:
-        with open(json_path, 'r') as f:
-            json_coupons = json.load(f)
-            for coupon in json_coupons:
-                # Get the product categories, or use a default if empty
-                categories = coupon['product_categories']
-                coupon_name = ' & '.join(categories).title() if categories else "All Products"
+        if filters:
+            # Use the existing filtering system
+            all_filtered_coupons = Coupon.get_filtered_coupons(filters)
+            
+            # Convert to list and randomize
+            all_filtered_coupons = list(all_filtered_coupons)
+            
+            # Randomly select up to 5 coupons
+            import random
+            if len(all_filtered_coupons) > 5:
+                filtered_coupons = random.sample(all_filtered_coupons, 5)
+            else:
+                filtered_coupons = all_filtered_coupons
+        else:
+            # If no filters, get random coupons from all available
+            all_coupons = list(Coupon.get_all())
+            import random
+            if len(all_coupons) > 5:
+                filtered_coupons = random.sample(all_coupons, 5)
+            else:
+                filtered_coupons = all_coupons
                 
-                # Format the amount based on discount_type
-                amount = f"{coupon['amount']}%" if coupon['discount_type'] == 'percent' else f"${coupon['amount']}"
-                
-                formatted_coupon = {
-                    'store_name': 'AliExpress',
-                    'store_logo': '',  # Empty since we're not sure about the logo
-                    'code': coupon['code'],
-                    'amount': amount,
-                    'name': coupon_name,
-                    'description': coupon['description'],
-                    'date_expires': datetime.strptime(coupon['date_expires'].split('T')[0], '%Y-%m-%d'),
-                    'store_url': 'https://www.aliexpress.com',
-                    'minimum_amount': coupon['minimum_amount']
-                }
-                formatted_coupons.append(formatted_coupon)
     except Exception as e:
-        print(f"Error loading JSON coupons: {e}")
+        logger.error(f"Error getting filtered coupons: {str(e)}")
+        # Fallback to empty list if there's an error
+        filtered_coupons = []
+
+    # Format coupons for display
+    formatted_coupons = []
+    for coupon in filtered_coupons:
+        try:
+            # Format the amount based on discount_type
+            if coupon.get('discount_type') == 'percentage':
+                amount = f"{coupon.get('price', 0)}%"
+            else:
+                amount = f"${coupon.get('price', 0)}"
+            
+            # Get store name from club_name array
+            club_names = coupon.get('club_name', [])
+            store_name = club_names[0] if club_names else "Unknown Store"
+            
+            formatted_coupon = {
+                'store_name': store_name,
+                'store_logo': coupon.get('image_link', ''),
+                'code': coupon.get('coupon_code', ''),
+                'amount': amount,
+                'name': coupon.get('title', 'Special Offer'),
+                'description': coupon.get('description', ''),
+                'date_expires': coupon.get('valid_until', ''),
+                'store_url': coupon.get('discount_link', ''),
+                'minimum_amount': 0,  # Default value
+                'discount_id': coupon.get('discount_id', '')
+            }
+            formatted_coupons.append(formatted_coupon)
+        except Exception as e:
+            logger.error(f"Error formatting coupon: {str(e)}")
+            continue
 
     context = {
         'user': {

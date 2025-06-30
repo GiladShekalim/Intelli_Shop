@@ -313,18 +313,18 @@
                     <strong>Interests:</strong>
                     <div class="d-flex flex-wrap gap-2">
                         {% for hobby in user.hobbies %}
-                            <span class="badge" style="background-color:
-                                {% if hobby == 'lifestyle' %}#1a237e /* Deep Indigo */
-                                {% elif hobby == 'electronics' %}#004d40 /* Dark Teal */
-                                {% elif hobby == 'home' %}#e65100 /* Deep Orange */
-                                {% elif hobby == 'books' %}#33691e /* Dark Lime Green */
-                                {% elif hobby == 'Consumerism' %}#880e4f /* Dark Pink */
-                                {% elif hobby == 'Travel and Vacation' %}#01579b /* Dark Cyan */
-                                {% elif hobby == 'Culture and Leisure' %}#4a148c /* Dark Purple */
-                                {% elif hobby == 'Cars' %}#b71c1c /* Dark Red */
-                                {% elif hobby == 'Insurance' %}#0d47a1 /* Dark Blue */
-                                {% elif hobby == 'Finance and Banking' %}#f57f17 /* Dark Yellow */
-                                {% else %}#6c757d /* Defaulting to a neutral color */
+                            <span class="badge" style="background-color: 
+                                {% if hobby == 'lifestyle' %}#1a237e
+                                {% elif hobby == 'electronics' %}#004d40
+                                {% elif hobby == 'home' %}#e65100
+                                {% elif hobby == 'books' %}#33691e
+                                {% elif hobby == 'Consumerism' %}#880e4f
+                                {% elif hobby == 'Travel and Vacation' %}#01579b
+                                {% elif hobby == 'Culture and Leisure' %}#4a148c
+                                {% elif hobby == 'Cars' %}#b71c1c
+                                {% elif hobby == 'Insurance' %}#0d47a1
+                                {% elif hobby == 'Finance and Banking' %}#f57f17
+                                {% else %}#6c757d
                                 {% endif %} !important; color: white !important;">
                                 {{ hobby }}
                             </span>
@@ -342,47 +342,82 @@
         </div>
 
         <!-- Filtered Coupons List -->
-        <div class="row">
-            {% for coupon in filtered_coupons %}
-            <div class="col-12 mb-3">
-                <div class="card">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <div class="store-logo me-3">
+        {% if filtered_coupons %}
+            <div class="favorites-container">
+                {% for coupon in filtered_coupons %}
+                    <div class="discount-card favorite-item" data-discount-id="{{ coupon.discount_id }}">
+                        <div class="discount-flex-row">
+                            <div class="discount-image-col">
                                 {% if coupon.store_logo %}
-                                <img src="{{ coupon.store_logo }}" alt="{{ coupon.store_name }} Logo" style="width: 60px; height: 60px; object-fit: contain;">
+                                    <img src="{{ coupon.store_logo }}" alt="{{ coupon.name }}" style="max-width:400px; max-height:400px; border-radius:8px;">
                                 {% else %}
-                                <div class="placeholder-logo">
-                                    <i class="bi bi-shop"></i>
+                                    <div class="placeholder-logo" style="width: 400px; height: 400px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #e0e0e0;">
+                                        <i class="bi bi-shop" style="font-size: 4rem; color: #ccc;"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="discount-details-col">
+                                <h4 class="discount-title">{{ coupon.name }}
+                                    <span class="discount-meta">
+                                        {% if coupon.date_expires %}
+                                            <span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: {{ coupon.date_expires }}
+                                            </span>
+                                        {% endif %}
+                                        {% if coupon.minimum_amount > 0 %}
+                                            <span class='meta-item'><i class='bi bi-currency-dollar'></i> מינימום רכישה: ${{ coupon.minimum_amount }}</span>
+                                        {% endif %}
+                                    </span>
+                                </h4>
+                                <div class="desc-block">
+                                    <strong>תיאור:</strong>
+                                    <div>
+                                        {% if coupon.description|length > 250 %}
+                                            <span id="desc-{{ coupon.discount_id }}-short">{{ coupon.description|slice:":250" }}...</span>
+                                            <span id="desc-{{ coupon.discount_id }}-full" style="display:none;">{{ coupon.description }}</span>
+                                            <a href="#" class="show-more-link" data-id="desc-{{ coupon.discount_id }}">הצג עוד</a>
+                                        {% else %}
+                                            <span>{{ coupon.description }}</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                {% endif %}
-                            </div>
-                            <div>
-                                <h5 class="card-title mb-1">{{ coupon.name }} Coupon [Updated 2025]</h5>
-                                <p class="card-text text-warning mb-1 fw-bold">{{ coupon.amount }}</p>
-                                <p class="text-muted mb-1">{{ coupon.description }}</p>
-                                <small class="text-muted">Expires: {{ coupon.date_expires|date:"d/m/Y" }}</small>
-                                {% if coupon.minimum_amount > 0 %}
-                                <br>
-                                <small class="text-muted">Minimum purchase: ${{ coupon.minimum_amount }}</small>
-                                {% endif %}
                             </div>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <button class="btn btn-outline-secondary me-2" title="Save for later">
-                                <i class="bi bi-heart"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary me-2" title="Share">
-                                <i class="bi bi-share"></i>
-                            </button>
-                            <a href="{% url 'coupon_code' code=coupon.code %}" class="btn btn-primary me-2">Acquire</a>
-                            <a href="{{ coupon.store_url }}" target="_blank" class="btn btn-dark">Go To Website</a>
+                        <div class="discount-bottom-row">
+                            <div class="price-type-col">
+                                <span class="price-label-big" style="background:{% if 'percentage' in coupon.amount %}#28a745{% else %}#007bff{% endif %};color:white;padding:3px 9px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
+                                    {% if 'percentage' in coupon.amount %}% הנחה{% else %}מחיר סופי{% endif %}
+                                </span>
+                                <span class="price-value-big">{{ coupon.amount }}</span>
+                            </div>
+                            {% if coupon.code %}
+                                <div class="copy-code-btn" data-code="{{ coupon.code }}">
+                                    Copy Code Coupon
+                                </div>
+                            {% endif %}
+                            {% if coupon.store_url %}
+                                <a href="{{ coupon.store_url }}" target="_blank" class="site-link-btn">
+                                    Go To Website
+                                </a>
+                            {% endif %}
+                            <div class="like-icon-col">
+                                <span class="like-fav-text">Favorites 
+                                    <span class="like-icon" title="Click To Save" data-discount-id="{{ coupon.discount_id }}" onclick="toggleFavorite('{{ coupon.discount_id }}', this)">&#10084;</span> 
+                                    Add
+                                </span>
+                            </div>
                         </div>
+                        <hr>
                     </div>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
+        {% else %}
+            <div class="no-favorites-message text-center py-5">
+                <i class="bi bi-shop" style="font-size: 4rem; color: #ccc;"></i>
+                <h3 class="mt-3">No Matching Offers Found</h3>
+                <p class="text-muted">No offers currently match your profile preferences. Try updating your interests or check back later!</p>
+                <a href="{% url 'filter_search' %}" class="btn btn-primary">Browse All Discounts</a>
+            </div>
+        {% endif %}
     </div>
 
     <style>
@@ -402,6 +437,171 @@
 
     .gap-2 {
         gap: 0.5rem !important;
+    }
+
+    /* Discount card styles for home page */
+    .favorites-container {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+    }
+    .discount-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        background: #fafbfc;
+        direction: rtl;
+        text-align: right;
+        font-family: "Segoe UI", Arial, "Noto Sans Hebrew", "Open Sans", sans-serif;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .discount-flex-row {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 12px;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+    }
+    .discount-title {
+        font-size: 2em;
+        font-weight: bold;
+        background: linear-gradient(90deg, #f0f2f5 60%, #ffe082 100%);
+        padding: 8px 18px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        display: inline-block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        letter-spacing: 0.02em;
+        vertical-align: middle;
+    }
+    .discount-meta {
+        font-size: 0.55em;
+        color: #555;
+        margin-right: 18px;
+        vertical-align: middle;
+    }
+    .meta-item {
+        margin-left: 18px;
+        display: inline-block;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 2px 10px;
+        margin-bottom: 2px;
+        font-weight: 500;
+    }
+    .discount-image-col {
+        flex: 0 0 400px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+    }
+    .discount-image-col img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+    .discount-details-col {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+    .discount-bottom-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+        gap: 100px;
+        flex-wrap: wrap;
+    }
+    .discount-bottom-row > div, .discount-bottom-row > a {
+        flex: 0 0 auto;
+        margin: 5px;
+    }
+    .price-type-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .price-value-big {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #2c3e50;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    .copy-code-btn, .site-link-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-block;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    .copy-code-btn:hover, .site-link-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    .like-icon-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    .like-fav-text {
+        font-size: 0.9em;
+        color: #666;
+        text-align: center;
+    }
+    .like-icon {
+        font-size: 2em;
+        color: #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: block;
+        margin: 5px 0;
+    }
+    .like-icon:hover {
+        transform: scale(1.1);
+        color: #ff6b6b;
+    }
+    .like-icon.favorite-active {
+        color: #ff0000 !important;
+    }
+    .no-favorites-message {
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    .desc-block, .terms-block {
+        margin-bottom: 15px;
+    }
+    .desc-block strong, .terms-block strong {
+        color: #2c3e50;
+        font-size: 1.1em;
+    }
+    .show-more-link {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    .show-more-link:hover {
+        text-decoration: underline;
     }
 
     /* Coupon card styles */
@@ -456,6 +656,20 @@
             margin-top: 1rem;
             width: 100%;
             justify-content: space-between;
+        }
+        
+        .discount-flex-row {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .discount-image-col {
+            flex: none;
+            width: 100%;
+        }
+        
+        .discount-bottom-row {
+            gap: 20px;
         }
     }
     </style>
@@ -561,6 +775,146 @@
                 localStorage.setItem('nightMode', 'off');
             }
         });
+    });
+    </script>
+
+    <!-- Favorites and Show More/Less JavaScript -->
+    <script>
+        // Toggle favorite functionality
+        function toggleFavorite(discountId, element) {
+            const isFavorite = element.classList.contains('favorite-active');
+            
+            if (isFavorite) {
+                // Remove from favorites
+                fetch('/remove_favorite/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        discount_id: discountId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        element.classList.remove('favorite-active');
+                        element.title = 'Click To Save';
+                        // Update text if it exists
+                        const textElement = element.parentElement.querySelector('.like-fav-text');
+                        if (textElement) {
+                            textElement.innerHTML = textElement.innerHTML.replace('Remove', 'Add');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            } else {
+                // Add to favorites
+                fetch('/add_favorite/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        discount_id: discountId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        element.classList.add('favorite-active');
+                        element.title = 'Click To Remove';
+                        // Update text if it exists
+                        const textElement = element.parentElement.querySelector('.like-fav-text');
+                        if (textElement) {
+                            textElement.innerHTML = textElement.innerHTML.replace('Add', 'Remove');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        // Copy coupon code functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('copy-code-btn')) {
+                const code = e.target.getAttribute('data-code');
+                navigator.clipboard.writeText(code).then(function() {
+                    const originalText = e.target.textContent;
+                    e.target.textContent = 'Copied!';
+                    e.target.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                    
+                    setTimeout(function() {
+                        e.target.textContent = originalText;
+                        e.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }, 2000);
+                });
+            }
+        });
+
+        // Show more/less functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('show-more-link')) {
+                e.preventDefault();
+                const id = e.target.getAttribute('data-id');
+                const shortSpan = document.getElementById(`${id}-short`);
+                const fullSpan = document.getElementById(`${id}-full`);
+                
+                if (shortSpan.style.display === 'none') {
+                    shortSpan.style.display = '';
+                    fullSpan.style.display = 'none';
+                    e.target.textContent = 'הצג עוד';
+                } else {
+                    shortSpan.style.display = 'none';
+                    fullSpan.style.display = '';
+                    e.target.textContent = 'הצג פחות';
+                }
+            }
+        });
+
+        // Check favorite status on page load
+        function checkFavoriteStatus() {
+            const favoriteIcons = document.querySelectorAll('.like-icon');
+            favoriteIcons.forEach(icon => {
+                const discountId = icon.getAttribute('data-discount-id');
+                if (discountId) {
+                    fetch(`/check_favorite/${discountId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.is_favorite) {
+                                icon.classList.add('favorite-active');
+                                icon.title = 'Click To Remove';
+                                const textElement = icon.parentElement.querySelector('.like-fav-text');
+                                if (textElement) {
+                                    textElement.innerHTML = textElement.innerHTML.replace('Add', 'Remove');
+                                }
+                            }
+                        })
+                        .catch(error => console.error('Error checking favorite status:', error));
+                }
+            });
+        }
+
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Initialize favorite status check
+        checkFavoriteStatus();
     });
     </script>
 </body>
