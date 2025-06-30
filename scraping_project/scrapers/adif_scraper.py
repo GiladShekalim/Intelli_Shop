@@ -32,7 +32,7 @@ def extract_discounts_for_category(driver, category_url, category_name):
 
     #print("[DEBUG] Waiting for discount elements to load...")
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "div.col-12.col-md-3.mb-4"))
+        EC.presence_of_element_located((By.CSS_SELECTOR, "div.col-6.col-sm-4.col-md-3.mb-4"))
     )
     #print("[DEBUG] Discount elements loaded")
 
@@ -40,7 +40,7 @@ def extract_discounts_for_category(driver, category_url, category_name):
 
     # Search for Set of Discounts for chosen category:    
     try:
-        discount_elements = driver.find_elements(By.CSS_SELECTOR, "div.col-12.col-md-3.mb-4")[:MAX_DISCOUNTS]
+        discount_elements = driver.find_elements(By.CSS_SELECTOR, "div.col-6.col-sm-4.col-md-3.mb-4")[:MAX_DISCOUNTS]
         print(f"[+] Found {len(discount_elements)} discount(s).")
     except NoSuchElementException:
         print("[-] No discount cards found.")
@@ -189,11 +189,11 @@ def extract_discounts_for_category(driver, category_url, category_name):
             
             # Discount Code
             coupon_code = extract_coupon_code(combined_text)
-
-            # Provider's link:  
+            
+            # Provider's link:
             provider_link = "N/A"
             try:
-                # Try locating the block (either .desc or .description)
+                # קודם בדוק ב-description או desc
                 try:
                     desc_block = driver.find_element(By.CLASS_NAME, "desc")
                 except NoSuchElementException:
@@ -207,17 +207,96 @@ def extract_discounts_for_category(driver, category_url, category_name):
                         href = a_tag.get_attribute("href")
                         if href and href.strip():
                             provider_link = href
-                            print(f"[+] Provider Link Found: {provider_link}")
-                            break  # Stop after the first valid one
+                            print(f"[+] Provider Link Found (from description): {provider_link}")
+                            break
                     except NoSuchElementException:
                         continue
 
+                # אם לא נמצא — ננסה את buy-button
                 if provider_link == "N/A":
-                    print("[-] No <a> tag with href found inside <p> in description block")
+                    try:
+                        buy_btn = driver.find_element(By.CLASS_NAME, "buy-button")
+                        a_tag = buy_btn.find_element(By.TAG_NAME, "a")
+                        href = a_tag.get_attribute("href")
+                        if href and href.strip():
+                            provider_link = href
+                            print(f"[+] Provider Link Found (from buy-button): {provider_link}")
+                    except NoSuchElementException:
+                        print("[-] No buy-button link found")
+
+                if provider_link == "N/A":
+                    print("[-] No provider link found in description or button")
+
             except NoSuchElementException:
                 print("[-] No description block found for provider link search")
 
 
+            # provider_link = "N/A"
+            # try:
+            #     # קודם בדוק ב-description או desc
+            #     try:
+            #         desc_block = driver.find_element(By.CLASS_NAME, "desc")
+            #     except NoSuchElementException:
+            #         desc_block = driver.find_element(By.CLASS_NAME, "description")
+
+            #     p_tags = desc_block.find_elements(By.TAG_NAME, "p")
+
+            #     for p in p_tags:
+            #         try:
+            #             a_tag = p.find_element(By.TAG_NAME, "a")
+            #             href = a_tag.get_attribute("href")
+            #             if href and href.strip():
+            #                 provider_link = href
+            #                 print(f"[+] Provider Link Found (from description): {provider_link}")
+            #                 break
+            #         except NoSuchElementException:
+            #             continue
+
+            #     # אם לא נמצא — ננסה את buy-button
+            #     if provider_link == "N/A":
+            #         try:
+            #             buy_btn = driver.find_element(By.CLASS_NAME, "buy-button")
+            #             a_tag = buy_btn.find_element(By.TAG_NAME, "a")
+            #             href = a_tag.get_attribute("href")
+            #             if href and href.strip():
+            #                 provider_link = href
+            #                 print(f"[+] Provider Link Found (from buy-button): {provider_link}")
+            #         except NoSuchElementException:
+            #             print("[-] No buy-button link found")
+
+            #     # אם עדיין לא נמצא — ננסה ב-blockD לפי הדוגמא שלך
+            #     if provider_link == "N/A":
+            #         try:
+            #             blockD = driver.find_element(By.CLASS_NAME, "blockD")
+            #             block_text = blockD.text.strip()
+
+            #             # חפש כתובת URL מלאה
+            #             url_match = re.search(r'(https?://[^\s]+)', block_text)
+            #             if url_match:
+            #                 provider_link = url_match.group(1)
+            #                 print(f"[+] Provider Link Found in blockD (URL): {provider_link}")
+
+            #             # או חפש דומיין ממייל
+            #             elif "@" in block_text:
+            #                 email_match = re.search(r'[\w\.-]+@([\w\.-]+\.[a-z]{2,})', block_text)
+            #                 if email_match:
+            #                     domain = email_match.group(1)
+            #                     provider_link = f"http://{domain}"
+            #                     print(f"[+] Provider Link Generated from Email in blockD: {provider_link}")
+
+            #             else:
+            #                 print("[-] No URL or Email found in blockD")
+
+            #         except NoSuchElementException:
+            #             print("[-] No blockD found for fallback provider link search")
+
+            #     if provider_link == "N/A":
+            #         print("[-] No provider link found in description, buy-button or blockD")
+
+            # except NoSuchElementException:
+            #     print("[-] No description block found for provider link search")
+            
+        
 
             # Placeholder for rest
             discounts.append({

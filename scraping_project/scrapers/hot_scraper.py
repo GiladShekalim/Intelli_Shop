@@ -91,11 +91,20 @@ def extract_discounts_for_category(driver, category_url, category_name):
                     href = button.get_attribute("href") or button.get_attribute("data-href") or ""
 
                     # Phone detection logic
+                    print(f"[DEBUG] Button text: '{button_text}'")
+                    print(f"[DEBUG] Button href: '{href}'")
+
                     is_tel = False
                     if "tel:" in button_html.lower():
                         is_tel = True
                     elif re.search(r"\b0\d{1,2}[-\s]?\d{3}[-\s]?\d{4}\b", button_text):
                         is_tel = True
+                    elif re.search(r"\*?\d{2,6}\*?", button_text):
+                        is_tel = True
+                    elif button_text.strip().startswith("*") or button_text.strip().endswith("*"):
+                        digits = button_text.strip().replace("*", "")
+                        if digits.isdigit():
+                            is_tel = True
                     elif "להזמנה" in button_text or "להזמנות" in button_text:
                         is_tel = True
                     elif href.lower().startswith("tel:"):
