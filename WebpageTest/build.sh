@@ -86,6 +86,10 @@ test_mongodb_connection() {
 run_database_update() {
     log "Running database update script..." 1 "$SCRIPT_NAME"
     
+    # Clear coupons collection before inserting new data
+    log "Clearing existing coupons collection..." 1 "$SCRIPT_NAME"
+    python manage.py clear_coupons
+    
     # Use relative paths based on script location
     local base_dir="$SCRIPT_DIR"
     local script_path="$base_dir/$PROJECT_DIR/update_database.py"
@@ -117,6 +121,10 @@ run_groq_enhancement() {
     
     # Verify Groq API key first
     verify_groq_api_key || return 1
+    
+    # Clear coupons collection before enhancement
+    log "Clearing existing coupons collection before AI enhancement..." 1 "$SCRIPT_NAME"
+    python manage.py clear_coupons
     
     # Use relative paths based on script location
     local base_dir="$SCRIPT_DIR"
