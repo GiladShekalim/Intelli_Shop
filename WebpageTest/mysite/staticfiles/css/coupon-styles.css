@@ -1,0 +1,408 @@
+/**
+ * Coupon Styles - Reusable CSS for coupon display across all pages
+ * This file contains all styles needed for consistent coupon card display
+ */
+
+/* Coupon Card Styles - Centralized styling for consistent UI across all pages */
+
+/* Main coupon card container */
+.discount-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    background: #fafbfc;
+    direction: rtl;
+    text-align: right;
+    font-family: "Segoe UI", Arial, "Noto Sans Hebrew", "Open Sans", sans-serif;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.discount-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+/* Flex row for image and details */
+.discount-flex-row {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 12px;
+    flex-wrap: nowrap;
+}
+
+/* Image column */
+.discount-image-col {
+    flex: 0 0 400px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.discount-image-col img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Details column */
+.discount-details-col {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* Bottom row for actions */
+.discount-bottom-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    gap: 100px;
+    flex-wrap: wrap;
+}
+
+.discount-bottom-row > div, 
+.discount-bottom-row > a {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Price styling */
+.price-type-col {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 12px;
+}
+
+.price-label-big {
+    margin-bottom: 0;
+    background: #007bff;
+    color: white;
+    padding: 3px 9px;
+    border-radius: 16px;
+    font-size: 1em;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.price-value-big {
+    margin-bottom: 0;
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #333;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 12px;
+}
+
+/* Title and meta information */
+.discount-title {
+    font-size: 2em;
+    font-weight: bold;
+    background: linear-gradient(90deg, #f0f2f5 60%, #ffe082 100%);
+    padding: 8px 18px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
+
+.discount-meta {
+    font-size: 0.55em;
+    color: #555;
+    margin-right: 18px;
+    vertical-align: middle;
+}
+
+.meta-item {
+    margin-left: 18px;
+    display: inline-block;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 2px 10px;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+.expired-label {
+    color: #fff;
+    background: #e53935;
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-size: 1em;
+    font-weight: bold;
+    margin-top: 4px;
+    display: inline-block;
+    box-shadow: 0 1px 4px rgba(229,57,53,0.08);
+    letter-spacing: 0.03em;
+}
+
+/* Button styles */
+.copy-code-btn {
+    background: #ff9800;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+    display: inline-block;
+    font-size: 1em;
+    white-space: nowrap;
+}
+
+.copy-code-btn:hover {
+    background: #f57c00;
+}
+
+.copy-code-btn.copied {
+    background: #4caf50;
+    text-align: center;
+}
+
+.site-link-btn {
+    display: inline-block;
+    background: #ffb347;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.site-link-btn:hover {
+    background: #ffa327;
+    color: #fff;
+    text-decoration: none;
+}
+
+.site-link-btn.provider-link-btn {
+    background: #d84368;
+    color: white;
+}
+
+.site-link-btn.provider-link-btn:hover {
+    background: #c33a5d;
+    color: white;
+}
+
+/* Favorite controls */
+.like-icon-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.like-icon {
+    font-size: 1.6em;
+    color: #ff0000;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.like-icon:hover {
+    color: #cc0000;
+}
+
+.like-icon.favorite-active {
+    color: #ff0000 !important;
+}
+
+.like-fav-text {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #ff6666;
+    display: flex;
+    align-items: center;
+}
+
+/* Show more/less functionality */
+.show-more-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.show-more-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Loading and error states */
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #333;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #dee2e6;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e9ecef;
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.no-results i {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 16px;
+}
+
+.no-results p {
+    color: #495057;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+.error-message {
+    text-align: center;
+    padding: 20px;
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    margin: 20px 0;
+    color: #d32f2f;
+}
+
+.error-message i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+/* Filter summary */
+.filter-summary {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    direction: rtl;
+    text-align: right;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .discount-flex-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .discount-image-col {
+        flex: none;
+        width: 100%;
+    }
+    
+    .discount-image-col img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .discount-bottom-row {
+        gap: 20px;
+        justify-content: space-between;
+    }
+    
+    .discount-title {
+        font-size: 1.5em;
+    }
+    
+    .price-value-big {
+        font-size: 1.8em;
+    }
+}
+
+/* Favorites page specific styles */
+.favorite-item {
+    border-left: 4px solid #ff0000;
+}
+
+.no-favorites-message {
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.no-favorites-message i {
+    font-size: 4rem;
+    color: #ccc;
+    margin-bottom: 16px;
+}
+
+.no-favorites-message h3 {
+    margin-bottom: 16px;
+}
+
+.no-favorites-message p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Night Mode Support */
+body.night-mode .discount-card {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+body.night-mode .discount-title {
+    background: linear-gradient(90deg, #4a5568 60%, #744210 100%);
+    color: #e2e8f0;
+}
+
+body.night-mode .price-value-big {
+    color: #e2e8f0;
+}
+
+body.night-mode .meta-item {
+    background: #4a5568;
+    color: #e2e8f0;
+}
+
+body.night-mode .no-results {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+body.night-mode .no-results i {
+    color: #a0aec0;
+}
+
+body.night-mode .no-results p {
+    color: #e2e8f0;
+} 

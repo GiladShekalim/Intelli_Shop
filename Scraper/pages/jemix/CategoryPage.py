@@ -15,6 +15,9 @@
 #shopping_page.click_item("Specific Product Name")
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from Scraper.pages.base.BasePage import BasePage
 
 class CategoryPage(BasePage):
@@ -23,13 +26,68 @@ class CategoryPage(BasePage):
     PROVIDER_LINK = (By.CSS_SELECTOR, "a.elementor-post__thumbnail__link")
     PROVIDER_THUMBNAIL = (By.CSS_SELECTOR, "div.elementor-post__thumbnail img")
 
-    def __init__(self, driver, category_url):
+    def __init__(self, driver, category_url, category_name=""):
         super().__init__(driver)
         self.category_url = category_url
+        self.category_name = category_name
 
     def navigate_to_category(self):
         """Navigate to the category page"""
         self.driver.get(self.category_url)
+
+    def get_provider_links(self):
+        """Get all provider links in the category page with enhanced data
+        
+        Returns:
+            list: List of provider data dictionaries
+        """
+        providers = []
+        articles = self.get_provider_articles()
+        
+        for article in articles:
+            try:
+                link_element = article.find_element(*self.PROVIDER_LINK)
+                provider_url = link_element.get_attribute('href')
+                
+                # Extract provider name from URL
+                provider_name = self._extract_provider_name_from_url(provider_url)
+                
+                # Extract thumbnail if available
+                try:
+                    thumbnail_element = article.find_element(*self.PROVIDER_THUMBNAIL)
+                    thumbnail_src = thumbnail_element.get_attribute('src')
+                except NoSuchElementException:
+                    thumbnail_src = ""
+                
+                providers.append({
+                    'url': provider_url,
+                    'name': provider_name,
+                    'title': provider_name.replace('-', ' ').replace('_', ' ').title(),
+                    'thumbnail': thumbnail_src,
+                    'category': self.category_name
+                })
+            except NoSuchElementException:
+                # Article without link is valid, continue to next
+                continue
+        
+        return providers
+
+    def _extract_provider_name_from_url(self, url):
+        """Extract provider name from URL"""
+        if not url:
+            return ""
+        
+        # Extract from URLs like "https://www.jemix.co.il/addict-coupon/"
+        if "jemix.co.il" in url:
+            parts = url.rstrip('/').split('/')
+            if len(parts) > 0:
+                last_part = parts[-1]
+                # Remove "-coupon" suffix if present
+                if last_part.endswith('-coupon'):
+                    return last_part[:-8]  # Remove "-coupon"
+                return last_part
+        
+        return ""
 
     def get_item_list(self, item_class_name):
         # Retrieve a list of items (e.g., coupons, products) by class name
@@ -48,26 +106,6 @@ class CategoryPage(BasePage):
             list: List of article elements
         """
         return self.driver.find_elements(*self.PROVIDER_ARTICLE)
-
-    def get_provider_links(self):
-        """Get all provider links in the category page
-        
-        Returns:
-            list: List of provider URLs
-        """
-        links = []
-        articles = self.get_provider_articles()
-        for article in articles:
-            try:
-                link = article.find_element(*self.PROVIDER_LINK)
-                links.append({
-                    'url': link.get_attribute('href'),
-                    'title': link.get_attribute('href').split('/')[-2].replace('-coupon', '').replace('-', ' ').title()
-                })
-            except:
-                # Article without link is valid, continue to next
-                continue
-        return links
 
     def verify_provider_thumbnails(self):
         """Verify that provider articles with links have thumbnails

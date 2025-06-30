@@ -6,6 +6,7 @@ from Scraper.pages.tests.jemix.LoginPage_test import TestLogin
 from Scraper.pages.tests.jemix.test_logout import TestLogout
 from Scraper.pages.tests.jemix.test_main_navigation import TestMainNavigation
 from Scraper.pages.tests.jemix.test_category_navigation import TestCategoryNavigation
+from Scraper.pages.tests.jemix.test_coupon_data_collection import TestCouponDataCollection
 
 if __name__ == '__main__':
     # Create test suite
@@ -17,7 +18,8 @@ if __name__ == '__main__':
         TestLogin,
         TestLogout,
         TestMainNavigation,
-        TestCategoryNavigation
+        TestCategoryNavigation,
+        TestCouponDataCollection  # New comprehensive coupon collection test
     ]
     
     for test_case in test_cases:

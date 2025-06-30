@@ -1,4 +1,4 @@
-Harry Potter Books API Test Results - 2025-06-06 00:21:14
+Harry Potter Books API Test Results - 2025-06-30 15:54:55
 ==================================================
 
 Failed Tests:
@@ -45,57 +45,3 @@ Summary:
 Total Tests: 8
 Passed: 3
 Failed: 5
-
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-Terminal Logs: (Copy Past)
-
-# ./Selenium_Test.sh 1
-Requirement already satisfied: requests in ./venv/lib/python3.12/site-packages (2.32.3)
-Requirement already satisfied: charset-normalizer<4,>=2 in ./venv/lib/python3.12/site-packages (from requests) (3.4.2)
-Requirement already satisfied: idna<4,>=2.5 in ./venv/lib/python3.12/site-packages (from requests) (3.10)
-Requirement already satisfied: urllib3<3,>=1.21.1 in ./venv/lib/python3.12/site-packages (from requests) (2.4.0)
-Requirement already satisfied: certifi>=2017.4.17 in ./venv/lib/python3.12/site-packages (from requests) (2025.4.26)
-Running tests...
-Traceback (most recent call last):
-  File "/mnt/c/Users/Gilad/Desktop/repo/Intelli-Shop/Scraper/pages/tests/potter-api/execute_tests.py", line 11, in <module>
-    from api_get import TestHarryPotterBooksAPI
-  File "/mnt/c/Users/Gilad/Desktop/repo/Intelli-Shop/Scraper/pages/tests/potter-api/api_get.py", line 18, in <module>
-    from .api_modules import APIConfig, BookSchema, BookData
-ImportError: attempted relative import with no known parent package
-root@DESKTOP-1UGL8PV:/mnt/c/Users/Gilad/Desktop/repo/Intelli-Shop/Scraper# ./Selenium_Test.sh 1
-Requirement already satisfied: requests in ./venv/lib/python3.12/site-packages (2.32.3)
-Requirement already satisfied: charset-normalizer<4,>=2 in ./venv/lib/python3.12/site-packages (from requests) (3.4.2)
-Requirement already satisfied: idna<4,>=2.5 in ./venv/lib/python3.12/site-packages (from requests) (3.10)
-Requirement already satisfied: urllib3<3,>=1.21.1 in ./venv/lib/python3.12/site-packages (from requests) (2.4.0)
-Requirement already satisfied: certifi>=2017.4.17 in ./venv/lib/python3.12/site-packages (from requests) (2025.4.26)
-Running tests...
-test_book_data_validation (Scraper.pages.tests.potter_api.api_get.TestHarryPotterBooksAPI.test_book_data_validation)
-Test specific book data against known values. ... ok
-test_book_schema_validation (Scraper.pages.tests.potter_api.api_get.TestHarryPotterBooksAPI.test_book_schema_validation)
-Test schema validation for all book objects. ... ok
-test_get_all_books (Scraper.pages.tests.potter_api.api_get.TestHarryPotterBooksAPI.test_get_all_books)
-Test retrieving all books from the API. ... ok
-test_error_handling (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_error_handling)
-Test error handling for invalid parameters. ... ok
-test_pagination_consistency (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_pagination_consistency)
-Test pagination consistency and completeness. ... FAIL
-test_query_parameter_combinations (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_query_parameter_combinations)
-Test various combinations of query parameters. ...
-  test_query_parameter_combinations (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_query_parameter_combinations) (params={'index': 0})      
-Test various combinations of query parameters. ... FAIL
-test_response_headers (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_response_headers)
-Test response headers and caching behavior. ... ok
-test_search_functionality (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_search_functionality)
-Test the search feature with various search terms. ...
-  test_search_functionality (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_search_functionality) (search_term='Snake')
-Test the search feature with various search terms. ... FAIL
-  test_search_functionality (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_search_functionality) (search_term='Helga')
-Test the search feature with various search terms. ... FAIL
-  test_search_functionality (Scraper.pages.tests.potter_api.api_houses.TestHarryPotterHousesAPI.test_search_functionality) (search_term='blue')
-Test the search feature with various search terms. ... FAIL
-----------------------------------------------------------------------
-Ran 8 tests in 5.345s
-
-FAILED (failures=5)
