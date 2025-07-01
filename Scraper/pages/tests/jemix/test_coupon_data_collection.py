@@ -28,24 +28,21 @@ from Scraper.config.settings import PAGES
 class TestCouponDataCollection(unittest.TestCase):
     """Test suite for comprehensive coupon data collection from Jemix."""
     
-    # JSON Schema for coupon data validation
+    # JSON Schema for coupon data validation - Updated to match new specification
     JSON_SCHEMA = {
-        "discount_id": "string",
+        "discount_id": "string | null",
         "title": "string", 
         "price": "integer",
-        "discount_type": "enum",
+        "discount_type": "string",
         "description": "string",
         "image_link": "string",
         "discount_link": "string",
         "terms_and_conditions": "string",
         "club_name": ["string"],
-        "category": ["string"],
+        "coupon_code": "string | null",
+        "provider_link": "string | null",
         "valid_until": "string",
-        "usage_limit": "integer",
-        "coupon_code": "string",
-        "provider_link": "string",
-        "consumer_statuses": ["string"],
-        "favorites": ["string"]
+        "usage_limit": "integer"
     }
     
     @classmethod
@@ -92,12 +89,11 @@ class TestCouponDataCollection(unittest.TestCase):
             raise
 
     def validate_coupon_schema(self, coupon_data):
-        """Validate coupon data against the JSON schema"""
+        """Validate coupon data against the updated JSON schema"""
         required_fields = [
             "discount_id", "title", "price", "discount_type", "description",
             "image_link", "discount_link", "terms_and_conditions", "club_name",
-            "category", "valid_until", "usage_limit", "coupon_code", 
-            "provider_link", "consumer_statuses", "favorites"
+            "coupon_code", "provider_link", "valid_until", "usage_limit"
         ]
         
         for field in required_fields:
@@ -105,20 +101,32 @@ class TestCouponDataCollection(unittest.TestCase):
                 return False, f"Missing required field: {field}"
         
         # Validate data types
-        if not isinstance(coupon_data["discount_id"], str):
-            return False, "discount_id must be string"
+        if coupon_data["discount_id"] is not None and not isinstance(coupon_data["discount_id"], str):
+            return False, "discount_id must be string or null"
+        if not isinstance(coupon_data["title"], str):
+            return False, "title must be string"
         if not isinstance(coupon_data["price"], int):
             return False, "price must be integer"
-        if not isinstance(coupon_data["usage_limit"], int):
-            return False, "usage_limit must be integer"
+        if not isinstance(coupon_data["discount_type"], str):
+            return False, "discount_type must be string"
+        if not isinstance(coupon_data["description"], str):
+            return False, "description must be string"
+        if not isinstance(coupon_data["image_link"], str):
+            return False, "image_link must be string"
+        if not isinstance(coupon_data["discount_link"], str):
+            return False, "discount_link must be string"
+        if not isinstance(coupon_data["terms_and_conditions"], str):
+            return False, "terms_and_conditions must be string"
         if not isinstance(coupon_data["club_name"], list):
             return False, "club_name must be list"
-        if not isinstance(coupon_data["category"], list):
-            return False, "category must be list"
-        if not isinstance(coupon_data["consumer_statuses"], list):
-            return False, "consumer_statuses must be list"
-        if not isinstance(coupon_data["favorites"], list):
-            return False, "favorites must be list"
+        if coupon_data["coupon_code"] is not None and not isinstance(coupon_data["coupon_code"], str):
+            return False, "coupon_code must be string or null"
+        if coupon_data["provider_link"] is not None and not isinstance(coupon_data["provider_link"], str):
+            return False, "provider_link must be string or null"
+        if not isinstance(coupon_data["valid_until"], str):
+            return False, "valid_until must be string"
+        if not isinstance(coupon_data["usage_limit"], int):
+            return False, "usage_limit must be integer"
         
         return True, "Valid"
 
@@ -160,7 +168,10 @@ class TestCouponDataCollection(unittest.TestCase):
                         self.all_coupons.append(coupon_data)
                         self.collection_stats["successful_extractions"] += 1
                         self.collection_stats["providers_processed"].append(provider['name'])
-                        print(f"    ✓ Successfully extracted coupon data")
+                        print(f"    ✓ Successfully extracted coupon data:")
+                        print("    " + "="*60)
+                        print(json.dumps(coupon_data, ensure_ascii=False, indent=4))
+                        print("    " + "="*60)
                     else:
                         print(f"    ✗ Schema validation failed: {validation_message}")
                         self.collection_stats["failed_extractions"] += 1

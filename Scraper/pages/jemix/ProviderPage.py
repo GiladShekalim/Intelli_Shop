@@ -91,26 +91,23 @@ class ProviderPage(BasePage):
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
             
+            # Extract discount type from page content
+            discount_type = self._extract_discount_type()
+            
             coupon_data = {
                 "discount_id": str(uuid.uuid4()),
                 "title": self._extract_title(),
                 "price": self._extract_price(),
-                "discount_type": "price",  # Default value
+                "discount_type": discount_type,
                 "description": self._extract_description(),
                 "image_link": self._extract_image(),
                 "discount_link": self._extract_discount_link(),
                 "terms_and_conditions": self._extract_terms(),
                 "club_name": ["Jemix"],
-                "category": [category_name] if category_name else [],
-                "provider_name": self._extract_provider_name(),
                 "coupon_code": None,  # Will be filled after redirect
                 "provider_link": None,  # Will be filled after redirect
                 "valid_until": self._extract_expiry_date(),
-                "usage_limit": self._extract_usage_limit(),
-                "consumer_statuses": ["all"],  # Default value
-                "extraction_timestamp": datetime.now().isoformat(),
-                "source_url": provider_url,
-                "favorites": []  # Always present as empty list if not found
+                "usage_limit": self._extract_usage_limit()
             }
             
             # Handle discount link redirect to get coupon code
@@ -144,7 +141,7 @@ class ProviderPage(BasePage):
             return "קופון"
     
     def _extract_price(self):
-        """Extract price with number parsing"""
+        """Extract price with number parsing - returns integer"""
         for locator in self.PRICE_LOCATORS:
             try:
                 element = self.driver.find_element(By.XPATH, locator)
@@ -230,7 +227,7 @@ class ProviderPage(BasePage):
         return "Unknown Provider"
     
     def _extract_expiry_date(self):
-        """Extract expiry date if available"""
+        """Extract expiry date and convert to ISO format string"""
         try:
             # Look for date patterns in Hebrew
             date_patterns = [
@@ -243,13 +240,20 @@ class ProviderPage(BasePage):
             for pattern in date_patterns:
                 match = re.search(pattern, page_text)
                 if match:
-                    return match.group(1)
+                    date_str = match.group(1)
+                    # Convert DD/MM/YYYY to ISO format YYYY-MM-DD
+                    if '/' in date_str:
+                        day, month, year = date_str.split('/')
+                        return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+                    elif '-' in date_str:
+                        day, month, year = date_str.split('-')
+                        return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
         except:
             pass
-        return None
+        return "2030-01-01"  # Default expiry date as per specification
     
     def _extract_usage_limit(self):
-        """Extract usage limit information. Defaults to 1 if not found."""
+        """Extract usage limit information. Returns integer or 1 as default."""
         try:
             elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'שימוש') or contains(text(), 'usage')]")
             for element in elements:
@@ -261,7 +265,7 @@ class ProviderPage(BasePage):
                         return int(number_match.group(1))
         except Exception:
             pass
-        return 1  # Default to 1 if not found
+        return 1  # Return 1 as default if not found
     
     def _extract_coupon_code_data(self, discount_link):
         """Follow discount link to extract coupon code and provider link"""
@@ -388,3 +392,56 @@ class ProviderPage(BasePage):
         self.enter_text(coupon_input_locator, coupon_code)
         apply_button_locator = (By.ID, "apply-coupon-button")  # Replace with actual ID
         self.click(apply_button_locator)
+
+    def _extract_discount_type(self):
+        """Extract discount type from page content"""
+        try:
+            page_text = self.driver.page_source.lower()
+            
+            # Check for percentage discounts
+            if '%' in page_text or 'אחוז' in page_text or 'percent' in page_text:
+                return "percentage"
+            
+            # Check for fixed amount discounts
+            if '₪' in page_text or 'shekel' in page_text or 'nis' in page_text:
+                return "fixed_amount"
+            
+            # Check for buy one get one
+            if 'קנה' in page_text and 'קבל' in page_text or 'buy' in page_text and 'get' in page_text:
+                return "buy_one_get_one"
+            
+            # Check for cost discounts
+            if 'עלות' in page_text or 'cost' in page_text:
+                return "cost"
+            
+        except Exception:
+            pass
+        
+        return "fixed_amount"  # Default to fixed_amount
+
+    def _extract_consumer_statuses(self):
+        """Extract consumer statuses from page content"""
+        try:
+            page_text = self.driver.page_source.lower()
+            statuses = []
+            
+            # Check for new customer indicators
+            if 'לקוח חדש' in page_text or 'new customer' in page_text:
+                statuses.append("new_customer")
+            
+            # Check for returning customer indicators
+            if 'לקוח חוזר' in page_text or 'returning customer' in page_text:
+                statuses.append("returning_customer")
+            
+            # Check for VIP customer indicators
+            if 'vip' in page_text or 'premium' in page_text:
+                statuses.append("vip_customer")
+            
+            # If no specific status found, default to all
+            if not statuses:
+                statuses.append("all")
+                
+            return statuses
+            
+        except Exception:
+            return ["all"]  # Default to all if extraction fails

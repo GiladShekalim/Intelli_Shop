@@ -91,9 +91,14 @@ class ComprehensiveCouponExtractionTest:
                     coupon_data = self.provider_page.extract_coupon_data(provider_url, category_name)
                     
                     if coupon_data:
-                        self.extracted_data.append(coupon_data)
-                        self.test_results["successful_extractions"] += 1
-                        print(f"   ✅ Successfully extracted data")
+                        # Validate coupon data structure against new schema
+                        if self.validate_coupon_schema(coupon_data):
+                            self.extracted_data.append(coupon_data)
+                            self.test_results["successful_extractions"] += 1
+                            print(f"   ✅ Successfully extracted data")
+                        else:
+                            self.test_results["failed_extractions"] += 1
+                            print(f"   ❌ Invalid data structure")
                     else:
                         self.test_results["failed_extractions"] += 1
                         print(f"   ❌ Failed to extract data")
@@ -110,6 +115,76 @@ class ComprehensiveCouponExtractionTest:
                 
         except Exception as e:
             print(f"   ❌ Category {category_name} failed: {str(e)}")
+    
+    def validate_coupon_schema(self, coupon_data):
+        """Validate coupon data against the updated schema"""
+        required_fields = [
+            "discount_id", "title", "price", "discount_type", "description",
+            "image_link", "discount_link", "terms_and_conditions", "club_name",
+            "coupon_code", "provider_link", "valid_until", "usage_limit"
+        ]
+        
+        # Check if all required fields are present
+        for field in required_fields:
+            if field not in coupon_data:
+                print(f"   ⚠️  Missing required field: {field}")
+                return False
+        
+        # Validate field types
+        if coupon_data["discount_id"] is not None and not isinstance(coupon_data["discount_id"], str):
+            print(f"   ⚠️  discount_id must be string or null")
+            return False
+        
+        if not isinstance(coupon_data["title"], str):
+            print(f"   ⚠️  title must be string")
+            return False
+        
+        if not isinstance(coupon_data["price"], int):
+            print(f"   ⚠️  price must be integer")
+            return False
+        
+        if not isinstance(coupon_data["discount_type"], str):
+            print(f"   ⚠️  discount_type must be string")
+            return False
+        
+        if not isinstance(coupon_data["description"], str):
+            print(f"   ⚠️  description must be string")
+            return False
+        
+        if not isinstance(coupon_data["image_link"], str):
+            print(f"   ⚠️  image_link must be string")
+            return False
+        
+        if not isinstance(coupon_data["discount_link"], str):
+            print(f"   ⚠️  discount_link must be string")
+            return False
+        
+        if not isinstance(coupon_data["terms_and_conditions"], str):
+            print(f"   ⚠️  terms_and_conditions must be string")
+            return False
+        
+        if not isinstance(coupon_data["club_name"], list):
+            print(f"   ⚠️  club_name must be array")
+            return False
+        
+        if coupon_data["coupon_code"] is not None and not isinstance(coupon_data["coupon_code"], str):
+            print(f"   ⚠️  coupon_code must be string or null")
+            return False
+        
+        if coupon_data["provider_link"] is not None and not isinstance(coupon_data["provider_link"], str):
+            print(f"   ⚠️  provider_link must be string or null")
+            return False
+        
+        if not isinstance(coupon_data["valid_until"], str):
+            print(f"   ⚠️  valid_until must be string")
+            return False
+        
+        # Validate usage_limit is integer
+        if not isinstance(coupon_data["usage_limit"], int):
+            print(f"   ⚠️  usage_limit must be integer")
+            return False
+        
+        return True
     
     def generate_extraction_report(self):
         """Generate comprehensive extraction report"""
@@ -128,16 +203,21 @@ class ComprehensiveCouponExtractionTest:
         self.test_results["extraction_warnings"].extend(extraction_report["warnings"])
         
         # Print summary
-        print(f"\n EXTRACTION SUMMARY:")
+        print(f"\n📊 EXTRACTION SUMMARY:")
         print(f"   Total providers tested: {self.test_results['total_providers_tested']}")
         print(f"   Successful extractions: {self.test_results['successful_extractions']}")
         print(f"   Failed extractions: {self.test_results['failed_extractions']}")
-        print(f"   Success rate: {(self.test_results['successful_extractions']/self.test_results['total_providers_tested']*100):.1f}%")
+        if self.test_results['total_providers_tested'] > 0:
+            success_rate = (self.test_results['successful_extractions']/self.test_results['total_providers_tested']*100)
+            print(f"   Success rate: {success_rate:.1f}%")
         
         print(f"\n⚠️  MISSING FIELDS SUMMARY:")
         for field, count in missing_fields_count.items():
-            percentage = (count / self.test_results['total_providers_tested']) * 100
-            print(f"   {field}: {count} times ({percentage:.1f}%)")
+            if self.test_results['total_providers_tested'] > 0:
+                percentage = (count / self.test_results['total_providers_tested']) * 100
+                print(f"   {field}: {count} times ({percentage:.1f}%)")
+            else:
+                print(f"   {field}: {count} times")
         
         print(f"\n🚨 EXTRACTION WARNINGS ({len(self.test_results['extraction_warnings'])} total):")
         for warning in self.test_results['extraction_warnings'][:10]:  # Show first 10 warnings
@@ -152,9 +232,14 @@ class ComprehensiveCouponExtractionTest:
     def save_test_results(self):
         """Save test results to file"""
         results = {
-            "test_results": self.test_results,
-            "extracted_data": self.extracted_data,
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+            "metadata": {
+                "collection_date": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                "total_coupons": len(self.extracted_data),
+                "source": "Jemix",
+                "schema_version": "2.0"
+            },
+            "coupons": self.extracted_data,
+            "test_results": self.test_results
         }
         
         filename = f"comprehensive_coupon_extraction_results_{int(time.time())}.json"
