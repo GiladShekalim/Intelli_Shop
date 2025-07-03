@@ -124,14 +124,16 @@ window.CouponUtils = {
                         Copy Code Coupon
                     </div>
                 ` : ''}
-                ${coupon.provider_link ? `
+                ${(typeof coupon.provider_link === 'string' && coupon.provider_link.trim().toLowerCase().startsWith('https')) ? `
                     <a href="${coupon.provider_link}" target="_blank" class="site-link-btn provider-link-btn">
                         Go To Provider
                     </a>
                 ` : ''}
-                <a href="${coupon.discount_link}" target="_blank" class="site-link-btn">
-                    Discount Link
-                </a>
+                ${(coupon.discount_link && typeof coupon.discount_link === 'string' && coupon.discount_link.trim().toLowerCase().startsWith('https')) ? `
+                    <a href="${coupon.discount_link}" target="_blank" class="site-link-btn">
+                        Discount Link
+                    </a>
+                ` : ''}
                 ${favoriteControlsHtml}
             </div>
             <hr>
