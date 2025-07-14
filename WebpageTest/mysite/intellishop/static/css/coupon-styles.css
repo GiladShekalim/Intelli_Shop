@@ -61,7 +61,7 @@
     justify-content: center;
     align-items: center;
     margin-top: 10px;
-    gap: 100px;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
@@ -204,19 +204,19 @@
 }
 
 .like-icon {
-    font-size: 1.6em;
-    color: #ff0000;
+    font-size: 2em;
+    color: #bbb;
     cursor: pointer;
-    user-select: none;
     transition: color 0.2s;
-}
-
-.like-icon:hover {
-    color: #cc0000;
+    vertical-align: middle;
 }
 
 .like-icon.favorite-active {
-    color: #ff0000 !important;
+    color: #ff2d55;
+}
+
+.fav-btn {
+    vertical-align: middle;
 }
 
 .like-fav-text {
@@ -405,4 +405,9 @@ body.night-mode .no-results i {
 
 body.night-mode .no-results p {
     color: #e2e8f0;
+} 
+
+.favorites-container {
+    padding-left: 2vw;
+    padding-right: 2vw;
 } 

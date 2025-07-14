@@ -1,0 +1,68 @@
+<div class="discount-card favorite-item {{ card_class|default:'' }}" data-discount-id="{{ coupon.discount_id }}" style="width: 100%; max-width: none;">
+    <div class="discount-flex-row" style="display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 24px; margin-bottom: 12px; flex-wrap: nowrap; justify-content: flex-end; width: 100%;">
+        <div class="discount-image-col">
+            {% if coupon.store_logo %}
+                <img src="{{ coupon.store_logo }}" alt="{{ coupon.name }}">
+            {% else %}
+                <div class="placeholder-logo">
+                    <i class="bi bi-shop" style="font-size: 4rem; color: #ccc;"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="discount-details-col" style="flex: 1 1 0; min-width: 0;">
+            <h4 class="discount-title">{{ coupon.name }}
+                <span class="discount-meta">
+                    {% if coupon.date_expires %}
+                        <span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: {{ coupon.date_expires }}</span>
+                    {% endif %}
+                    {% if coupon.minimum_amount > 0 %}
+                        <span class='meta-item'><i class='bi bi-currency-dollar'></i> מינימום רכישה: ${{ coupon.minimum_amount }}</span>
+                    {% endif %}
+                </span>
+            </h4>
+            <div class="desc-block">
+                <strong>תיאור:</strong>
+                <div>
+                    {% if coupon.description|length > 250 %}
+                        <span id="desc-{{ coupon.discount_id }}-short">{{ coupon.description|slice:":250" }}...</span>
+                        <span id="desc-{{ coupon.discount_id }}-full" style="display:none;">{{ coupon.description }}</span>
+                        <a href="#" class="show-more-link" data-id="desc-{{ coupon.discount_id }}">הצג עוד</a>
+                    {% else %}
+                        <span>{{ coupon.description }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="discount-bottom-row" style="display: flex; justify-content: center; align-items: center; gap: 32px; flex-wrap: wrap; margin-top: 10px; width: 100%;">
+        <div class="price-type-col" style="display: flex; align-items: center; gap: 8px;">
+            <span class="price-label-big" style="background:{% if 'percentage' in coupon.amount %}#28a745{% else %}#007bff{% endif %};color:white;padding:3px 14px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
+                {% if 'percentage' in coupon.amount %}% הנחה{% else %}מחיר סופי{% endif %}
+            </span>
+            <span class="price-value-big" style="font-size: 2em;">{{ coupon.amount }}</span>
+        </div>
+        <a href="#" class="discount-link-btn" style="background: #ffc107; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center;">Discount Link</a>
+        <a href="{{ coupon.store_url }}" target="_blank" class="go-to-provider-btn" style="background: #e83e8c; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center;">Go To Provider</a>
+        {% if coupon.code %}
+            <div class="copy-code-btn" data-code="{{ coupon.code }}" style="background: #fd7e14; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;">Copy Code Coupon</div>
+        {% endif %}
+        {% if show_favorite_controls|default:True %}
+            <div class="like-icon-col">
+                {% if show_remove_favorite|default:False %}
+                    <span class="like-fav-text" style="display: flex; align-items: center; gap: 4px; font-weight: 500; color: #ff6b6b;">
+                        <span class="like-fav-label">Remove</span>
+                        <span class="like-icon favorite-active" title="Click To Remove" data-discount-id="{{ coupon.discount_id }}" style="font-size: 1.5em; color: #ff0000; margin: 0 4px;">&#10084;</span>
+                        Favorites
+                    </span>
+                {% else %}
+                    <span class="like-fav-text" style="display: flex; align-items: center; gap: 4px; font-weight: 500; color: #ff6b6b;">
+                        <span class="like-fav-label">Add</span>
+                        <span class="like-icon" title="Click To Add/Remove" data-discount-id="{{ coupon.discount_id }}" style="font-size: 1.5em; color: #ccc; margin: 0 4px;">&#10084;</span>
+                        Favorites
+                    </span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    <hr>
+</div>
