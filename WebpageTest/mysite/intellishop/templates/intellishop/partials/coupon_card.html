@@ -1,5 +1,5 @@
-<div class="discount-card favorite-item {{ card_class|default:'' }}" data-discount-id="{{ coupon.discount_id }}" style="width: 100%; max-width: none;">
-    <div class="discount-flex-row" style="display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 24px; margin-bottom: 12px; flex-wrap: nowrap; justify-content: flex-end; width: 100%;">
+<div class="discount-card favorite-item {{ card_class|default:'' }}" data-discount-id="{{ coupon.discount_id }}">
+    <div class="discount-flex-row">
         <div class="discount-image-col">
             {% if coupon.store_logo %}
                 <img src="{{ coupon.store_logo }}" alt="{{ coupon.name }}">
@@ -32,9 +32,21 @@
                     {% endif %}
                 </div>
             </div>
+            <div class="terms-block" style="margin-top:10px;">
+                <strong>תנאים והגבלות:</strong>
+                <div>
+                    {% if coupon.terms_and_conditions|length > 250 %}
+                        <span id="terms-{{ coupon.discount_id }}-short">{{ coupon.terms_and_conditions|slice:":250" }}...</span>
+                        <span id="terms-{{ coupon.discount_id }}-full" style="display:none;">{{ coupon.terms_and_conditions }}</span>
+                        <a href="#" class="show-more-link" data-id="terms-{{ coupon.discount_id }}">הצג עוד</a>
+                    {% else %}
+                        <span>{{ coupon.terms_and_conditions }}</span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
-    <div class="discount-bottom-row" style="display: flex; justify-content: center; align-items: center; gap: 32px; flex-wrap: wrap; margin-top: 10px; width: 100%;">
+    <div class="discount-bottom-row">
         <div class="price-type-col" style="display: flex; align-items: center; gap: 8px;">
             <span class="price-label-big" style="background:{% if 'percentage' in coupon.amount %}#28a745{% else %}#007bff{% endif %};color:white;padding:3px 14px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
                 {% if 'percentage' in coupon.amount %}% הנחה{% else %}מחיר סופי{% endif %}
@@ -66,3 +78,25 @@
     </div>
     <hr>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.show-more-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            var id = this.getAttribute('data-id');
+            var shortSpan = document.getElementById(id + '-short');
+            var fullSpan = document.getElementById(id + '-full');
+            if (shortSpan.style.display === 'none') {
+                shortSpan.style.display = '';
+                fullSpan.style.display = 'none';
+                this.textContent = 'הצג עוד';
+            } else {
+                shortSpan.style.display = 'none';
+                fullSpan.style.display = '';
+                this.textContent = 'הצג פחות';
+            }
+        });
+    });
+});
+</script>

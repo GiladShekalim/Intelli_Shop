@@ -97,7 +97,8 @@ def index_home(request):
                 'date_expires': coupon.get('valid_until', ''),
                 'store_url': coupon.get('discount_link', ''),
                 'minimum_amount': 0,  # Default value
-                'discount_id': coupon.get('discount_id', '')
+                'discount_id': coupon.get('discount_id', ''),
+                'terms_and_conditions': coupon.get('terms_and_conditions', '')
             }
             formatted_coupons.append(formatted_coupon)
         except Exception as e:
