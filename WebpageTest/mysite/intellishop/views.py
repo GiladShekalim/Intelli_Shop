@@ -98,7 +98,10 @@ def index_home(request):
                 'store_url': coupon.get('discount_link', ''),
                 'minimum_amount': 0,  # Default value
                 'discount_id': coupon.get('discount_id', ''),
-                'terms_and_conditions': coupon.get('terms_and_conditions', '')
+                'terms_and_conditions': coupon.get('terms_and_conditions', ''),
+                'usage_limit': coupon.get('usage_limit', None),
+                'price': coupon.get('price', 0),  # Ensure price is passed
+                'discount_type': coupon.get('discount_type', ''),  # Ensure discount_type is passed
             }
             formatted_coupons.append(formatted_coupon)
         except Exception as e:

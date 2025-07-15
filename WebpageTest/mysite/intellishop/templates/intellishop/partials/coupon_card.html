@@ -10,10 +10,31 @@
             {% endif %}
         </div>
         <div class="discount-details-col" style="flex: 1 1 0; min-width: 0;">
-            <h4 class="discount-title">{{ coupon.name }}
+            <h4 class="discount-title">
+                {{ coupon.name }}
                 <span class="discount-meta">
                     {% if coupon.date_expires %}
-                        <span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: {{ coupon.date_expires }}</span>
+                        {% now "Y-m-d" as today_date %}
+                        {% if coupon.date_expires < today_date %}
+                            <span class="meta-item" style="background: #e53935; color: #fff; font-weight: bold; padding: 4px 10px; border-radius: 8px; margin-right: 8px;">פג תוקף</span>
+                            <span class='meta-item' style="color: #e53935;">
+                                <i class='bi bi-calendar-event'></i> בתוקף עד: {{ coupon.date_expires }}
+                                {% if coupon.usage_limit is not None %}
+                                    <span style="background: #f5f6fa; color: #444; font-weight: 500; margin-right: 8px; font-size: 1em; padding: 4px 12px; border-radius: 8px; display: inline-block; margin-inline-start: 8px;">
+                                        כמות ההנחות שנותרה: {{ coupon.usage_limit }}
+                                    </span>
+                                {% endif %}
+                            </span>
+                        {% else %}
+                            <span class='meta-item'>
+                                <i class='bi bi-calendar-event'></i> בתוקף עד: {{ coupon.date_expires }}
+                                {% if coupon.usage_limit is not None %}
+                                    <span style="background: #f5f6fa; color: #444; font-weight: 500; margin-right: 8px; font-size: 1em; padding: 4px 12px; border-radius: 8px; display: inline-block; margin-inline-start: 8px;">
+                                        כמות ההנחות שנותרה: {{ coupon.usage_limit }}
+                                    </span>
+                                {% endif %}
+                            </span>
+                        {% endif %}
                     {% endif %}
                     {% if coupon.minimum_amount > 0 %}
                         <span class='meta-item'><i class='bi bi-currency-dollar'></i> מינימום רכישה: ${{ coupon.minimum_amount }}</span>
@@ -48,10 +69,17 @@
     </div>
     <div class="discount-bottom-row">
         <div class="price-type-col" style="display: flex; align-items: center; gap: 8px;">
-            <span class="price-label-big" style="background:{% if 'percentage' in coupon.amount %}#28a745{% else %}#007bff{% endif %};color:white;padding:3px 14px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
-                {% if 'percentage' in coupon.amount %}% הנחה{% else %}מחיר סופי{% endif %}
-            </span>
-            <span class="price-value-big" style="font-size: 2em;">{{ coupon.amount }}</span>
+            {% if coupon.discount_type == 'percentage' %}
+                <span class="price-label-big" style="background:#28a745;color:white;padding:3px 14px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
+                    הנחה %
+                </span>
+                <span class="price-value-big" style="font-size: 2em;">{{ coupon.price|floatformat:0 }}</span>
+            {% else %}
+                <span class="price-label-big" style="background:#007bff;color:white;padding:3px 14px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
+                    מחיר סופי
+                </span>
+                <span class="price-value-big" style="font-size: 2em;">{{ coupon.price|floatformat:0 }}</span>
+            {% endif %}
         </div>
         <a href="#" class="discount-link-btn" style="background: #ffc107; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center;">Discount Link</a>
         <a href="{{ coupon.store_url }}" target="_blank" class="go-to-provider-btn" style="background: #e83e8c; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center;">Go To Provider</a>
@@ -87,14 +115,16 @@ document.addEventListener('DOMContentLoaded', function() {
             var id = this.getAttribute('data-id');
             var shortSpan = document.getElementById(id + '-short');
             var fullSpan = document.getElementById(id + '-full');
-            if (shortSpan.style.display === 'none') {
-                shortSpan.style.display = '';
-                fullSpan.style.display = 'none';
-                this.textContent = 'הצג עוד';
-            } else {
-                shortSpan.style.display = 'none';
-                fullSpan.style.display = '';
-                this.textContent = 'הצג פחות';
+            if (shortSpan && fullSpan) {
+                if (shortSpan.style.display === 'none') {
+                    shortSpan.style.display = '';
+                    fullSpan.style.display = 'none';
+                    this.textContent = 'הצג עוד';
+                } else {
+                    shortSpan.style.display = 'none';
+                    fullSpan.style.display = '';
+                    this.textContent = 'הצג פחות';
+                }
             }
         });
     });
