@@ -18,78 +18,7 @@
             {% if favorite_coupons %}
                 <div class="favorites-container">
                     {% for coupon in favorite_coupons %}
-                        <div class="discount-card favorite-item" data-discount-id="{{ coupon.discount_id }}">
-                            <div class="discount-flex-row">
-                                <div class="discount-image-col">
-                                    <img src="{{ coupon.image_link }}" alt="{{ coupon.title }}" style="max-width:400px; max-height:400px; border-radius:8px;">
-                                </div>
-                                <div class="discount-details-col">
-                                    <h4 class="discount-title">{{ coupon.title }}
-                                        <span class="discount-meta">
-                                            {% if coupon.valid_until %}
-                                                <span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: {{ coupon.valid_until }}
-                                                    {% if coupon.expired %}
-                                                        <span class='expired-label'>פג תוקף</span>
-                                                    {% endif %}
-                                                </span>
-                                            {% endif %}
-                                            {% if coupon.usage_limit %}
-                                                <span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: {{ coupon.usage_limit }}</span>
-                                            {% endif %}
-                                        </span>
-                                    </h4>
-                                    <div class="desc-block">
-                                        <strong>תיאור:</strong>
-                                        <div>
-                                            {% if coupon.description|length > 250 %}
-                                                <span id="desc-{{ coupon.discount_id }}-short">{{ coupon.description|slice:":250" }}...</span>
-                                                <span id="desc-{{ coupon.discount_id }}-full" style="display:none;">{{ coupon.description }}</span>
-                                                <a href="#" class="show-more-link" data-id="desc-{{ coupon.discount_id }}">הצג עוד</a>
-                                            {% else %}
-                                                <span>{{ coupon.description }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="terms-block" style="margin-top:10px;">
-                                        <strong>תנאים והגבלות:</strong>
-                                        <div>
-                                            {% if coupon.terms_and_conditions|length > 250 %}
-                                                <span id="terms-{{ coupon.discount_id }}-short">{{ coupon.terms_and_conditions|slice:":250" }}...</span>
-                                                <span id="terms-{{ coupon.discount_id }}-full" style="display:none;">{{ coupon.terms_and_conditions }}</span>
-                                                <a href="#" class="show-more-link" data-id="terms-{{ coupon.discount_id }}">הצג עוד</a>
-                                            {% else %}
-                                                <span>{{ coupon.terms_and_conditions }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="discount-bottom-row">
-                                <div class="price-type-col">
-                                    <span class="price-label-big" style="background:{% if coupon.discount_type == 'percentage' %}#28a745{% else %}#007bff{% endif %};color:white;padding:3px 9px;border-radius:16px;font-size:1em;font-weight:bold;display:inline-block;vertical-align:middle;">
-                                        {% if coupon.discount_type == 'percentage' %}% הנחה{% else %}מחיר סופי{% endif %}
-                                    </span>
-                                    <span class="price-value-big">{{ coupon.price }}</span>
-                                </div>
-                                {% if coupon.coupon_code %}
-                                    <div class="copy-code-btn" data-code="{{ coupon.coupon_code }}">
-                                        Copy Code Coupon
-                                    </div>
-                                {% endif %}
-                                {% if coupon.provider_link %}
-                                    <a href="{{ coupon.provider_link }}" target="_blank" class="site-link-btn provider-link-btn">
-                                        Go To Provider
-                                    </a>
-                                {% endif %}
-                                <a href="{{ coupon.discount_link }}" target="_blank" class="site-link-btn">
-                                    Discount Link
-                                </a>
-                                <div class="like-icon-col">
-                                    <span class="like-fav-text">Favorites <span class="like-icon favorite-active" title="Click To Remove" data-discount-id="{{ coupon.discount_id }}">&#10084;</span> Remove</span>
-                                </div>
-                            </div>
-                            <hr>
-                        </div>
+                        {% include "intellishop/partials/coupon_card.html" with coupon=coupon show_favorite_controls=True show_remove_favorite=True %}
                     {% endfor %}
                 </div>
             {% else %}

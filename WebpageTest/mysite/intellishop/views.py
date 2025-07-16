@@ -347,12 +347,36 @@ def coupon_detail(request, club_name):
             return redirect('login')
         
         # Get coupons for this specific club - search within the club_name array
-        club_coupons = Coupon.find({'club_name': {'$in': [club_name]}})
+        club_coupons_raw = Coupon.find({'club_name': {'$in': [club_name]}})
         
         # Convert ObjectId to string for JSON serialization
-        for coupon in club_coupons:
+        club_coupons = []
+        for coupon in club_coupons_raw:
             if '_id' in coupon:
                 coupon['_id'] = str(coupon['_id'])
+            if coupon.get('discount_type') == 'percentage':
+                amount = f"{coupon.get('price', 0)}%"
+            else:
+                amount = f"${coupon.get('price', 0)}"
+            club_names = coupon.get('club_name', [])
+            store_name = club_names[0] if club_names else "Unknown Store"
+            formatted_coupon = {
+                'store_name': store_name,
+                'store_logo': coupon.get('image_link', ''),
+                'code': coupon.get('coupon_code', ''),
+                'amount': amount,
+                'name': coupon.get('title', 'Special Offer'),
+                'description': coupon.get('description', ''),
+                'date_expires': coupon.get('valid_until', ''),
+                'store_url': coupon.get('discount_link', ''),
+                'minimum_amount': 0,
+                'discount_id': coupon.get('discount_id', ''),
+                'terms_and_conditions': coupon.get('terms_and_conditions', ''),
+                'usage_limit': coupon.get('usage_limit', None),
+                'price': coupon.get('price', 0),
+                'discount_type': coupon.get('discount_type', ''),
+            }
+            club_coupons.append(formatted_coupon)
         
         # Format club name for display (capitalize first letter)
         display_name = club_name.title()
@@ -476,25 +500,40 @@ def coupon_code_view(request, code):
 # Favorites Page
 def favorites_view(request):
     """Display user's favorite coupons"""
-    # Check if user is logged in
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('login')
-
-    # Get user from MongoDB
     user = User.find_one({'_id': ObjectId(user_id)})
     if not user:
         return redirect('login')
-
-    # Get user's favorite discount IDs
     favorite_ids = user.get('favorites', [])
-    
-    # Get actual coupon data for favorite IDs
     favorite_coupons = []
     if favorite_ids:
-        # Use $in operator to get all favorite coupons in one query
-        favorite_coupons = Coupon.find({'discount_id': {'$in': favorite_ids}})
-    
+        raw_coupons = Coupon.find({'discount_id': {'$in': favorite_ids}})
+        for coupon in raw_coupons:
+            if coupon.get('discount_type') == 'percentage':
+                amount = f"{coupon.get('price', 0)}%"
+            else:
+                amount = f"${coupon.get('price', 0)}"
+            club_names = coupon.get('club_name', [])
+            store_name = club_names[0] if club_names else "Unknown Store"
+            formatted_coupon = {
+                'store_name': store_name,
+                'store_logo': coupon.get('image_link', ''),
+                'code': coupon.get('coupon_code', ''),
+                'amount': amount,
+                'name': coupon.get('title', 'Special Offer'),
+                'description': coupon.get('description', ''),
+                'date_expires': coupon.get('valid_until', ''),
+                'store_url': coupon.get('discount_link', ''),
+                'minimum_amount': 0,
+                'discount_id': coupon.get('discount_id', ''),
+                'terms_and_conditions': coupon.get('terms_and_conditions', ''),
+                'usage_limit': coupon.get('usage_limit', None),
+                'price': coupon.get('price', 0),
+                'discount_type': coupon.get('discount_type', ''),
+            }
+            favorite_coupons.append(formatted_coupon)
     context = {
         'user': user,
         'favorite_coupons': favorite_coupons,
