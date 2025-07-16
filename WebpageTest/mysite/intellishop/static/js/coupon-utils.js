@@ -61,18 +61,20 @@ window.CouponUtils = {
             if (config.showRemoveFavorite) {
                 favoriteControlsHtml = `
                     <div class="like-icon-col">
-                        <span class="like-fav-text">Favorites 
-                            <span class="like-icon favorite-active" title="Click To Remove" data-discount-id="${coupon.discount_id}">&#10084;</span> 
-                            Remove
+                        <span class="like-fav-text" style="direction: ltr; display: inline-flex; align-items: center; gap: 4px;">
+                            <span style="display:inline-block;">Remove</span>
+                            <span class="like-icon favorite-active" title="Click To Remove" data-discount-id="${coupon.discount_id}" style="display:inline-block;">&#10084;</span>
+                            <span style="display:inline-block;">Favorites</span>
                         </span>
                     </div>
                 `;
             } else {
                 favoriteControlsHtml = `
                     <div class="like-icon-col">
-                        <span class="like-fav-text">Favorites 
-                            <span class="like-icon" title="Click To Add" data-discount-id="${coupon.discount_id}">&#10084;</span> 
-                            Add
+                        <span class="like-fav-text" style="direction: ltr; display: inline-flex; align-items: center; gap: 4px;">
+                            <span style="display:inline-block;">Add</span>
+                            <span class="like-icon" title="Click To Add" data-discount-id="${coupon.discount_id}" style="display:inline-block;">&#10084;</span>
+                            <span style="display:inline-block;">Favorites</span>
                         </span>
                     </div>
                 `;

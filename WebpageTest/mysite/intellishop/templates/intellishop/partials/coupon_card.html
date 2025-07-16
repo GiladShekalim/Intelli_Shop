@@ -89,16 +89,16 @@
         {% if show_favorite_controls|default:True %}
             <div class="like-icon-col">
                 {% if show_remove_favorite|default:False %}
-                    <span class="like-fav-text" style="display: flex; align-items: center; gap: 4px; font-weight: 500; color: #ff6b6b;">
+                    <span class="like-fav-text" style="display: flex; align-items: center; gap: 4px; font-weight: 500; color: #ff6b6b; direction: ltr;">
                         Remove
                         <span class="like-icon favorite-active" title="Click To Remove" data-discount-id="{{ coupon.discount_id }}" style="font-size: 1.5em; color: #ff0000; margin: 0 4px;">&#10084;</span>
                         Favorites
                     </span>
                 {% else %}
-                    <span class="like-fav-text" style="display: flex; align-items: center; gap: 4px; font-weight: 500; color: #ff6b6b;">
-                        Favorites
-                        <span class="like-icon" title="Click To Add/Remove" data-discount-id="{{ coupon.discount_id }}" style="font-size: 1.5em; color: #ccc; margin: 0 4px;">&#10084;</span>
+                    <span class="like-fav-text" style="display: flex; align-items: center; gap: 4px; font-weight: 500; color: #ff6b6b; direction: ltr;">
                         Add
+                        <span class="like-icon" title="Click To Add/Remove" data-discount-id="{{ coupon.discount_id }}" style="font-size: 1.5em; color: #ccc; margin: 0 4px;">&#10084;</span>
+                        Favorites
                     </span>
                 {% endif %}
             </div>
