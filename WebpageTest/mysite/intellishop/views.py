@@ -96,6 +96,7 @@ def index_home(request):
                 'description': coupon.get('description', ''),
                 'date_expires': coupon.get('valid_until', ''),
                 'store_url': coupon.get('discount_link', ''),
+                'discount_link': coupon.get('discount_link', ''),
                 'minimum_amount': 0,  # Default value
                 'discount_id': coupon.get('discount_id', ''),
                 'terms_and_conditions': coupon.get('terms_and_conditions', ''),
@@ -369,6 +370,7 @@ def coupon_detail(request, club_name):
                 'description': coupon.get('description', ''),
                 'date_expires': coupon.get('valid_until', ''),
                 'store_url': coupon.get('discount_link', ''),
+                'discount_link': coupon.get('discount_link', ''),
                 'minimum_amount': 0,
                 'discount_id': coupon.get('discount_id', ''),
                 'terms_and_conditions': coupon.get('terms_and_conditions', ''),
@@ -526,6 +528,7 @@ def favorites_view(request):
                 'description': coupon.get('description', ''),
                 'date_expires': coupon.get('valid_until', ''),
                 'store_url': coupon.get('discount_link', ''),
+                'discount_link': coupon.get('discount_link', ''),
                 'minimum_amount': 0,
                 'discount_id': coupon.get('discount_id', ''),
                 'terms_and_conditions': coupon.get('terms_and_conditions', ''),

@@ -81,7 +81,9 @@
                 <span class="price-value-big" style="font-size: 2em;">{{ coupon.price|floatformat:0 }}</span>
             {% endif %}
         </div>
-        <a href="#" class="discount-link-btn" style="background: #ffc107; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center;">Discount Link</a>
+        {% if coupon.discount_link %}
+            <a href="{{ coupon.discount_link }}" target="_blank" class="discount-link-btn" style="background: #ffc107; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center;">Discount Link</a>
+        {% endif %}
         <a href="{{ coupon.store_url }}" target="_blank" class="go-to-provider-btn" style="background: #e83e8c; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center;">Go To Provider</a>
         {% if coupon.code %}
             <div class="copy-code-btn" data-code="{{ coupon.code }}" style="background: #fd7e14; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;">Copy Code Coupon</div>
