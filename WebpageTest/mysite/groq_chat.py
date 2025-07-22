@@ -17,6 +17,8 @@ from intellishop.models.constants import (
 )
 import glob
 import sys
+import datetime
+import argparse
 
 # Use the imported constants and helper functions
 CATEGORIES = get_categories_string()
@@ -126,6 +128,22 @@ load_dotenv()
 DEFAULT_DATA_DIR = os.environ.get('DISCOUNT_DATA_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data'))
 
 current_model_index = 0
+
+# Global tracking for processed discounts to avoid duplicates
+processed_discounts = set()
+failed_discounts = set()  # Track discounts that have failed all attempts
+
+# Rate limiting configuration
+RATE_LIMIT_CONFIG = {
+    'REQUEST_DELAY': 3,  # Delay between successful requests (seconds)
+    'RETRY_DELAY': 5,    # Delay between retry attempts (seconds)
+    'MODEL_SWITCH_DELAY': 10,  # Delay when switching models (seconds)
+    '429_DELAY': 15,     # Delay when hitting 429 error (seconds)
+    'MAX_CONSECUTIVE_429': 3,  # Max consecutive 429 errors before longer delay
+}
+
+# Track consecutive 429 errors per model
+model_429_count = {}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -281,7 +299,7 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) 
     Returns:
         The edited discount object from Groq, or original if all retries fail
     """
-    global current_model_index  # Use the global variable
+    global current_model_index, processed_discounts, failed_discounts, model_429_count
     
     # disable Groq client's internal logging
     logging.getLogger("groq").setLevel(logging.WARNING)
@@ -293,15 +311,35 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) 
     system_message = MESSAGE_TEMPLATE
     
     discount_id = discount.get('discount_id', 'unknown')
+    
+    # Check if this discount has already been processed successfully
+    if discount_id in processed_discounts:
+        logger.info(f"⏭️ Discount ID {discount_id} already processed successfully, skipping")
+        return discount
+    
+    # Check if this discount has already failed all attempts
+    if discount_id in failed_discounts:
+        logger.info(f"⏭️ Discount ID {discount_id} already failed all attempts, skipping")
+        return discount
+    
     user_message = f"Please edit each indvidual field for the following discount object as described in the instructions:\n{json.dumps(discount, indent=2, ensure_ascii=False)}"
     
     retry_count = 0
     validation_failures_count = 0  # Track consecutive validation failures
+    consecutive_429_count = 0  # Track consecutive 429 errors
     
     while retry_count <= max_retries:
         try:
             client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
             current_model = models[current_model_index]
+            
+            # Check if current model has too many consecutive 429 errors
+            if model_429_count.get(current_model, 0) >= RATE_LIMIT_CONFIG['MAX_CONSECUTIVE_429']:
+                logger.warning(f"Model {current_model} has too many consecutive 429 errors, switching...")
+                current_model_index = (current_model_index + 1) % len(models)
+                current_model = models[current_model_index]
+                model_429_count[current_model] = 0  # Reset counter for new model
+                time.sleep(RATE_LIMIT_CONFIG['MODEL_SWITCH_DELAY'])
             
             # Log when sending a new object to the API with discount ID
             logger.info(f"Sending discount ID: {discount_id} to Groq API using model: {current_model} (attempt {retry_count + 1}/{max_retries + 1})")
@@ -316,6 +354,10 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) 
                 response_format={"type": "json_object"}
             )
             
+            # Reset 429 counter for successful request
+            model_429_count[current_model] = 0
+            consecutive_429_count = 0
+            
             # With JSON Mode, we can directly parse the response content
             response_content = chat_completion.choices[0].message.content
             edited_discount = json.loads(response_content)
@@ -325,6 +367,7 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) 
             
             if is_valid:
                 logger.info(f"✅ Discount ID {discount_id} successfully processed and validated")
+                processed_discounts.add(discount_id)  # Mark as successfully processed
                 return edited_discount
             else:
                 validation_failures_count += 1
@@ -339,15 +382,16 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) 
                     new_model = models[current_model_index]
                     logger.info(f"🔄 3 consecutive validation failures: Switching model from {prev_model} to {new_model} for discount ID: {discount_id}")
                     validation_failures_count = 0  # Reset counter for new model
-                    time.sleep(1)  # Brief pause before trying the new model
+                    time.sleep(RATE_LIMIT_CONFIG['MODEL_SWITCH_DELAY'])
                 
                 if retry_count < max_retries:
                     retry_count += 1
                     logger.info(f"Retrying discount ID {discount_id} (attempt {retry_count + 1}/{max_retries + 1})")
-                    time.sleep(2)  # Add delay before retry
+                    time.sleep(RATE_LIMIT_CONFIG['RETRY_DELAY'])
                     continue
                 else:
                     logger.error(f"❌ All {max_retries + 1} attempts failed for discount ID {discount_id}. Using original discount.")
+                    failed_discounts.add(discount_id)  # Mark as failed
                     return discount
                 
         except json.JSONDecodeError as e:
@@ -357,10 +401,11 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) 
             if retry_count < max_retries:
                 retry_count += 1
                 logger.info(f"Retrying discount ID {discount_id} due to JSON error (attempt {retry_count + 1}/{max_retries + 1})")
-                time.sleep(2)
+                time.sleep(RATE_LIMIT_CONFIG['RETRY_DELAY'])
                 continue
             else:
                 logger.error(f"❌ All {max_retries + 1} attempts failed for discount ID {discount_id}. Using original discount.")
+                failed_discounts.add(discount_id)  # Mark as failed
                 return discount
                 
         except Exception as e:
@@ -369,23 +414,36 @@ def process_discount_with_groq(discount: Dict[str, Any], max_retries: int = 10) 
             
             # Check if it's a rate limit error (429)
             if "429" in error_str:
-                # Move to the next model in the list
-                prev_model = models[current_model_index]
-                current_model_index = (current_model_index + 1) % len(models)
-                new_model = models[current_model_index]
-                # Always log model changes at INFO level
-                logger.info(f"429 Too Many Requests: Switching model from {prev_model} to {new_model} for discount ID: {discount_id}")
-                time.sleep(1)  # Brief pause before trying the next model
+                consecutive_429_count += 1
+                model_429_count[current_model] = model_429_count.get(current_model, 0) + 1
+                
+                logger.warning(f"429 Too Many Requests for model {current_model} (consecutive: {consecutive_429_count})")
+                
+                # If too many consecutive 429 errors, switch model and wait longer
+                if consecutive_429_count >= RATE_LIMIT_CONFIG['MAX_CONSECUTIVE_429']:
+                    prev_model = models[current_model_index]
+                    current_model_index = (current_model_index + 1) % len(models)
+                    new_model = models[current_model_index]
+                    logger.info(f"🔄 Too many consecutive 429 errors: Switching model from {prev_model} to {new_model} for discount ID: {discount_id}")
+                    consecutive_429_count = 0  # Reset counter for new model
+                    time.sleep(RATE_LIMIT_CONFIG['429_DELAY'])
+                else:
+                    # Just wait and retry with same model
+                    logger.info(f"Waiting {RATE_LIMIT_CONFIG['429_DELAY']} seconds before retry...")
+                    time.sleep(RATE_LIMIT_CONFIG['429_DELAY'])
+                
                 continue
             
             if retry_count < max_retries:
                 retry_count += 1
                 logger.warning(f"{error_message}\nRetrying attempt {retry_count} of {max_retries}...")
-                time.sleep(2)  # Add a slightly longer delay before retrying
+                time.sleep(RATE_LIMIT_CONFIG['RETRY_DELAY'])
             else:
                 logger.error(f"{error_message}\nMax retries exceeded. Using original discount.")
+                failed_discounts.add(discount_id)  # Mark as failed
                 return discount
     
+    failed_discounts.add(discount_id)  # Mark as failed if we exit the loop
     return discount
 
 # TODO: 
@@ -405,6 +463,14 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
         input_file_path: Path to the original hot_discounts.json file
         output_file_path: Path to the new Inhanced_discounts.json file
     """
+    global processed_discounts, failed_discounts
+    
+    # Get output directory for tracking state
+    output_dir = os.path.dirname(output_file_path)
+    
+    # Try to load existing tracking state
+    load_tracking_state(output_dir)
+    
     # Load the original JSON file
     with open(input_file_path, 'r', encoding='utf-8') as f:
         discounts = json.load(f)
@@ -416,13 +482,17 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     
     total_discounts = len(discounts)
     log_checkpoint(f"Processing file: {os.path.basename(input_file_path)} with {total_discounts} discounts")
+    log_checkpoint(f"Already processed: {len(processed_discounts)}, Already failed: {len(failed_discounts)}")
     
     # Process each discount one by one
     for i, discount in enumerate(discounts):
         discount_id = discount.get('discount_id', 'unknown')
-        # Reduce frequency of progress logs - only log at DEBUG level
-        if (i+1) % 10 == 0 or i+1 == total_discounts:
-            logger.debug(f"Progress: {i+1}/{total_discounts} discounts processed")
+        
+        # Log progress every 5 discounts or at the end
+        if (i+1) % 5 == 0 or i+1 == total_discounts:
+            logger.info(f"Progress: {i+1}/{total_discounts} discounts processed (successful: {len(processed_discounts)}, failed: {len(failed_discounts)})")
+            # Save tracking state periodically
+            save_tracking_state(output_dir)
         
         # Process with Groq with retry mechanism (up to 10 attempts)
         edited_discount = process_discount_with_groq(discount, max_retries=10)
@@ -446,8 +516,11 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
         enhanced_discounts.append(edited_discount)
         logger.info(f"✅ Successfully enhanced discount ID: {discount_id}")
         
-        # Add a small delay to avoid rate limits
-        time.sleep(1)
+        # Add delay between requests to avoid rate limits
+        time.sleep(RATE_LIMIT_CONFIG['REQUEST_DELAY'])
+    
+    # Save final tracking state
+    save_tracking_state(output_dir)
     
     # Save successfully enhanced discounts
     with open(output_file_path, 'w', encoding='utf-8') as f:
@@ -514,6 +587,54 @@ def find_json_files(data_dir_path=None):
     
     return json_files
 
+def save_tracking_state(output_dir):
+    """Save current tracking state to a file for potential recovery"""
+    global processed_discounts, failed_discounts, model_429_count
+    tracking_state = {
+        'processed_discounts': list(processed_discounts),
+        'failed_discounts': list(failed_discounts),
+        'model_429_count': model_429_count,
+        'timestamp': datetime.datetime.now().isoformat()
+    }
+    
+    tracking_file = os.path.join(output_dir, 'groq_tracking_state.json')
+    try:
+        with open(tracking_file, 'w', encoding='utf-8') as f:
+            json.dump(tracking_state, f, ensure_ascii=False, indent=2)
+        logger.debug(f"Tracking state saved to {tracking_file}")
+    except Exception as e:
+        logger.warning(f"Failed to save tracking state: {e}")
+
+def load_tracking_state(output_dir):
+    """Load tracking state from file if it exists"""
+    global processed_discounts, failed_discounts, model_429_count
+    tracking_file = os.path.join(output_dir, 'groq_tracking_state.json')
+    
+    if os.path.exists(tracking_file):
+        try:
+            with open(tracking_file, 'r', encoding='utf-8') as f:
+                tracking_state = json.load(f)
+            
+            processed_discounts.update(tracking_state.get('processed_discounts', []))
+            failed_discounts.update(tracking_state.get('failed_discounts', []))
+            model_429_count.update(tracking_state.get('model_429_count', {}))
+            
+            logger.info(f"Loaded tracking state: {len(processed_discounts)} processed, {len(failed_discounts)} failed")
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to load tracking state: {e}")
+    
+    return False
+
+def reset_global_tracking():
+    """Reset global tracking variables for processing new files"""
+    global processed_discounts, failed_discounts, model_429_count, current_model_index
+    processed_discounts.clear()
+    failed_discounts.clear()
+    model_429_count.clear()
+    current_model_index = 0
+    logger.info("🔄 Reset global tracking for new file processing")
+
 def process_json_files(data_dir_path=None):
     """Process all JSON files found in the data directory
     
@@ -529,17 +650,28 @@ def process_json_files(data_dir_path=None):
     
     success_count = 0
     for input_file_path in json_files:
-        # Create output file path based on input file name
-        file_name = os.path.basename(input_file_path)
-        file_dir = os.path.dirname(input_file_path)
-        output_file_name = f"enhanced_{file_name}"
-        output_file_path = os.path.join(file_dir, output_file_name)
-        
-        log_checkpoint(f"\nProcessing file: {file_name}")
-        
-        # Process the file
-        update_discounts_file(input_file_path, output_file_path)
-        success_count += 1
+        try:
+            # Create output file path based on input file name
+            file_name = os.path.basename(input_file_path)
+            file_dir = os.path.dirname(input_file_path)
+            output_file_name = f"enhanced_{file_name}"
+            output_file_path = os.path.join(file_dir, output_file_name)
+            
+            log_checkpoint(f"\nProcessing file: {file_name}")
+            
+            # Process the file
+            update_discounts_file(input_file_path, output_file_path)
+            success_count += 1
+            
+            # Add delay between files to avoid rate limits
+            if success_count < len(json_files):  # Don't delay after the last file
+                logger.info(f"Waiting {RATE_LIMIT_CONFIG['MODEL_SWITCH_DELAY']} seconds before processing next file...")
+                time.sleep(RATE_LIMIT_CONFIG['MODEL_SWITCH_DELAY'])
+                
+        except Exception as e:
+            logger.error(f"Error processing file {input_file_path}: {str(e)}")
+            # Continue with next file instead of stopping
+            continue
     
     # Final summary - always show at INFO level
     log_checkpoint("\nSummary:")
@@ -552,18 +684,32 @@ def process_json_files(data_dir_path=None):
         logger.warning("⚠️ Groq enhancement process completed with warnings.")
 
 if __name__ == "__main__":
-    # Check for environment variable to control log level
-    if 'LOG_LEVEL' in os.environ:
-        level_name = os.environ['LOG_LEVEL'].upper()
-        level = getattr(logging, level_name, None)
-        if level is not None:
-            logger.setLevel(level)
-            log_checkpoint(f"Log level set to {level_name}")
+    # Set up command line argument parsing
+    parser = argparse.ArgumentParser(description='Process discount files with Groq API')
+    parser.add_argument('--data-dir', type=str, help='Custom data directory path')
+    parser.add_argument('--reset-tracking', action='store_true', help='Reset tracking state and start fresh')
+    parser.add_argument('--log-level', type=str, default='INFO', 
+                       choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], 
+                       help='Set logging level')
+    
+    args = parser.parse_args()
+    
+    # Set log level
+    level_name = args.log_level.upper()
+    level = getattr(logging, level_name, None)
+    if level is not None:
+        logger.setLevel(level)
+        log_checkpoint(f"Log level set to {level_name}")
     else:
         # Set default to INFO if not specified
         logger.setLevel(logging.INFO)
         log_checkpoint("Log level defaulting to INFO")
     
-    # You can set a custom data directory here or pass None to use defaults
-    data_directory = None  # Replace with your variable path if needed
+    # Handle reset tracking option
+    if args.reset_tracking:
+        reset_global_tracking()
+        log_checkpoint("Tracking state reset - starting fresh")
+    
+    # Process files
+    data_directory = args.data_dir if args.data_dir else None
     process_json_files(data_directory)

@@ -122,22 +122,26 @@ run_groq_enhancement() {
     # Verify Groq API key first
     verify_groq_api_key || return 1
     
-    # Clear coupons collection before enhancement
-    log "Clearing existing coupons collection before AI enhancement..." 1 "$SCRIPT_NAME"
-    python manage.py clear_coupons
-    
     # Use relative paths based on script location
     local base_dir="$SCRIPT_DIR"
-    local script_path="$base_dir/$PROJECT_DIR/groq_chat.py"
+    local script_path="$base_dir/$PROJECT_DIR/groq_enhancement.py"
     
     if [[ -f "$script_path" ]]; then
-        log "Found groq_chat.py at $script_path" 1 "$SCRIPT_NAME"
+        log "Found groq_enhancement.py at $script_path" 1 "$SCRIPT_NAME"
         # Set PYTHONPATH to include the project directory for imports
         PYTHONPATH="$base_dir/$PROJECT_DIR" python "$script_path"
         return $?
     else
-        log "groq_chat.py not found at $script_path" 0 "$SCRIPT_NAME"
-        return 1
+        log "groq_enhancement.py not found at $script_path, trying groq_chat.py" 1 "$SCRIPT_NAME"
+        script_path="$base_dir/$PROJECT_DIR/groq_chat.py"
+        if [[ -f "$script_path" ]]; then
+            log "Found groq_chat.py at $script_path" 1 "$SCRIPT_NAME"
+            PYTHONPATH="$base_dir/$PROJECT_DIR" python "$script_path"
+            return $?
+        else
+            log "Neither groq_enhancement.py nor groq_chat.py found" 0 "$SCRIPT_NAME"
+            return 1
+        fi
     fi
 }
 
