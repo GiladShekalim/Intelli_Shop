@@ -19,6 +19,7 @@ import glob
 import sys
 import datetime
 import argparse
+import shutil
 
 # Use the imported constants and helper functions
 CATEGORIES = get_categories_string()
@@ -126,6 +127,29 @@ load_dotenv()
 
 # Near the top of the file, after loading environment variables
 DEFAULT_DATA_DIR = os.environ.get('DISCOUNT_DATA_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data'))
+
+# ---------------------------------------------------------
+# Utility: ensure all_discounts.json is present in data dir
+# ---------------------------------------------------------
+def sync_all_discounts_file():
+    """Move/overwrite scraper/output/all_discounts.json into the data directory.
+    If the source file does not exist, this is a no-op.
+    """
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # WebpageTest/mysite
+    src_path = os.path.join(base_dir, 'scraper', 'output', 'all_discounts.json')
+    dest_dir = DEFAULT_DATA_DIR
+    dest_path = os.path.join(dest_dir, 'all_discounts.json')
+
+    if not os.path.exists(src_path):
+        return  # Nothing to sync
+
+    os.makedirs(dest_dir, exist_ok=True)
+
+    try:
+        shutil.move(src_path, dest_path)
+        logger.info(f"📂 Synced all_discounts.json -> {dest_path}")
+    except Exception as e:
+        logger.warning(f"Failed to move {src_path} to {dest_path}: {e}")
 
 current_model_index = 0
 
@@ -525,9 +549,17 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     # Save successfully enhanced discounts
     with open(output_file_path, 'w', encoding='utf-8') as f:
         json.dump(enhanced_discounts, f, ensure_ascii=False, indent=2)
-    
-    successful_count = len(enhanced_discounts)
-    deprecated_count = total_discounts - successful_count
+
+    # Persist failed discounts for further processing
+    if deprecated_discount_ids:
+        failed_file_path = os.path.join(output_dir, f"failed_{os.path.basename(input_file_path)}")
+        failed_objects = [d for d in discounts if d.get('discount_id', 'unknown') in deprecated_discount_ids]
+        try:
+            with open(failed_file_path, 'w', encoding='utf-8') as ff:
+                json.dump(failed_objects, ff, ensure_ascii=False, indent=2)
+            logger.info(f"💾 Saved failed discounts to {failed_file_path} ({len(failed_objects)} items)")
+        except Exception as e:
+            logger.warning(f"Could not write failed discounts file: {e}")
     
     # Log summary in the same format as update_database.py
     log_checkpoint("\nFile Summary:")
@@ -642,6 +674,10 @@ def process_json_files(data_dir_path=None):
         data_dir_path: Optional path to the data directory.
     """
     log_checkpoint("Starting Groq discount enhancement process")
+
+    # Ensure the latest scraped data is available
+    sync_all_discounts_file()
+
     json_files = find_json_files(data_dir_path)
     
     if not json_files:
@@ -658,9 +694,33 @@ def process_json_files(data_dir_path=None):
             output_file_path = os.path.join(file_dir, output_file_name)
             
             log_checkpoint(f"\nProcessing file: {file_name}")
-            
-            # Process the file
-            update_discounts_file(input_file_path, output_file_path)
+
+            iteration = 1
+            max_iterations = 5  # safety guard
+
+            while iteration <= max_iterations:
+                update_discounts_file(input_file_path, output_file_path)
+
+                if not failed_discounts:
+                    break  # all discounts enhanced successfully
+
+                log_checkpoint(f"🔄 Retry round {iteration}: {len(failed_discounts)} discounts still failing – re-sending to AI")
+
+                # Clear failed set so they will be attempted again
+                failed_discounts.clear()
+
+                # Remove tracking state so next iteration starts fresh
+                tracking_file = os.path.join(file_dir, 'groq_tracking_state.json')
+                if os.path.exists(tracking_file):
+                    os.remove(tracking_file)
+
+                iteration += 1
+
+            if failed_discounts:
+                logger.warning(f"⚠️  Enhancement finished with {len(failed_discounts)} persistent failures after {max_iterations} rounds")
+            else:
+                log_checkpoint("✅ All discounts successfully enhanced after retries")
+
             success_count += 1
             
             # Add delay between files to avoid rate limits
