@@ -1,5 +1,7 @@
 # main.py
 import json
+from pathlib import Path
+
 from utils.browser import setup_driver
 from scrapers.hot_scraper import scrape_hot
 from scrapers.adif_scraper import scrape_adif
@@ -31,13 +33,18 @@ def main():
 
     driver.quit()
 
-    # Define output filename
+    # Determine the central data directory (../mysite/intellishop/data)
+    webpage_root = Path(__file__).resolve().parent.parent  # .. / WebpageTest
+    data_dir = webpage_root / "mysite" / "intellishop" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    # Map scrape target → output file inside the data directory
     output_file_map = {
-        "hot": "output/hot_discounts.json",
-        "adif": "output/adif_discounts.json",
-        "both": "output/all_discounts.json"
+        "hot": data_dir / "hot_discounts.json",
+        "adif": data_dir / "adif_discounts.json",
+        "both": data_dir / "all_discounts.json",
     }
-    output_file = output_file_map.get(SCRAPE_TARGET, "output/discounts.json")
+    output_file = output_file_map.get(SCRAPE_TARGET, data_dir / "discounts.json")
 
     # Save the results
     with open(output_file, "w", encoding="utf-8") as f:
