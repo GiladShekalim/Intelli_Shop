@@ -145,6 +145,37 @@ run_groq_enhancement() {
     fi
 }
 
+# ===== Scraper Integration =====
+run_scraper() {
+    # Runs the standalone scraper located in WebpageTest/scraper
+    log "Running scraper project..." 1 "$SCRIPT_NAME"
+
+    local scraper_dir="$SCRIPT_DIR/scraper"
+
+    if [ ! -d "$scraper_dir" ]; then
+        log "Scraper directory not found at $scraper_dir" 0 "$SCRIPT_NAME"
+        return 1
+    fi
+
+    pushd "$scraper_dir" > /dev/null
+
+    # Install scraper specific dependencies
+    if [ -f "requirements.txt" ]; then
+        log "Installing scraper dependencies from requirements.txt" 1 "$SCRIPT_NAME"
+        python -m pip install -r requirements.txt
+    else
+        log "Installing scraper core dependencies" 1 "$SCRIPT_NAME"
+        python -m pip install selenium webdriver-manager requests beautifulsoup4
+    fi
+
+    log "Executing scraper main.py" 1 "$SCRIPT_NAME"
+    python main.py
+    local status=$?
+
+    popd > /dev/null
+    return $status
+}
+
 # Set up trap for cleanup on script exit
 trap cleanup EXIT
 
@@ -169,6 +200,13 @@ else
     # Install Django and MongoDB dependencies
     log "Installing Django and MongoDB dependencies" 1 "$SCRIPT_NAME"
     python -m pip install django pymongo[srv] dnspython
+fi
+
+# If option 3 (scraping only) was requested, run the scraper and exit
+if [ "$1" = "3" ]; then
+    log "Running scraper as requested (option 3)" 1 "$SCRIPT_NAME"
+    run_scraper
+    exit $?
 fi
 
 # Set up MongoDB configuration
