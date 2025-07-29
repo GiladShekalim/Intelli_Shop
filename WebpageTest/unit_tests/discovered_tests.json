@@ -1,0 +1,10 @@
+{
+  "tests": [
+    "mysite/intellishop/management/commands/test_ai_filter_helper.py",
+    "mysite/intellishop/management/commands/test_favorites.py",
+    "mysite/intellishop/management/commands/test_mongodb.py",
+    "mysite/intellishop/management/commands/test_percentage_filters.py",
+    "mysite/test_home_functionality.py",
+    "mysite/test_random.py"
+  ]
+}
