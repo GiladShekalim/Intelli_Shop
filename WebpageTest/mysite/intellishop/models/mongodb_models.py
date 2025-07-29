@@ -603,8 +603,11 @@ class Coupon(MongoDBModel):
                         filter_dict = {'coupon_code': normalized_data['coupon_code']}
                         cls.update_one(filter_dict, normalized_data, upsert=True)
                     else:
-                        # Insert as new
-                        cls.insert_one(normalized_data)
+                        # Insert as new and then update discount_id to match the inserted _id
+                        inserted_id = cls.insert_one(normalized_data)
+                        if inserted_id:
+                            # back-fill discount_id with the generated ObjectId string
+                            cls.update_one({'_id': inserted_id}, {'discount_id': str(inserted_id)})
                     
                     results['success'] += 1
                 
@@ -692,9 +695,9 @@ class Coupon(MongoDBModel):
         normalized = dict(coupon_data)
         
         # Set default values for missing fields
-        if 'discount_id' not in normalized or not normalized['discount_id']:
-            normalized['discount_id'] = str(ObjectId())
-            
+        # Do NOT generate discount_id here – it will be written after the document is inserted so that
+        # it always matches MongoDB's ObjectId.  Keep user-provided discount_id if it exists.
+
         if 'date_created' not in normalized:
             normalized['date_created'] = datetime.datetime.now().isoformat()
             
@@ -861,12 +864,16 @@ class Coupon(MongoDBModel):
                                 cls.update_one({'_id': existing['_id']}, coupon)
                                 results['updated'] += 1
                             else:
-                                # Insert new coupon
-                                cls.insert_one(coupon)
+                                # Insert new coupon and back-fill discount_id with MongoDB _id
+                                inserted_id = cls.insert_one(coupon)
+                                if inserted_id:
+                                    cls.update_one({'_id': inserted_id}, {'discount_id': str(inserted_id)})
                                 results['new'] += 1
                         else:
-                            # Insert as new coupon
-                            cls.insert_one(coupon)
+                            # Insert as new coupon and back-fill discount_id
+                            inserted_id = cls.insert_one(coupon)
+                            if inserted_id:
+                                cls.update_one({'_id': inserted_id}, {'discount_id': str(inserted_id)})
                             results['new'] += 1
                             
                         results['valid'] += 1
