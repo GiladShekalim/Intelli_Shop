@@ -43,39 +43,58 @@ def index_home(request):
     if user_hobbies:
         filters['interests'] = user_hobbies
     
-    # Get filtered coupons from MongoDB
-    filtered_coupons = []
+    # Get filtered coupons from MongoDB (UPDATED LOGIC)
     try:
+        # Step 1: Fetch coupons based on user filters (no random limit)
         if filters:
-            # Use the existing filtering system
-            all_filtered_coupons = Coupon.get_filtered_coupons(filters)
-            
-            # Convert to list and randomize
-            all_filtered_coupons = list(all_filtered_coupons)
-            
-            # Randomly select up to 5 coupons
-            import random
-            if len(all_filtered_coupons) > 5:
-                filtered_coupons = random.sample(all_filtered_coupons, 5)
-            else:
-                filtered_coupons = all_filtered_coupons
+            base_coupons = list(Coupon.get_filtered_coupons(filters))
         else:
-            # If no filters, get random coupons from all available
-            all_coupons = list(Coupon.get_all())
-            import random
-            if len(all_coupons) > 5:
-                filtered_coupons = random.sample(all_coupons, 5)
-            else:
-                filtered_coupons = all_coupons
-                
+            base_coupons = list(Coupon.get_all())
+
+        # Step 2: Fetch user's favourite coupons
+        favorite_ids = user.get('favorites', [])
+        favorite_coupons = []
+        if favorite_ids:
+            favorite_coupons = list(Coupon.find({'discount_id': {'$in': favorite_ids}}))
+
+        # Step 3: Build weighting based on favourites' categories & statuses
+        from collections import defaultdict
+        fav_cat_count = defaultdict(int)
+        fav_status_count = defaultdict(int)
+        for fav in favorite_coupons:
+            for cat in fav.get('category', []):
+                fav_cat_count[cat] += 1
+            for st in fav.get('consumer_statuses', []):
+                fav_status_count[st] += 1
+
+        # Step 4: Merge base coupons with favourites (dedup by discount_id)
+        combined_map = {}
+        for c in base_coupons + favorite_coupons:
+            combined_map[c.get('discount_id')] = c
+        combined_coupons = list(combined_map.values())
+
+        # Step 5: Compute weight & sort
+        def _compute_weight(coupon):
+            weight = 0
+            # Category influence
+            for cat in coupon.get('category', []):
+                weight += fav_cat_count.get(cat, 0)
+            # Consumer status influence
+            for st in coupon.get('consumer_statuses', []):
+                weight += fav_status_count.get(st, 0)
+            # Direct favourite boost
+            if coupon.get('discount_id') in favorite_ids:
+                weight += 1000
+            return weight
+        combined_coupons.sort(key=_compute_weight, reverse=True)
+
     except Exception as e:
         logger.error(f"Error getting filtered coupons: {str(e)}")
-        # Fallback to empty list if there's an error
-        filtered_coupons = []
+        combined_coupons = []
 
-    # Format coupons for display
+    # Format coupons for display (UPDATED to iterate combined_coupons)
     formatted_coupons = []
-    for coupon in filtered_coupons:
+    for coupon in combined_coupons:
         try:
             # Format the amount based on discount_type
             if coupon.get('discount_type') == 'percentage':
@@ -116,7 +135,8 @@ def index_home(request):
             'status': user.get('status', []),
             'hobbies': user.get('hobbies', [])
         },
-        'filtered_coupons': formatted_coupons
+        'filtered_coupons': formatted_coupons,
+        'total_count': len(formatted_coupons)  # NEW
     }
     
     return render(request, 'intellishop/index_home_original.html', context)
