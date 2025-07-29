@@ -34,7 +34,7 @@ def test_home_functionality():
             email="test@example.com",
             status=["Student", "Tech"],
             age=25,
-            location="Tel Aviv",
+            location="Israel",
             hobbies=["electronics", "lifestyle"]
         )
         print(f"Created test user with ID: {user_id}")

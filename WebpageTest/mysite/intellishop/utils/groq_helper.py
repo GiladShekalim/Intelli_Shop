@@ -65,7 +65,7 @@ Available filter fields and their possible values:
 - If no specific percentage is mentioned but discount is implied, use "up_to_20" as default
 - Keywords that should trigger percentage_range: "discount", "off", "sale", "reduced", "percentage", "%", "save"
 - ALWAYS include a valid bucket name from the available buckets list
-- If unsure about percentage, default to "up_to_20" bucket
+- Do not include percentage_range unless it is explicitly mentioned in the user's query
 
 **COMPREHENSIVE CATEGORY MATCHING:**
 - "electronics" → include ["electronics", "Consumerism", "Tech"]

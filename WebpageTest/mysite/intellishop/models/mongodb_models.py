@@ -451,47 +451,37 @@ class Coupon(MongoDBModel):
             if or_conditions:
                 query['$or'] = or_conditions
         
-        elif price_range_enabled or percentage_range_enabled:
-            # Only one range filter is enabled - show both discount types
-            # but apply the range filter only to the relevant type
-            or_conditions = []
-            
-            # Always include percentage discounts (without range filter)
-            or_conditions.append({'discount_type': 'percentage'})
-            
-            # Always include fixed_amount discounts (without range filter)
-            or_conditions.append({'discount_type': 'fixed_amount'})
-            
-            # Add the range filter as an additional condition
-            if price_range_enabled:
-                price_range = filters['price_range']
-                if price_range.get('max_value') is not None:
-                    # For fixed_amount discounts, apply the price filter
+        # -------------------------------------------------------------
+        # NEW EXCLUSIVE RANGE LOGIC
+        # -------------------------------------------------------------
+        elif price_range_enabled and not percentage_range_enabled:
+            # Only PRICE RANGE filter is active -> return ONLY fixed_amount coupons within range
+            price_range = filters['price_range']
+            if price_range.get('max_value') is not None:
+                and_clauses.append({
+                    'discount_type': 'fixed_amount',
+                    'price': {'$lte': price_range['max_value']}
+                })
+            else:
+                # No explicit max value supplied – still restrict by discount type
+                query['discount_type'] = 'fixed_amount'
+        
+        elif percentage_range_enabled and not price_range_enabled:
+            # Only PERCENTAGE filter is active -> return ONLY percentage coupons (optionally bucket-filtered)
+            percentage_range = filters['percentage_range']
+            if percentage_range.get('bucket'):
+                bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
+                if bucket_config:
                     and_clauses.append({
-                        '$or': [
-                            {'discount_type': 'percentage'},  # Percentage discounts (no price filter)
-                            {
-                                'discount_type': 'fixed_amount',
-                                'price': {'$lte': price_range['max_value']}
-                            }
-                        ]
+                        'discount_type': 'percentage',
+                        'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}
                     })
-            
-            elif percentage_range_enabled:
-                percentage_range = filters['percentage_range']
-                if percentage_range.get('bucket'):
-                    bucket_config = FILTER_CONFIG['PERCENTAGE_BUCKETS'].get(percentage_range['bucket'])
-                    if bucket_config:
-                        # For percentage discounts, apply the percentage filter
-                        and_clauses.append({
-                            '$or': [
-                                {'discount_type': 'fixed_amount'},  # Fixed amount discounts (no percentage filter)
-                                {
-                                    'discount_type': 'percentage',
-                                    'price': {'$gte': bucket_config['min'], '$lte': bucket_config['max']}
-                                }
-                            ]
-                        })
+            else:
+                # No bucket provided – just ensure we return percentage discounts
+                query['discount_type'] = 'percentage'
+        # -------------------------------------------------------------
+        # END NEW EXCLUSIVE RANGE LOGIC
+        # -------------------------------------------------------------
         
         # Add AND clauses to query if any exist
         if and_clauses:
