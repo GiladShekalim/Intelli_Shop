@@ -1,0 +1,28 @@
+[
+  {
+    "discount_id": "90",
+    "title": "cutton club",
+    "price": 12,
+    "discount_type": "percentage",
+    "description": "הנחה משתלמת במיוחד לחברי מועדון !\n12% על כל האתר ב - cutton club\nכותנה מיוחדת ואיכות ללא פשרות!\nעיצוב מיוחד, מגוון סגנונות וצבעים מיוחדים. מגוון רחב של מוצרים יפים לבית באיכות מעולה!\nמימוש ההטבה :\nהזנת קוד קופן באתר בית העסק\nhttps://cottonclub.co.il/",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/b3ee4b89a6ce44da072ab80ba0cb6e69.webp",
+    "discount_link": "https://adif.org.il/benefit/1677",
+    "terms_and_conditions": "לתשומת לבך:\n\n*השירותים והמוצרים באחריות בית העסק בלבד כשרות - הסניף כשר *מועדון מועדון צרכנות עדיף ו/או בית העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת *התמונות להמחשה בלבד *כולל כפל מבצעים והנחות תוקף 27.10.25\n\nאתר אינטרנט: https://cottonclub.co.il/\n\nמדיה חברתית של בית העסק: https://www.facebook.com/cottonclubhome  \n\nכתובת סניפי בית העסק: אזור תעשייה יצחקי, משמרות\n\nטלפון: 074-769-8668\n\nמייל שירות לקוחות : Info@cottonclub.co.il",
+    "club_name": [
+      "adif"
+    ],
+    "valid_until": "13.08.25",
+    "usage_limit": 1,
+    "coupon_code": "",
+    "provider_link": "https://cottonclub.co.il/",
+    "consumer_statuses": [
+      "Young",
+      "Family"
+    ],
+    "category": [
+      "lifestyle",
+      "home"
+    ],
+    "favorites": []
+  }
+]

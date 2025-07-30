@@ -126,7 +126,15 @@ If you want to add consumer_statuses or process price, you must explicitly state
 load_dotenv()
 
 # Near the top of the file, after loading environment variables
-DEFAULT_DATA_DIR = os.environ.get('DISCOUNT_DATA_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data'))
+# ------------------------------------------------------------------
+# Data directory: enforce single canonical path
+# ------------------------------------------------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # WebpageTest/mysite
+# Canonical data directory is WebpageTest/mysite/intellishop/data unless overridden
+DEFAULT_DATA_DIR = os.environ.get(
+    'DISCOUNT_DATA_DIR',
+    os.path.join(BASE_DIR, 'intellishop', 'data')
+)
 
 # ---------------------------------------------------------
 # Utility: ensure all_discounts.json is present in data dir
@@ -491,6 +499,8 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     
     # Get output directory for tracking state
     output_dir = os.path.dirname(output_file_path)
+    # Ensure the output directory exists so incremental writes don't fail
+    os.makedirs(output_dir, exist_ok=True)
     
     # Try to load existing tracking state
     load_tracking_state(output_dir)
@@ -499,9 +509,25 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     with open(input_file_path, 'r', encoding='utf-8') as f:
         discounts = json.load(f)
     
-    # Create an empty list to hold only successfully processed discounts
-    enhanced_discounts = []
-    # Track IDs of deprecated/skipped discounts
+    # ------------------------------------------------------------------
+    # Load previously enhanced discounts (if any) so the file grows over
+    # multiple iterations instead of being overwritten each time.
+    # ------------------------------------------------------------------
+    enhanced_discounts = []  # will hold cumulative successes
+    if os.path.exists(output_file_path):
+        try:
+            with open(output_file_path, 'r', encoding='utf-8') as ef:
+                enhanced_discounts = json.load(ef)
+        except Exception:
+            logger.warning("Could not read existing enhanced file – starting fresh")
+
+    # Ensure processed_discounts reflects already enhanced records
+    for d in enhanced_discounts:
+        did = d.get('discount_id')
+        if did:
+            processed_discounts.add(did)
+
+    # Track IDs of deprecated/skipped discounts in this iteration
     deprecated_discount_ids = []
     
     total_discounts = len(discounts)
@@ -539,6 +565,20 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
         # Successfully processed and validated, add it to our list
         enhanced_discounts.append(edited_discount)
         logger.info(f"✅ Successfully enhanced discount ID: {discount_id}")
+        # -----------------------------------------------------------------
+        #   Incremental persistence: write progress to disk immediately
+        # -----------------------------------------------------------------
+        try:
+            with open(output_file_path, 'w', encoding='utf-8') as inc_f:
+                json.dump(enhanced_discounts, inc_f, ensure_ascii=False, indent=2)
+                inc_f.flush()
+                # Ensure data is physically written (durability in case of crash)
+                os.fsync(inc_f.fileno())
+            logger.debug(
+                f"💾 Incremental save – {len(enhanced_discounts)} discounts written to {output_file_path}"
+            )
+        except Exception as e:
+            logger.warning(f"Failed incremental save to {output_file_path}: {e}")
         
         # Add delay between requests to avoid rate limits
         time.sleep(RATE_LIMIT_CONFIG['REQUEST_DELAY'])
@@ -546,13 +586,17 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
     # Save final tracking state
     save_tracking_state(output_dir)
     
-    # Save successfully enhanced discounts
-    with open(output_file_path, 'w', encoding='utf-8') as f:
-        json.dump(enhanced_discounts, f, ensure_ascii=False, indent=2)
-
-    # Persist failed discounts for further processing
+    # Overwrite output with cumulative successes
+    try:
+        with open(output_file_path, 'w', encoding='utf-8') as f:
+            json.dump(enhanced_discounts, f, ensure_ascii=False, indent=2)
+        logger.info(f"💾 Updated enhanced file written: {output_file_path} ({len(enhanced_discounts)} items)")
+    except Exception as e:
+        logger.error(f"Failed to write enhanced file {output_file_path}: {e}")
+    
+    # Save *current* failed objects list (overwrites previous)
+    failed_file_path = os.path.join(output_dir, f"failed_{os.path.basename(input_file_path)}")
     if deprecated_discount_ids:
-        failed_file_path = os.path.join(output_dir, f"failed_{os.path.basename(input_file_path)}")
         failed_objects = [d for d in discounts if d.get('discount_id', 'unknown') in deprecated_discount_ids]
         try:
             with open(failed_file_path, 'w', encoding='utf-8') as ff:
@@ -560,9 +604,15 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
             logger.info(f"💾 Saved failed discounts to {failed_file_path} ({len(failed_objects)} items)")
         except Exception as e:
             logger.warning(f"Could not write failed discounts file: {e}")
+    else:
+        # No failures left – remove stale failed file if exists
+        if os.path.exists(failed_file_path):
+            os.remove(failed_file_path)
     
     # Log summary in the same format as update_database.py
     log_checkpoint("\nFile Summary:")
+    successful_count = len(enhanced_discounts)
+    deprecated_count = len(deprecated_discount_ids)
     log_checkpoint(f"  - Total discounts processed: {total_discounts}")
     log_checkpoint(f"  - Successfully enhanced: {successful_count}")
     log_checkpoint(f"  - Failed/deprecated: {deprecated_count}")
@@ -578,30 +628,27 @@ def update_discounts_file(input_file_path: str, output_file_path: str) -> None:
 
 def find_json_files(data_dir_path=None):
     """Find all JSON files in the data directory and its subdirectories, excluding files that start with 'enhanced_'"""
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Go up two levels now
-    
     # Use provided path if available
     if data_dir_path and os.path.exists(data_dir_path):
         data_dir = data_dir_path
         logger.debug(f"Using provided data directory: {data_dir}")
     else:
-        # Use the global default with fallbacks
+        # Prefer canonical directory first
         data_dir = DEFAULT_DATA_DIR
-        
-        # Add additional fallback paths if needed
+
+        # If canonical dir is missing, fall back to legacy search locations (kept for backward compatibility)
         if not os.path.exists(data_dir):
             alternative_paths = [
-                os.path.join(base_dir, '..', 'data'),
-                os.path.join(base_dir, 'data'),
-                os.path.join(base_dir, 'intellishop', 'data'),
-                os.path.join(base_dir, 'mysite', 'intellishop', 'data')
+                os.path.join(BASE_DIR, '..', 'data'),
+                os.path.join(BASE_DIR, 'data'),  # old "mysite/data" layout
+                os.path.join(BASE_DIR, 'intellishop', 'data'),  # duplicate of canonical but kept for completeness
+                os.path.join(BASE_DIR, 'mysite', 'intellishop', 'data')
             ]
-            
-            # Check if any alternative paths exist
+
             for alt_path in alternative_paths:
                 if os.path.exists(alt_path):
                     data_dir = alt_path
-                    logger.debug(f"Using alternative data directory: {data_dir}")
+                    logger.debug(f"Using alternative data directory (legacy): {data_dir}")
                     break
     
     log_checkpoint(f"Scanning for JSON files in {data_dir}")
