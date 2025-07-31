@@ -87,6 +87,8 @@ def index_home(request):
                 weight += 1000
             return weight
         combined_coupons.sort(key=_compute_weight, reverse=True)
+        # NEW: Limit to maximum 10 coupons for display
+        combined_coupons = combined_coupons[:10]
 
     except Exception as e:
         logger.error(f"Error getting filtered coupons: {str(e)}")
@@ -136,7 +138,7 @@ def index_home(request):
             'hobbies': user.get('hobbies', [])
         },
         'filtered_coupons': formatted_coupons,
-        'total_count': len(formatted_coupons)  # NEW
+        'total_count': len(formatted_coupons)  # NEW remains accurate, reflects displayed count
     }
     
     return render(request, 'intellishop/index_home_original.html', context)
