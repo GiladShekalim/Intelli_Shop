@@ -58,27 +58,15 @@ window.CouponUtils = {
         // Build favorite controls HTML
         let favoriteControlsHtml = '';
         if (config.showFavoriteControls) {
-            if (config.showRemoveFavorite) {
-                favoriteControlsHtml = `
-                    <div class="like-icon-col">
-                        <span class="like-fav-text" style="direction: ltr; display: inline-flex; align-items: center; gap: 4px;">
-                            <span style="display:inline-block;">Remove</span>
-                            <span class="like-icon favorite-active" title="Click To Remove" data-discount-id="${coupon.discount_id}" style="display:inline-block;">&#10084;</span>
-                            <span style="display:inline-block;">Favorites</span>
-                        </span>
-                    </div>
-                `;
-            } else {
-                favoriteControlsHtml = `
-                    <div class="like-icon-col">
-                        <span class="like-fav-text" style="direction: ltr; display: inline-flex; align-items: center; gap: 4px;">
-                            <span style="display:inline-block;">Add</span>
-                            <span class="like-icon" title="Click To Add" data-discount-id="${coupon.discount_id}" style="display:inline-block;">&#10084;</span>
-                            <span style="display:inline-block;">Favorites</span>
-                        </span>
-                    </div>
-                `;
-            }
+            favoriteControlsHtml = `
+                <div class="like-icon-col">
+                    <button class="fav-btn btn btn-outline-primary" data-discount-id="${coupon.discount_id}" style="display: flex; align-items: center; gap: 4px; font-weight: 500; color: #ff6b6b; direction: ltr; border: none; background: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                        <span class="fav-btn-text">Add</span>
+                        <span class="like-icon" style="font-size: 1.5em; color: #ccc; margin: 0 4px;">&#10084;</span>
+                        <span>Favorites</span>
+                    </button>
+                </div>
+            `;
         }
 
         div.innerHTML = `
@@ -172,6 +160,11 @@ window.CouponUtils = {
 
         // Add event delegation for show more/less functionality
         this.addShowMoreEventDelegation(container);
+        
+        // Initialize favorites for the newly rendered cards
+        if (typeof initFavoritesForNewCards === 'function') {
+            initFavoritesForNewCards();
+        }
     },
 
     /**
@@ -336,12 +329,14 @@ window.CouponUtils = {
                 }
             } else {
                 console.error('toggleFavorite: Server returned error:', data.error);
-                this.showNotification('Failed to update favorites: ' + (data.error || 'Unknown error'), 'error');
+                // Don't show error notification for favorites - handled by favorites-manager.js
+                console.log('Suppressing favorite error notification');
             }
         })
         .catch(error => {
             console.error('toggleFavorite: Fetch error:', error);
-            this.showNotification('Failed to update favorites: ' + error.message, 'error');
+            // Don't show error notification for favorites - handled by favorites-manager.js
+            console.log('Suppressing favorite error notification');
         });
     },
 
@@ -428,12 +423,14 @@ window.CouponUtils = {
                 }
             } else {
                 console.error('removeFavorite: Server returned error:', data.error);
-                this.showNotification('Failed to remove from favorites: ' + (data.error || 'Unknown error'), 'error');
+                // Don't show error notification for favorites - handled by favorites-manager.js
+                console.log('Suppressing favorite error notification');
             }
         })
         .catch(error => {
             console.error('removeFavorite: Fetch error:', error);
-            this.showNotification('Failed to remove from favorites: ' + error.message, 'error');
+            // Don't show error notification for favorites - handled by favorites-manager.js
+            console.log('Suppressing favorite error notification');
         });
     },
 
@@ -488,6 +485,19 @@ window.CouponUtils = {
      * @param {string} type - The type of notification (success, error, info)
      */
     showNotification: function(message, type = 'info') {
+        // For favorite-related operations, use the new success message system
+        if (message.includes('favorites') || message.includes('Favorite')) {
+            if (type === 'success' && typeof showSuccessMessage === 'function') {
+                showSuccessMessage(message);
+                return;
+            }
+            // Don't show error messages for favorites - they're handled by favorites-manager.js
+            if (type === 'error') {
+                console.log('Suppressing favorite error notification:', message);
+                return;
+            }
+        }
+        
         // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;

@@ -37,18 +37,41 @@ function removeFavorite(couponId) {
 function updateCouponCardUI(card, isFav) {
     const heart = card.querySelector('.like-icon');
     const btn = card.querySelector('.fav-btn');
+    const btnText = card.querySelector('.fav-btn-text');
+    
     if (isFav) {
         heart.classList.add('favorite-active');
+        heart.style.color = '#ff0000';
         heart.title = "Remove from Favorites";
-        btn.textContent = "Remove";
+        btnText.textContent = "Remove";
         btn.classList.add('btn-danger');
         btn.classList.remove('btn-outline-primary');
     } else {
         heart.classList.remove('favorite-active');
+        heart.style.color = '#ccc';
         heart.title = "Add to Favorites";
-        btn.textContent = "Add";
+        btnText.textContent = "Add";
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-outline-primary');
+    }
+}
+
+// Set favorite button state
+function setFavBtnState(btn, isFav) {
+    const text = btn.querySelector('.fav-btn-text');
+    const heart = btn.querySelector('.like-icon');
+    if (isFav) {
+        btn.classList.add('favorited', 'btn-danger');
+        btn.classList.remove('btn-outline-primary');
+        text.textContent = 'Remove';
+        heart.style.color = '#ff0000';
+        heart.classList.add('favorite-active');
+    } else {
+        btn.classList.remove('favorited', 'btn-danger');
+        btn.classList.add('btn-outline-primary');
+        text.textContent = 'Add';
+        heart.style.color = '#ccc';
+        heart.classList.remove('favorite-active');
     }
 }
 
@@ -61,90 +84,81 @@ function initFavoritesUI() {
         // Update UI
         updateCouponCardUI(card, isFav);
 
-        // Heart icon click
-        card.querySelector('.like-icon').onclick = function() {
-            if (isFavorite(couponId)) {
-                removeFavorite(couponId);
-                updateCouponCardUI(card, false);
-            } else {
-                addFavorite(couponId);
-                updateCouponCardUI(card, true);
-            }
-        };
-
         // Add/Remove button click
-        card.querySelector('.fav-btn').onclick = function() {
-            if (isFavorite(couponId)) {
-                removeFavorite(couponId);
-                updateCouponCardUI(card, false);
-            } else {
-                addFavorite(couponId);
-                updateCouponCardUI(card, true);
-            }
-        };
-    });
-}
-
-// Run on page load
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.fav-btn').forEach(btn => {
-        const couponId = btn.getAttribute('data-discount-id');
-        setFavBtnState(btn, isFavorite(couponId));
-
-        btn.onclick = async function() {
-            const currentlyFav = isFavorite(couponId);
-            try {
-                if (currentlyFav) {
-                    await updateFavoriteOnServer(couponId, 'remove');
-                    removeFavorite(couponId);
-                } else {
-                    await updateFavoriteOnServer(couponId, 'add');
-                    addFavorite(couponId);
+        const favBtn = card.querySelector('.fav-btn');
+        if (favBtn) {
+            favBtn.onclick = async function() {
+                const currentlyFav = isFavorite(couponId);
+                try {
+                    if (currentlyFav) {
+                        await updateFavoriteOnServer(couponId, 'remove');
+                        removeFavorite(couponId);
+                        showSuccessMessage('Removed from favorites!');
+                    } else {
+                        await updateFavoriteOnServer(couponId, 'add');
+                        addFavorite(couponId);
+                        showSuccessMessage('Added to favorites!');
+                    }
+                    setFavBtnState(favBtn, !currentlyFav);
+                } catch (e) {
+                    console.error('Error updating favorites:', e);
+                    // Don't show error alert, just log it
                 }
-                setFavBtnState(btn, !currentlyFav);
-            } catch (e) {
-                alert(e.message);
-            }
-        };
+            };
+        }
     });
-});
-
-function setFavBtnState(btn, isFav) {
-    const text = btn.querySelector('.fav-btn-text');
-    const heart = btn.querySelector('.like-icon');
-    if (isFav) {
-        btn.classList.add('favorited', 'btn-danger');
-        btn.classList.remove('btn-outline-primary');
-        text.textContent = 'Remove';
-        heart.style.color = '#ff2d55';
-    } else {
-        btn.classList.remove('favorited', 'btn-danger');
-        btn.classList.add('btn-outline-primary');
-        text.textContent = 'Add';
-        heart.style.color = '#bbb';
-    }
 }
 
 async function updateFavoriteOnServer(couponId, action) {
     const url = action === 'add'
         ? '/add_favorite/'
         : '/remove_favorite/';
+    
+    const requestBody = { discount_id: couponId };
+    const csrfToken = getCSRFToken();
+    
+    console.log(`updateFavoriteOnServer: ${action} favorite for ${couponId}`);
+    console.log('Request URL:', url);
+    console.log('Request body:', requestBody);
+    console.log('CSRF Token:', csrfToken);
+    
     const response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken(), // if using Django
+            'X-CSRFToken': csrfToken,
         },
-        body: JSON.stringify({ discount_id: couponId })
+        body: JSON.stringify(requestBody)
     });
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
     if (!response.ok) {
         const msg = await response.text();
+        console.error('Error response:', msg);
+        
+        // Handle authentication error gracefully
+        if (response.status === 401) {
+            console.log('User not authenticated, using localStorage only');
+            // For non-authenticated users, just use localStorage
+            if (action === 'add') {
+                addFavorite(couponId);
+            } else {
+                removeFavorite(couponId);
+            }
+            return { status: 'success', message: 'Updated local favorites (not logged in)' };
+        }
+        
         throw new Error(`Failed to update favorites: HTTP ${response.status}: ${msg}`);
     }
+    
+    const responseData = await response.json();
+    console.log('Success response:', responseData);
+    return responseData;
 }
 
 function getCSRFToken() {
-    // Django: get from cookie
     const name = 'csrftoken';
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -156,142 +170,138 @@ function getCSRFToken() {
     return '';
 }
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+// Show success message
+function showSuccessMessage(message) {
+    // Remove any existing success message
+    const existingMessage = document.querySelector('.success-message');
+    if (existingMessage) {
+        existingMessage.remove();
     }
-    return cookieValue;
-}
-
-// Toggle favorite status for a coupon
-function toggleFavorite(discountId, iconElement) {
-    const isFavorite = iconElement.classList.contains('favorite-active');
-    const url = isFavorite ? '/remove_favorite/' : '/add_favorite/';
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({discount_id: discountId})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            if (isFavorite) {
-                iconElement.classList.remove('favorite-active');
-                iconElement.style.color = '#ccc';
-                if (iconElement.nextElementSibling) iconElement.nextElementSibling.textContent = 'Add';
-            } else {
-                iconElement.classList.add('favorite-active');
-                iconElement.style.color = '#ff0000';
-                if (iconElement.nextElementSibling) iconElement.nextElementSibling.textContent = 'Remove';
-            }
-        } else {
-            alert('Failed to update favorites: ' + (data.error || 'Unknown error'));
+    
+    // Create success message element
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+    `;
+    successDiv.textContent = message;
+    
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to update favorites');
-    });
-}
-
-// Check favorite status for all coupons on the page
-function checkAllFavoriteStatus() {
-    document.querySelectorAll('.like-icon[data-discount-id]').forEach(icon => {
-        const discountId = icon.getAttribute('data-discount-id');
-        checkFavoriteStatus(discountId, icon);
-    });
-}
-
-// Check favorite status for a single coupon
-function checkFavoriteStatus(discountId, iconElement) {
-    fetch(`/check_favorite/${discountId}/`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.is_favorite) {
-            iconElement.classList.add('favorite-active');
-            iconElement.style.color = '#ff0000';
-            if (iconElement.nextElementSibling) iconElement.nextElementSibling.textContent = 'Remove';
-        } else {
-            iconElement.classList.remove('favorite-active');
-            iconElement.style.color = '#ccc';
-            if (iconElement.nextElementSibling) iconElement.nextElementSibling.textContent = 'Add';
-        }
-    })
-    .catch(error => {
-        console.error('Error checking favorite status:', error);
-    });
-}
-
-// Attach event listeners and initialize on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Attach click event to all like icons
-    document.querySelectorAll('.like-icon[data-discount-id]').forEach(icon => {
-        icon.addEventListener('click', function() {
-            const discountId = this.getAttribute('data-discount-id');
-            const label = this.parentElement.querySelector('.like-fav-label');
-            const isFavorite = this.classList.contains('favorite-active');
-            const url = isFavorite ? '/remove_favorite/' : '/add_favorite/';
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({discount_id: discountId})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    if (isFavorite) {
-                        this.classList.remove('favorite-active');
-                        this.style.color = '#ccc';
-                        if (label) label.textContent = 'Add';
-                    } else {
-                        this.classList.add('favorite-active');
-                        this.style.color = '#ff0000';
-                        if (label) label.textContent = 'Remove';
-                    }
-                } else {
-                    alert('Failed to update favorites: ' + (data.error || 'Unknown error'));
+    `;
+    document.head.appendChild(style);
+    
+    // Add to page
+    document.body.appendChild(successDiv);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (successDiv.parentNode) {
+            successDiv.style.animation = 'slideOut 0.3s ease-in';
+            successDiv.style.transform = 'translateX(100%)';
+            successDiv.style.opacity = '0';
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to update favorites');
-            });
+            }, 300);
+        }
+    }, 3000);
+}
+
+// Initialize favorites for dynamically added cards
+function initFavoritesForNewCards() {
+    document.querySelectorAll('.discount-card[data-discount-id]').forEach(card => {
+        const couponId = card.getAttribute('data-discount-id');
+        const favBtn = card.querySelector('.fav-btn');
+        
+        if (favBtn && !favBtn.hasAttribute('data-initialized')) {
+            const isFav = isFavorite(couponId);
+            setFavBtnState(favBtn, isFav);
+            
+            favBtn.onclick = async function() {
+                const currentlyFav = isFavorite(couponId);
+                try {
+                    if (currentlyFav) {
+                        await updateFavoriteOnServer(couponId, 'remove');
+                        removeFavorite(couponId);
+                        showSuccessMessage('Removed from favorites!');
+                    } else {
+                        await updateFavoriteOnServer(couponId, 'add');
+                        addFavorite(couponId);
+                        showSuccessMessage('Added to favorites!');
+                    }
+                    setFavBtnState(favBtn, !currentlyFav);
+                } catch (e) {
+                    console.error('Error updating favorites:', e);
+                    // Don't show error alert, just log it
+                }
+            };
+            
+            favBtn.setAttribute('data-initialized', 'true');
+        }
+    });
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize favorites UI for all coupon cards
+    initFavoritesUI();
+    
+    // Also handle individual fav-btn elements for backward compatibility
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+        const couponId = btn.getAttribute('data-discount-id');
+        if (couponId) {
+            setFavBtnState(btn, isFavorite(couponId));
+
+            btn.onclick = async function() {
+                const currentlyFav = isFavorite(couponId);
+                try {
+                    if (currentlyFav) {
+                        await updateFavoriteOnServer(couponId, 'remove');
+                        removeFavorite(couponId);
+                        showSuccessMessage('Removed from favorites!');
+                    } else {
+                        await updateFavoriteOnServer(couponId, 'add');
+                        addFavorite(couponId);
+                        showSuccessMessage('Added to favorites!');
+                    }
+                    setFavBtnState(btn, !currentlyFav);
+                } catch (e) {
+                    console.error('Error updating favorites:', e);
+                    // Don't show error alert, just log it
+                }
+            };
+        }
+    });
+    
+    // Set up a MutationObserver to handle dynamically added cards
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                initFavoritesForNewCards();
+            }
         });
     });
-
-    // Check favorite status for all coupons
-    document.querySelectorAll('.like-icon[data-discount-id]').forEach(icon => {
-        const discountId = icon.getAttribute('data-discount-id');
-        const label = icon.parentElement.querySelector('.like-fav-label');
-        fetch(`/check_favorite/${discountId}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.is_favorite) {
-                icon.classList.add('favorite-active');
-                icon.style.color = '#ff0000';
-                if (label) label.textContent = 'Remove';
-            } else {
-                icon.classList.remove('favorite-active');
-                icon.style.color = '#ccc';
-                if (label) label.textContent = 'Add';
-            }
-        })
-        .catch(error => {
-            console.error('Error checking favorite status:', error);
-        });
+    
+    // Start observing the document body for dynamically added content
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
     });
 });

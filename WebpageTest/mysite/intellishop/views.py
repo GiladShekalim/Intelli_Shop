@@ -779,7 +779,7 @@ def add_favorite_view(request):
         user_id = request.session.get('user_id')
         if not user_id:
             logger.warning("add_favorite_view: User not authenticated")
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
+            return JsonResponse({'error': 'User not authenticated', 'status': 'auth_required'}, status=401)
         
         data = json.loads(request.body)
         discount_id = data.get('discount_id')
@@ -827,7 +827,7 @@ def remove_favorite_view(request):
         user_id = request.session.get('user_id')
         if not user_id:
             logger.warning("remove_favorite_view: User not authenticated")
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
+            return JsonResponse({'error': 'User not authenticated', 'status': 'auth_required'}, status=401)
         
         data = json.loads(request.body)
         discount_id = data.get('discount_id')
