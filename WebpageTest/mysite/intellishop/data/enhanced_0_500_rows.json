@@ -511,9 +511,7 @@
     "consumer_statuses": [
       ""
     ],
-    "favorites": [
-      ""
-    ]
+    "favorites": []
   },
   {
     "discount_id": "27",
@@ -661,9 +659,7 @@
       "Student",
       "Traveler"
     ],
-    "favorites": [
-      "hot"
-    ],
+    "favorites": [],
     "usage_limit_text": "One time usage"
   }
 ]
