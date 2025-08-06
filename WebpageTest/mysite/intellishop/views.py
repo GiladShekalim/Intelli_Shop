@@ -19,7 +19,7 @@ import random
 logger = logging.getLogger(__name__)
 
 def index(request):
-    return render(request, 'intellishop/index.html')
+    return redirect('index_home')  # Redirect to /home/
 
 def index_home(request):
     # Get user details from session
