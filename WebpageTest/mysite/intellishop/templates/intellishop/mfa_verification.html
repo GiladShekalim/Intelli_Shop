@@ -1,1 +1,91 @@
- 
+{% extends 'intellishop/index_home_original.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body text-center p-5">
+                    <!-- Padlock Icon -->
+                    <div class="mb-4">
+                        <i class="fas fa-lock" style="font-size: 4rem; color: #6c757d;"></i>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h3 class="mb-4 text-dark">Protected Page</h3>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Password Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="mfa_password" class="form-label text-dark">Password</label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="mfa_password" 
+                                   name="mfa_password" 
+                                   placeholder="Enter your password"
+                                   required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.card-body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.fas.fa-lock {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    padding: 12px 15px;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.btn-primary {
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+</style>
+{% endblock %}
