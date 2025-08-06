@@ -88,7 +88,7 @@ window.CouponUtils = {
                                 return `<span class='meta-item'>
                                 <i class='bi bi-calendar-event'></i> 
                                 <span style="${expired ? 'color:red;font-weight:bold;' : ''}">בתוקף עד: ${dateStr}</span>
-                                ${expired ? `<div class='expired-label' style="color:red;font-weight:bold;">פג תוקף</div>` : ''}  
+${expired ? `<div class='expired-label' style="background-color:#dc3545;color:white;font-weight:bold;display:inline-block;padding:4px 8px;border-radius:6px;margin-right:8px;">פג תוקף</div>` : ''}
                             </span>`;
                             })() : ''}
                             ${coupon.usage_limit ? `<span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: ${coupon.usage_limit}</span>` : ''}
