@@ -7,6 +7,7 @@ urlpatterns = [
     path('home/', views.index_home, name='index_home'),
     path('login/', views.login_view, name='login'),
     path('register/', views.register, name='register'),
+    path('mfa_verification/', views.mfa_verification, name='mfa_verification'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('base/', views.template, name='template'),
     path('coupon_for_aliexpress/', views.aliexpress_coupons, name='aliexpress_coupons'),

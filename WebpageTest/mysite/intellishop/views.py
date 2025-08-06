@@ -13,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from intellishop.models.constants import FILTER_CONFIG
 import logging
+from django.core.mail import send_mail
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +137,9 @@ def index_home(request):
         'user': {
             'email': user.get('email'),
             'status': user.get('status', []),
-            'hobbies': user.get('hobbies', [])
+            'hobbies': user.get('hobbies', []),
+            'username': user.get('username', ''),
+            'is_admin': user.get('is_admin', False)
         },
         'filtered_coupons': formatted_coupons,
         'total_count': len(formatted_coupons)  # NEW remains accurate, reflects displayed count
@@ -271,10 +275,76 @@ def register(request):
     
     return render(request, 'intellishop/register.html')
 
+def mfa_verification(request):
+    """MFA verification view for dashboard access (password + email code)"""
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+
+    user = User.find_one({'_id': ObjectId(user_id)})
+    if not user:
+        return redirect('login')
+
+    is_admin = user.get('username') == 'admin'
+    if not is_admin:
+        return redirect('index_home')
+
+    if request.session.get('mfa_verified', False):
+        return redirect('dashboard')
+
+    error = None
+    step = request.session.get('mfa_step', 'password')
+
+    if request.method == 'POST':
+        if step == 'password':
+            mfa_password = request.POST.get('mfa_password')
+            if mfa_password == 'admin123':
+                # Generate 5-digit code
+                code = str(random.randint(10000, 99999))
+                # Store code in session
+                request.session['mfa_code'] = code
+                request.session['mfa_step'] = 'code'
+                # Send code to email
+                send_mail(
+                    subject='Your Intelli-Shop Admin Verification Code',
+                    message=f'Your verification code is: {code}',
+                    from_email='noreply@intellishop.com',
+                    recipient_list=['orengolov02@gmail.com'],
+                    fail_silently=False,
+                )
+                return render(request, 'intellishop/mfa_code_entry.html')
+            else:
+                error = 'Incorrect password. This page is for admin access only.'
+        elif step == 'code':
+            code_entered = request.POST.get('verification_code')
+            code_sent = request.session.get('mfa_code')
+            if code_entered == code_sent:
+                request.session['mfa_verified'] = True
+                # Clean up session
+                request.session.pop('mfa_code', None)
+                request.session.pop('mfa_step', None)
+                return redirect('dashboard')
+            else:
+                error = 'Incorrect verification code. Please try again.'
+                return render(request, 'intellishop/mfa_code_entry.html', {'error': error})
+
+    # Default: show password form
+    request.session['mfa_step'] = 'password'
+    return render(request, 'intellishop/mfa_verification.html', {'error': error})
+
 def dashboard(request):
+    # Check if user is logged in
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    
+    # Check if MFA is verified for this session
+    if not request.session.get('mfa_verified', False):
+        return redirect('mfa_verification')
+    
     try:
         # Get all users from MongoDB without any sorting
-        users = list(User.find())  # Convert cursor to list immediately
+        users = list(User.find())  
         
         # Process the users
         users_list = []
