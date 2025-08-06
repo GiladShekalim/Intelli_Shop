@@ -85,9 +85,11 @@ window.CouponUtils = {
                                 if (!isNaN(dateObj.getTime()) && dateStr.length >= 8) {
                                     expired = dateObj < new Date(now.getFullYear(), now.getMonth(), now.getDate());
                                 }
-                                return `<span class='meta-item'><i class='bi bi-calendar-event'></i> בתוקף עד: ${dateStr}
-                                    ${expired ? `<div class='expired-label'>פג תוקף</div>` : ''}
-                                </span>`;
+                                return `<span class='meta-item'>
+                                <i class='bi bi-calendar-event'></i> 
+                                <span style="${expired ? 'color:red;font-weight:bold;' : ''}">בתוקף עד: ${dateStr}</span>
+                                ${expired ? `<div class='expired-label' style="color:red;font-weight:bold;">פג תוקף</div>` : ''}  
+                            </span>`;
                             })() : ''}
                             ${coupon.usage_limit ? `<span class='meta-item'><i class='bi bi-ticket-perforated'></i> כמות הנחות שנותרה: ${coupon.usage_limit}</span>` : ''}
                         </span>
