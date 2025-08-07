@@ -17,9 +17,10 @@ show_menu() {
     echo -e "${BLUE}       IntelliShop Setup Menu        ${NC}"
     echo -e "${BLUE}======================================${NC}"
     echo -e "${GREEN}1.${NC} Setup and start server"
-    echo -e "${GREEN}2.${NC} Setup and start server -> data validation and insert"
-    echo -e "${GREEN}3.${NC} Setup and start server -> AI enhancement -> data validation and insert"
-    echo -e "${GREEN}4.${NC} X Setup -> Data Scraping -> AI enhancement -> data validation and insert"
+    echo -e "${GREEN}2.${NC} Data validation and insert -> Setup and start server"
+    echo -e "${GREEN}3.${NC} AI enhancement -> data validation and insert -> Setup and start server"
+    echo -e "${GREEN}4.${NC} Data Scraping"
+    echo -e "${GREEN}5.${NC} Tests"
     echo -e "${BLUE}======================================${NC}"
     echo -e "${YELLOW}q.${NC} Quit"
     echo -e "${BLUE}======================================${NC}"
@@ -43,6 +44,36 @@ handle_menu() {
         3)
             echo -e "${GREEN}Running AI enhancement and updating database...${NC}"
             ./build.sh 2
+            ;;
+        4)
+            echo -e "${GREEN}Running data scraping...${NC}"
+            ./build.sh 3
+            exit 0
+            ;;
+        5)
+            echo -e "${GREEN}Running tests...${NC}"
+            # Determine Python interpreter (use venv's python if available)
+            PYTHON_INTERPRETER=""
+            if [ -x "venv/bin/python" ]; then
+                PYTHON_INTERPRETER="venv/bin/python"
+            elif command -v python >/dev/null 2>&1; then
+                PYTHON_INTERPRETER="$(command -v python)"
+            elif command -v python3 >/dev/null 2>&1; then
+                PYTHON_INTERPRETER="$(command -v python3)"
+            else
+                echo -e "${RED}No Python interpreter found. Please install Python 3.${NC}"
+                exit 1
+            fi
+
+            echo -e "Using Python interpreter at: $PYTHON_INTERPRETER"
+
+            "$PYTHON_INTERPRETER" unit_tests/Test_scripts.py || {
+                echo -e "${RED}Test discovery failed.${NC}"
+                exit 1
+            }
+
+            "$PYTHON_INTERPRETER" unit_tests/Run_Test_scripts.py
+            exit 0
             ;;
         q|Q) 
             echo -e "${GREEN}Exiting. Goodbye!${NC}"

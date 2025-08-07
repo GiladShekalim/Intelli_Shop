@@ -13,11 +13,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from intellishop.models.constants import FILTER_CONFIG
 import logging
+from django.core.mail import send_mail
+import random
 
 logger = logging.getLogger(__name__)
 
 def index(request):
-    return render(request, 'intellishop/index.html')
+    return redirect('index_home')  # Redirect to /home/
 
 def index_home(request):
     # Get user details from session
@@ -43,39 +45,60 @@ def index_home(request):
     if user_hobbies:
         filters['interests'] = user_hobbies
     
-    # Get filtered coupons from MongoDB
-    filtered_coupons = []
+    # Get filtered coupons from MongoDB (UPDATED LOGIC)
     try:
+        # Step 1: Fetch coupons based on user filters (no random limit)
         if filters:
-            # Use the existing filtering system
-            all_filtered_coupons = Coupon.get_filtered_coupons(filters)
-            
-            # Convert to list and randomize
-            all_filtered_coupons = list(all_filtered_coupons)
-            
-            # Randomly select up to 5 coupons
-            import random
-            if len(all_filtered_coupons) > 5:
-                filtered_coupons = random.sample(all_filtered_coupons, 5)
-            else:
-                filtered_coupons = all_filtered_coupons
+            base_coupons = list(Coupon.get_filtered_coupons(filters))
         else:
-            # If no filters, get random coupons from all available
-            all_coupons = list(Coupon.get_all())
-            import random
-            if len(all_coupons) > 5:
-                filtered_coupons = random.sample(all_coupons, 5)
-            else:
-                filtered_coupons = all_coupons
-                
+            base_coupons = list(Coupon.get_all())
+
+        # Step 2: Fetch user's favourite coupons
+        favorite_ids = user.get('favorites', [])
+        favorite_coupons = []
+        if favorite_ids:
+            favorite_coupons = list(Coupon.find({'discount_id': {'$in': favorite_ids}}))
+
+        # Step 3: Build weighting based on favourites' categories & statuses
+        from collections import defaultdict
+        fav_cat_count = defaultdict(int)
+        fav_status_count = defaultdict(int)
+        for fav in favorite_coupons:
+            for cat in fav.get('category', []):
+                fav_cat_count[cat] += 1
+            for st in fav.get('consumer_statuses', []):
+                fav_status_count[st] += 1
+
+        # Step 4: Merge base coupons with favourites (dedup by discount_id)
+        combined_map = {}
+        for c in base_coupons + favorite_coupons:
+            combined_map[c.get('discount_id')] = c
+        combined_coupons = list(combined_map.values())
+
+        # Step 5: Compute weight & sort
+        def _compute_weight(coupon):
+            weight = 0
+            # Category influence
+            for cat in coupon.get('category', []):
+                weight += fav_cat_count.get(cat, 0)
+            # Consumer status influence
+            for st in coupon.get('consumer_statuses', []):
+                weight += fav_status_count.get(st, 0)
+            # Direct favourite boost
+            if coupon.get('discount_id') in favorite_ids:
+                weight += 1000
+            return weight
+        combined_coupons.sort(key=_compute_weight, reverse=True)
+        # NEW: Limit to maximum 10 coupons for display
+        combined_coupons = combined_coupons[:10]
+
     except Exception as e:
         logger.error(f"Error getting filtered coupons: {str(e)}")
-        # Fallback to empty list if there's an error
-        filtered_coupons = []
+        combined_coupons = []
 
-    # Format coupons for display
+    # Format coupons for display (UPDATED to iterate combined_coupons)
     formatted_coupons = []
-    for coupon in filtered_coupons:
+    for coupon in combined_coupons:
         try:
             # Format the amount based on discount_type
             if coupon.get('discount_type') == 'percentage':
@@ -96,8 +119,14 @@ def index_home(request):
                 'description': coupon.get('description', ''),
                 'date_expires': coupon.get('valid_until', ''),
                 'store_url': coupon.get('discount_link', ''),
+                'discount_link': coupon.get('discount_link', ''),
+                'provider_link': coupon.get('provider_link', ''),
                 'minimum_amount': 0,  # Default value
-                'discount_id': coupon.get('discount_id', '')
+                'discount_id': coupon.get('discount_id', ''),
+                'terms_and_conditions': coupon.get('terms_and_conditions', ''),
+                'usage_limit': coupon.get('usage_limit', None),
+                'price': coupon.get('price', 0),  # Ensure price is passed
+                'discount_type': coupon.get('discount_type', ''),  # Ensure discount_type is passed
             }
             formatted_coupons.append(formatted_coupon)
         except Exception as e:
@@ -108,9 +137,12 @@ def index_home(request):
         'user': {
             'email': user.get('email'),
             'status': user.get('status', []),
-            'hobbies': user.get('hobbies', [])
+            'hobbies': user.get('hobbies', []),
+            'username': user.get('username', ''),
+            'is_admin': user.get('is_admin', False)
         },
-        'filtered_coupons': formatted_coupons
+        'filtered_coupons': formatted_coupons,
+        'total_count': len(formatted_coupons)  # NEW remains accurate, reflects displayed count
     }
     
     return render(request, 'intellishop/index_home_original.html', context)
@@ -243,10 +275,53 @@ def register(request):
     
     return render(request, 'intellishop/register.html')
 
+def mfa_verification(request):
+    """MFA verification view for dashboard access"""
+    # Check if user is logged in
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+
+    # Get user from MongoDB to verify admin status
+    user = User.find_one({'_id': ObjectId(user_id)})
+    if not user:
+        return redirect('login')
+
+    # Check if user is admin (customize as needed)
+    is_admin = user.get('is_admin', False) or user.get('username') == 'admin'
+    if not is_admin:
+        # Non-admins cannot access this page
+        return redirect('index_home')
+
+    # Check if MFA is already verified for this session
+    if request.session.get('mfa_verified', False):
+        return redirect('dashboard')
+
+    error = None
+    if request.method == 'POST':
+        mfa_password = request.POST.get('mfa_password')
+        admin_mfa_password = "admin123"  # Only this password is valid
+        if mfa_password == admin_mfa_password:
+            request.session['mfa_verified'] = True
+            return redirect('dashboard')
+        else:
+            error = 'Incorrect password. This page is for admin access only.'
+
+    return render(request, 'intellishop/mfa_verification.html', {'error': error})
+
 def dashboard(request):
+    # Check if user is logged in
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    
+    # Check if MFA is verified for this session
+    if not request.session.get('mfa_verified', False):
+        return redirect('mfa_verification')
+    
     try:
         # Get all users from MongoDB without any sorting
-        users = list(User.find())  # Convert cursor to list immediately
+        users = list(User.find())  
         
         # Process the users
         users_list = []
@@ -343,12 +418,38 @@ def coupon_detail(request, club_name):
             return redirect('login')
         
         # Get coupons for this specific club - search within the club_name array
-        club_coupons = Coupon.find({'club_name': {'$in': [club_name]}})
+        club_coupons_raw = Coupon.find({'club_name': {'$in': [club_name]}})
         
         # Convert ObjectId to string for JSON serialization
-        for coupon in club_coupons:
+        club_coupons = []
+        for coupon in club_coupons_raw:
             if '_id' in coupon:
                 coupon['_id'] = str(coupon['_id'])
+            if coupon.get('discount_type') == 'percentage':
+                amount = f"{coupon.get('price', 0)}%"
+            else:
+                amount = f"${coupon.get('price', 0)}"
+            club_names = coupon.get('club_name', [])
+            store_name = club_names[0] if club_names else "Unknown Store"
+            formatted_coupon = {
+                'store_name': store_name,
+                'store_logo': coupon.get('image_link', ''),
+                'code': coupon.get('coupon_code', ''),
+                'amount': amount,
+                'name': coupon.get('title', 'Special Offer'),
+                'description': coupon.get('description', ''),
+                'date_expires': coupon.get('valid_until', ''),
+                'store_url': coupon.get('discount_link', ''),
+                'discount_link': coupon.get('discount_link', ''),
+                'provider_link': coupon.get('provider_link', ''),
+                'minimum_amount': 0,
+                'discount_id': coupon.get('discount_id', ''),
+                'terms_and_conditions': coupon.get('terms_and_conditions', ''),
+                'usage_limit': coupon.get('usage_limit', None),
+                'price': coupon.get('price', 0),
+                'discount_type': coupon.get('discount_type', ''),
+            }
+            club_coupons.append(formatted_coupon)
         
         # Format club name for display (capitalize first letter)
         display_name = club_name.title()
@@ -472,25 +573,42 @@ def coupon_code_view(request, code):
 # Favorites Page
 def favorites_view(request):
     """Display user's favorite coupons"""
-    # Check if user is logged in
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('login')
-
-    # Get user from MongoDB
     user = User.find_one({'_id': ObjectId(user_id)})
     if not user:
         return redirect('login')
-
-    # Get user's favorite discount IDs
     favorite_ids = user.get('favorites', [])
-    
-    # Get actual coupon data for favorite IDs
     favorite_coupons = []
     if favorite_ids:
-        # Use $in operator to get all favorite coupons in one query
-        favorite_coupons = Coupon.find({'discount_id': {'$in': favorite_ids}})
-    
+        raw_coupons = Coupon.find({'discount_id': {'$in': favorite_ids}})
+        for coupon in raw_coupons:
+            if coupon.get('discount_type') == 'percentage':
+                amount = f"{coupon.get('price', 0)}%"
+            else:
+                amount = f"${coupon.get('price', 0)}"
+            club_names = coupon.get('club_name', [])
+            store_name = club_names[0] if club_names else "Unknown Store"
+            formatted_coupon = {
+                'store_name': store_name,
+                'store_logo': coupon.get('image_link', ''),
+                'code': coupon.get('coupon_code', ''),
+                'amount': amount,
+                'name': coupon.get('title', 'Special Offer'),
+                'description': coupon.get('description', ''),
+                'date_expires': coupon.get('valid_until', ''),
+                'store_url': coupon.get('discount_link', ''),
+                'discount_link': coupon.get('discount_link', ''),
+                'provider_link': coupon.get('provider_link', ''),
+                'minimum_amount': 0,
+                'discount_id': coupon.get('discount_id', ''),
+                'terms_and_conditions': coupon.get('terms_and_conditions', ''),
+                'usage_limit': coupon.get('usage_limit', None),
+                'price': coupon.get('price', 0),
+                'discount_type': coupon.get('discount_type', ''),
+            }
+            favorite_coupons.append(formatted_coupon)
     context = {
         'user': user,
         'favorite_coupons': favorite_coupons,
@@ -708,7 +826,7 @@ def add_favorite_view(request):
         user_id = request.session.get('user_id')
         if not user_id:
             logger.warning("add_favorite_view: User not authenticated")
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
+            return JsonResponse({'error': 'User not authenticated', 'status': 'auth_required'}, status=401)
         
         data = json.loads(request.body)
         discount_id = data.get('discount_id')
@@ -756,7 +874,7 @@ def remove_favorite_view(request):
         user_id = request.session.get('user_id')
         if not user_id:
             logger.warning("remove_favorite_view: User not authenticated")
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
+            return JsonResponse({'error': 'User not authenticated', 'status': 'auth_required'}, status=401)
         
         data = json.loads(request.body)
         discount_id = data.get('discount_id')

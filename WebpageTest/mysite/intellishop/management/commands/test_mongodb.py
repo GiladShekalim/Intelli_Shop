@@ -37,12 +37,12 @@ class CouponModelTestCase(TestCase):
         # Create test database connection
         self.collection = Coupon.get_collection()
         # Clear any existing test data
-        if self.collection:
+        if self.collection is not None:
             self.collection.delete_many({})
             
     def tearDown(self):
         # Clean up after tests
-        if self.collection:
+        if self.collection is not None:
             self.collection.delete_many({})
     
     def test_coupon_validation(self):
@@ -99,7 +99,7 @@ class CouponModelTestCase(TestCase):
             "valid_until": datetime.datetime.now().isoformat()
         }
         
-        if self.collection:
+        if self.collection is not None:
             self.collection.insert_one(test_coupon)
             
             # Retrieve by code

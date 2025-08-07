@@ -3,6 +3,23 @@
     "club_name": "adif",
     "category": "Consumerism",
     "discount_id": "1",
+    "title": "נגיסה סושי",
+    "price": "N/A",
+    "discount_type": "N/A",
+    "description": "נגיסה – רשת סושי בר ומטבח אסייאתי בפריסה ארצית, שמתמחה בטעמים אסייתיים עם טוויסט ישראלי מנצח.\nמהסושי הקלאסי ועד מנות מוקפצות עשירות – הכל טרי, איכותי ומותאם בדיוק למה שאתם אוהבים.\n💸 ההנחה מתעדכנת אוטומטית במעמד החיוב בבית העסק – אין צורך בקוד.",
+    "terms_and_conditions": "לתשומת לבך:\n\n*השירותים והמוצרים באחריות בית העסק בלבד *מועדון מועדון צרכנות עדיף ו/או בית העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת *התמונות להמחשה בלבד *ללא כפל מבצעים והנחות אלא אם מצוין אחרת. *כשרות - מומלץ לבדוק מול בית העסק *תוקף  31/12/2026\n\nהדר יוסף 14, תל אביב-יפו\n\nטלפון: 03-644-3020",
+    "discount_link": "https://adif.org.il/benefit/1789",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/0c08035db8de2e6ea7c2784dd1daee97.jpg",
+    "provider_link": "https://medamas.co.il/",
+    "coupon_code": "N/A",
+    "valid_until": "13.07.25",
+    "usage_limit": "1",
+    "location": "Israel"
+  },
+  {
+    "club_name": "adif",
+    "category": "Consumerism",
+    "discount_id": "2",
     "title": "Rosa Parks bar",
     "price": "10% הנחה",
     "discount_type": "percentage",
@@ -10,44 +27,27 @@
     "terms_and_conditions": "חשוב לדעת: משלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד * מועדון מועדון צרכנות עדיף ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות *כולל כפל מבצעים  תוקף: 30.12.2026",
     "discount_link": "https://adif.org.il/benefit/1749",
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/bc14ed1b3105928c3c5c9f5140a18909.jpg",
-    "provider_link": "N/A",
+    "provider_link": "https://ontopo.com/he/il/page/66404277",
     "coupon_code": "N/A",
-    "valid_until": "04.06.25",
-    "usage_limit": 1,
-    "location": "Israel"
-  },
-  {
-    "club_name": "adif",
-    "category": "Consumerism",
-    "discount_id": "2",
-    "title": "5% הנחה בברנרד",
-    "price": "5% הנחה",
-    "discount_type": "percentage",
-    "description": "5% הנחה במסעדת ברנרד – סנדוויץ' בר בראשון לציון!\nברנרד, סנדוויץ' בר מסעדה, תמצאו מבחר רחב של כריכי בשר עסיסיים, בירות ומשקאות איכותיים שיתאימו לכל טעם. עם אפשרות לשבת באווירה בפנים או בחוץ, או להזמין משלוח מהיר, תיהנו מכל מה שאתם אוהבים – עכשיו עם 5% הנחה על החשבון! אל תפספסו את ההזדמנות לפנק את עצמכם בארוחה טעימה במחיר משתלם.\nמימוש ההטבה:\nהנחה במעמד החיוב בבית העסק",
-    "terms_and_conditions": "חשוב לדעת: משלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד * מועדון מועדון צרכנות עדיף ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות *כולל כפל מבצעים  תוקף: 30.12.2026",
-    "discount_link": "https://adif.org.il/benefit/1748",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/8212105183a85e52404eb64a51371dbb.png",
-    "provider_link": "N/A",
-    "coupon_code": "N/A",
-    "valid_until": "12.06.25",
-    "usage_limit": 1,
+    "valid_until": "04.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Consumerism",
     "discount_id": "3",
-    "title": "שובר לפאנקו | 265 ש\"ח במקום 300 ש\"ח",
-    "price": "265 ₪",
-    "discount_type": "price",
-    "description": "פאנקו מארגנים לכם את האלכוהול המושלם!\nהטבה מסובסדת !!!\nמשלמים 265 ש\"ח ומקבלים שובר בשווי 300 ש\"ח על הקטגוריות הבאות:\nיין, בירה, קוקטיילים ומארזים\nמעבר לאתר >>\nמימוש ההטבה: \n יש להזין את הקוד הקופון במעמד התשלום\nתקף עד 31.5.25",
-    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד , השירותים והמוצרים באחריות בית העסק בלבד מועדון מועדון צרכנות עדיף ו/או בית העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת התמונות להמחשה בלבד לא חל על מבצעי קופה (דוגמת 2 ב - 100/ 3 ב 150) תוקף למימוש : 31.5.25.  ללקוחות רשומים (רישום בחינם בכניסה לאתר) * מוגבל לשובר אחד למשתמש *מוגבל לקופון אחד לעסקה *חל באתר פאנקו מרכז לא חל באתר פאנקו אילת  * תוקף להטבה: כמצוין בגוף ההטבה\n\nשירות לקוחות: support@paneco.com",
-    "discount_link": "https://adif.org.il/product/4067",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/2f8eb1ce0ae72d79849b3f02b5260237.png",
-    "provider_link": "https://www.paneco.co.il/",
+    "title": "5% הנחה בברנרד | סנדוויץ בר",
+    "price": "5% הנחה",
+    "discount_type": "percentage",
+    "description": "5% הנחה במסעדת ברנרד – סנדוויץ' בר בראשון לציון!\nברנרד, סנדוויץ' בר מסעדה, תמצאו מבחר רחב של כריכי בשר עסיסיים, בירות ומשקאות איכותיים שיתאימו לכל טעם. עם אפשרות לשבת באווירה בפנים או בחוץ, או להזמין משלוח מהיר, תיהנו מכל מה שאתם אוהבים – עכשיו עם 5% הנחה על החשבון! אל תפספסו את ההזדמנות לפנק את עצמכם בארוחה טעימה במחיר משתלם.\nמימוש ההטבה:\nהנחה במעמד החיוב בבית העסק",
+    "terms_and_conditions": "חשוב לדעת: משלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד * מועדון מועדון צרכנות עדיף ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות *כולל כפל מבצעים  תוקף: 30.12.2026",
+    "discount_link": "https://adif.org.il/benefit/1748",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/b247b745b149cd60b2937582f06283ba.jpg",
+    "provider_link": "https://www.bsb.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "02.07.25",
-    "usage_limit": 1,
+    "valid_until": "05.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -63,8 +63,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/947b2aef251f137a101ab1bf2c72442f.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "24.06.25",
-    "usage_limit": 1,
+    "valid_until": "31.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -80,8 +80,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/d494459e160e3e38d4e763bf8eb36c6e.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "26.06.25",
-    "usage_limit": 1,
+    "valid_until": "10.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -97,8 +97,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/76ab4f2c2c16c181190492cf5f449a26.png",
     "provider_link": "https://pizza-story.co.il/?page_id=200",
     "coupon_code": "N/A",
-    "valid_until": "04.07.25",
-    "usage_limit": 1,
+    "valid_until": "25.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -114,8 +114,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/7782b961cc949357972fb7cc66e8162e.jpg",
     "provider_link": "https://www.viaggioespresso.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "04.07.25",
-    "usage_limit": 1,
+    "valid_until": "21.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -131,8 +131,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/cf43d4d2101d9d17bfdef575f690af19.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "12.06.25",
-    "usage_limit": 1,
+    "valid_until": "21.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -148,8 +148,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/7c38e63f59e77b1b397ba962a3d5915b.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "05.06.25",
-    "usage_limit": 1,
+    "valid_until": "19.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -165,8 +165,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/7d4642ed5deb6d06dc6489930057e0f4.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "27.06.25",
-    "usage_limit": 1,
+    "valid_until": "07.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -182,8 +182,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/c1189f021afb136ba2d05ac682b77afb.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "30.06.25",
-    "usage_limit": 1,
+    "valid_until": "17.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -199,8 +199,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/0fc7852900bd8ebf5c3e9aa1ecd0d267.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "09.06.25",
-    "usage_limit": 1,
+    "valid_until": "26.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -216,8 +216,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/a3b82e416a2e81a93c515f8196a833b0.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "30.06.25",
-    "usage_limit": 1,
+    "valid_until": "17.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -233,8 +233,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/ce1f7eb1825dfda93806c32cb231979b.jpg",
     "provider_link": "https://esimo.onelink.me/MYeR/Adif",
     "coupon_code": "N/A",
-    "valid_until": "11.06.25",
-    "usage_limit": 1,
+    "valid_until": "05.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -245,13 +245,13 @@
     "price": "6%  הנחה",
     "discount_type": "percentage",
     "description": "Neptucom מסלול החו\"ל כלול\nהקו הגלובלי הראשון בישראל – גם ישראל וגם חו''ל במספר אחד ובמחיר מנצח!\nמהיום לא צריך לרכוש חבילת חו''ל בכל פעם שטסים לחופשה.\nסים עם הקו שלך או עם קו נוסף הכולל חבילת חו''ל ואפשר להמשיך לגלוש, להשתמש באפליקציות האהובות ולבצע שיחות כאילו נשארת בישראל!\n✔ תמיכה בלמעלה מ- 120 מדינות\n✔ חבילות גלישה החל מ- 24GB ועד 120GB לשנה\n✔ שיחות מישראל לחו''ל / מחו\"ל לישראל\nסדרנו לכם הטבה שווה במיוחד !!!\n6%  הנחה במעמד החיוב על חבילות סלולר 5G עם הגלישה לחו\"ל של חברת Neptucom\nמימוש באתר בית העסק >>",
-    "terms_and_conditions": "כולל כפל מבצעים, בתוקף עד 20.10.2025\n\nפרטים נוספים\n\nחברת Neptucom הינה מפעילת סלולר בעלת היתר של משרד התקשורת המעניקה שירותים מתקדמים לאלפי לקוחות מרוצים, הנהנים מתשתית סלולרית מתקדמת המבוססת על רשתות בינלאומיות, מעל 19 שנות ניסיון בנדידת נתונים (גלישה בחו\"ל), עם הסכמים מול כ-500 חברות תקשורת בינלאומיות ומפעילי סלולר ברחבי העולם ומקומיות בארץ כפרטנר ופלאפון ובפריסה של מעל 100 מדינות וכ-19 מוקדי הפצה ברחבי העולם. כל קווי התקשורת תומכי דור 5.\n\nכתובת: מוזיאון בית התפוצות, קמפוס אוניברסיטת ת\"א. \nשעות פעילות: 08:30-18:00, ימים א'-ה'\n\nטלפון:  03-5200001\n\nמייל שירות לקוחות : support@neptucom.com\n\nאתר אינטרנט: https://neptucom.com/",
+    "terms_and_conditions": "כולל כפל מבצעים, בתוקף עד 20.12.2026\n\nפרטים נוספים\n\nחברת Neptucom הינה מפעילת סלולר בעלת היתר של משרד התקשורת המעניקה שירותים מתקדמים לאלפי לקוחות מרוצים, הנהנים מתשתית סלולרית מתקדמת המבוססת על רשתות בינלאומיות, מעל 19 שנות ניסיון בנדידת נתונים (גלישה בחו\"ל), עם הסכמים מול כ-500 חברות תקשורת בינלאומיות ומפעילי סלולר ברחבי העולם ומקומיות בארץ כפרטנר ופלאפון ובפריסה של מעל 100 מדינות וכ-19 מוקדי הפצה ברחבי העולם. כל קווי התקשורת תומכי דור 5.\n\nכתובת: מוזיאון בית התפוצות, קמפוס אוניברסיטת ת\"א. \nשעות פעילות: 08:30-18:00, ימים א'-ה'\n\nטלפון:  03-5200001\n\nמייל שירות לקוחות : support@neptucom.com\n\nאתר אינטרנט: https://neptucom.com/",
     "discount_link": "https://adif.org.il/benefit/1681",
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/568b5b5d258eef4ae6502b25e8081c81.jpg",
     "provider_link": "https://neptucom.com/",
     "coupon_code": "N/A",
-    "valid_until": "02.07.25",
-    "usage_limit": 1,
+    "valid_until": "08.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -267,8 +267,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/4a73f60b686e299c27b72eba35e674a8.jpg",
     "provider_link": "https://www.danlar.co.il/product/trekgear%D7%AA%D7%99%D7%A7-%D7%9B%D7%9C%D7%99-%D7%A8%D7%97%D7%A6%D7%94-%D7%A4%D7%95%D7%A0%D7%A7%D7%A6%D7%99%D7%95%D7%A0%D7%9C%D7%99",
     "coupon_code": "N/A",
-    "valid_until": "06.06.25",
-    "usage_limit": 1,
+    "valid_until": "18.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -284,8 +284,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/cd57f690c2b4ea6fd50b90aa7ff0d646.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "17.06.25",
-    "usage_limit": 1,
+    "valid_until": "26.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -301,31 +301,14 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/4a73f60b686e299c27b72eba35e674a8.jpg",
     "provider_link": "https://www.danlar.co.il/product/trekgear%D7%AA%D7%99%D7%A7-%D7%9B%D7%9C%D7%99-%D7%A8%D7%97%D7%A6%D7%94-%D7%A4%D7%95%D7%A0%D7%A7%D7%A6%D7%99%D7%95%D7%A0%D7%9C%D7%99",
     "coupon_code": "N/A",
-    "valid_until": "14.06.25",
-    "usage_limit": 1,
+    "valid_until": "09.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Travel and Vacation",
     "discount_id": "19",
-    "title": "Laufer VIP | שירות אישי בנתב\"ג ובחו\"ל",
-    "price": "15% הנחה",
-    "discount_type": "percentage",
-    "description": "לאופר VIP הינו מועדון אקסקלוסיבי המספק מגוון מלא של שירותי VIP בנמל התעופה בן גוריון ובשדות תעופה ברחבי העולם. שירותי Laufer VIP יהפכו את החוויה בשדה התעופה להרבה יותר נעימה. דייל אישי ילווה אותך לאורך כל התהליך בשדה התעופה במהירות, בנוחות וביעילות.\nבלעדי לחברי מועדון!\n15% הנחה על שירות LAUFER FAREWELL LITE\nההנחה תינתן עבור שירות Laufer Farewell Lite בלבד\nההטבה כוללת:\nלנוסעים יתאפשר להגיע מינימום שעתיים לפני שעת ההמראה\nמפגש עם הנוסע בשער 01 - קומת הנחיתות הבידוק הביטחוני יתבצע במתחם מיוחד לנוסעי הVIP\nמעבר יעיל בכלל התחנות בשדה התעופה: דלפקי צק-אין, בידוק כבודת יד וביקורת גבולות\nסיוע עם הכבודה עד 4 מזוודות. במידה וקיימות יותר מ4- מזוודות ויש צורך בסיוע נוסף, יש להזמין שירותי סבל בנוסף\nהשירות יסתיים לאחר המעבר בביקורת גבולות\nאופן מימוש ההטבה:\nמזינים את הקוד באתר במעמד התשלום ונהנים מהנחה!",
-    "terms_and_conditions": "משלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד השירותים והמוצרים באחריות בתי העסק בלבד | מועדון מועדון צרכנות עדיף ו/או כל אחד מבתי העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת | עד גמר המלאי | כל התמונות להמחשה בלבד | ללא כפל מבצעים ו/או הנחות. | תוקף עד 31.12.2024 | אולם ה-VIP  והשירות כפי שתואר תקף בהמראות מטרמינל 3 בלבד | מימוש באמצעות קוד הטבה | השירות על בסיס מקום פנוי | ביצוע הזמנה לכל המאוחר 48 שעות לפני מועד מתן השירות | התנאים וההגבלות עשויים להשתנות מעת לעת לפי תנאי לאופר | השירות יינתן עד לאחר ביקורת הגבולות בטרמינל 3 בלבד | ההנחה תינתן עבור שירות: Laufer Farewell Lite בלבד |  אם יחולו שינויים, עיכובים או כל ביטול במתן השירותים בשל הוראה או הנחייה של רשות שדות התעופה או משרד הבריאות, החברה תהיה מחויבת לפעול על פיהם ולא תהיה כל טענה, דרישה או תלונה כלפי החברה, בעניין זה.\n\nאתר אינטרנט: https://www.laufer-vip.com/\n\nטלפון/מייל שירות לקוחות: Vipoffice@lauferghi.com",
-    "discount_link": "https://adif.org.il/benefit/1603",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/58a44f1319e7e96b356975e6054a79f9.jpg",
-    "provider_link": "https://www.laufer-vip.com/",
-    "coupon_code": "N/A",
-    "valid_until": "10.06.25",
-    "usage_limit": 1,
-    "location": "Israel"
-  },
-  {
-    "club_name": "adif",
-    "category": "Travel and Vacation",
-    "discount_id": "20",
     "title": "תיק גב לטיסות ULTRA CABIN TREKKER",
     "price": "179 ₪",
     "discount_type": "price",
@@ -335,82 +318,133 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/da1bb4a06deeb2f0d8f17c87c4c77060.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "15.06.25",
-    "usage_limit": 1,
+    "valid_until": "08.08.25",
+    "usage_limit": "1",
+    "location": "Israel"
+  },
+  {
+    "club_name": "adif",
+    "category": "Travel and Vacation",
+    "discount_id": "20",
+    "title": "תיק גב | Ochocinco™ Pro",
+    "price": "149 ₪",
+    "discount_type": "price",
+    "description": "הכירו את תיק הגב Ochocinco™ Pro מבית כאמל מאונטיין® – תיק מדהים עם עיצוב אלגנטי ונפח של 25 ליטר, מושלם לסטודנטים, אנשי מקצוע, ולכל מי שתמיד בתנועה. הוא משלב עיצוב, פונקציונליות ועמידות, ויתאים לכם בול לעבודה, לימודים או נסיעות.\nוהמחיר ? רק 149 ש\"ח במקום 249 !!!!\nהתיק כולל תא מרופד שיגן על המחשב שלכם מכל פגיעה, עשוי מבד אוקספורד עמיד למים, ככה שהחפצים שלכם בטוחים בכל מזג אוויר. בנוסף, יש בו חיבור USB לנוחות בטעינה תוך כדי תנועה – ללא סוללה ניידת.\nהוא שוקל רק 0.55 ק\"ג, עם רצועות מרופדות ותמיכה אוורירית בגב, ככה שתהיו נינוחים ונוחים כל היום. ויש בו 4 תאים מרווחים שיארגנו לכם את כל החפצים בצורה מסודרת.\nעיצוב סופר אלגנטי ומקצועי שמתאים לכל סיטואציה – לימודים, עבודה או נסיעות. זה תיק קל, פונקציונלי ומעוצב בטירוף, שמושלם עבור סטודנטיות, מקצועניות, נשות עסקים ונוסעות.",
+    "terms_and_conditions": "שליח עד הבית: \n40 שח כולל מעמ \nאספקה- עד 4 ימי עסקים\n\nנקודת איסוף קרובה לבית: \n 20  שח כולל מעמ\nאספקה- עד 7 ימי עסקים\n\nאיסוף עצמי מבית העסק: \nשמוטקין 19 ראשון לציון (יש באזור חניה פרטית)\nא-ה: 10:00-17:30\n\nמשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד *השירותים והמוצרים באחריות בתי העסק בלבד *מועדון מועדון צרכנות עדיף ו/או כל אחד מבתי העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת *תוקף: 31.12.25\n\nשירות לקוחות – 03-5166336",
+    "discount_link": "https://adif.org.il/product/3057",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/04b1bebb381cb40012ee171b7ee63584.jpg",
+    "provider_link": "N/A",
+    "coupon_code": "N/A",
+    "valid_until": "17.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Culture and Leisure",
     "discount_id": "21",
-    "title": "מבשלים חוויה",
-    "price": "267 ₪",
-    "discount_type": "price",
-    "description": "267 ₪ בלבד במקום 355 ₪ לסנדת בישול ב “מבשלים חוויה \"\nהצטרפו לאחת מסדנאות הבישול , עם חוויה קולינרית פעילה, מתכונים מקוריים, קבלת פנים מפנקת, ושתייה חופשית לאורך כל הסדנה.\nבמיוחד לשבועות תוכלו להנות מסדנה איטלקית או סדנה יוונית שיעשו לכם את החג לטעים במיוחד!\nהחפלה היוונית שלנו • Mevashlim\nסדנת בישול איטלקית חלבית - מעדנים מהמטבח האיטלקי • Mevashlim\n1.6 בשעה 10:00\n*שימו לב השובר תקף לכל הסדנאות באתר - תוכלו לבקר באתר ולבחור את הסדנא הרצויה*\nלינק לאתר >>\nאופן מימוש ההטבה:\nרוכשים אצלנו באתר שובר, מקבלים קוד קופון לנייד, מזינים את הקוד באתר לאחר שבחרתם סדנה ומבשלים חוויה :)",
-    "terms_and_conditions": "למשלמים בכרטיס אשראי max מועדון צרכנות עדיף בלבד השירותים והמוצרים באחריות בית העסק בלבד מועדון  מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות/להפסיק את המבצע בכל עת וללא הודעה מוקדמת *תוקף: 31.12.26",
-    "discount_link": "https://adif.org.il/product/4108",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/95754084b0fb99d5f730522d619b0d4e.png",
-    "provider_link": "https://www.mevashlim.co.il/%D7%A1%D7%93%D7%A0%D7%AA-%D7%91%D7%99%D7%A9%D7%95%D7%9C-%D7%99%D7%95%D7%95%D7%A0%D7%99%D7%AA",
+    "title": "נגיסה סושי",
+    "price": "N/A",
+    "discount_type": "N/A",
+    "description": "נגיסה – רשת סושי בר ומטבח אסייאתי בפריסה ארצית, שמתמחה בטעמים אסייתיים עם טוויסט ישראלי מנצח.\nמהסושי הקלאסי ועד מנות מוקפצות עשירות – הכל טרי, איכותי ומותאם בדיוק למה שאתם אוהבים.\n💸 ההנחה מתעדכנת אוטומטית במעמד החיוב בבית העסק – אין צורך בקוד.",
+    "terms_and_conditions": "לתשומת לבך:\n\n*השירותים והמוצרים באחריות בית העסק בלבד *מועדון מועדון צרכנות עדיף ו/או בית העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת *התמונות להמחשה בלבד *ללא כפל מבצעים והנחות אלא אם מצוין אחרת. *כשרות - מומלץ לבדוק מול בית העסק *תוקף  31/12/2026\n\nהדר יוסף 14, תל אביב-יפו\n\nטלפון: 03-644-3020",
+    "discount_link": "https://adif.org.il/benefit/1789",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/0c08035db8de2e6ea7c2784dd1daee97.jpg",
+    "provider_link": "https://medamas.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "13.06.25",
-    "usage_limit": 1,
+    "valid_until": "06.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Culture and Leisure",
     "discount_id": "22",
-    "title": "50 ש\"ח הנחה על הופעה | עילי בוטנר והילדים החדשים",
-    "price": "50 ש\"ח",
-    "discount_type": "price",
-    "description": "עילי בוטנר והילדים החדשים במופע שווה!\n17.7 | חמישי | 19:00\nקו רקיע עונת המופעים 2025 בפארק אריאל שרון\nבלעדי לחברי מועדון!\n\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר Ticketmaster  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.",
-    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד מועדון מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות  *הכניסה למופע תתאפשר בכפוף להנחיות משרד הבריאות ובהתאם לתנאי התו הירוק * חובה להגיע למופע עם אישור התו הירוק בצירוף תעודה מזהה מדיניות ביטולים: לפי מדיניות בית העסק * מייל שירות לקוחות: info@tmisrael.co.il, טלפון: 03-5007000, 9964 * , *תוקף: בהתאם לכתוב בגוף ההטבה\n\nטלפון: 03-5007000, *9964 דואר אלקטרוני: info@tmisrael.co.il",
-    "discount_link": "https://adif.org.il/product/4107",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/b21d95cff47c7c2adf24b83972734cad.png",
-    "provider_link": "https://kavrakia.com/",
+    "title": "חומוס מדאמס",
+    "price": "15%",
+    "discount_type": "percentage",
+    "description": "15% בסניף רמת אביב\nבלב שכונת הדר יוסף בתל אביב מחכה לכם אחת הפינות הכי טעימות בעיר – חומוס הדר יוסף.\nחומוס חם, טרי, עשיר ועם תוספות מפנקות – כמו שחומוס אמיתי צריך להיות.\n🫒 מושלם לארוחת צהריים, אחרי אימון או כשמתחשק פשוט לנגב.\n💸 ההנחה מתעדכנת אוטומטית במעמד החיוב בבית העסק – בלי צורך בקוד או קופון!",
+    "terms_and_conditions": "לתשומת לבך:\n\n*השירותים והמוצרים באחריות בית העסק בלבד *מועדון מועדון צרכנות עדיף ו/או בית העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת *התמונות להמחשה בלבד *ללא כפל מבצעים והנחות אלא אם מצוין אחרת. *כשרות - מומלץ לבדוק מול בית העסק *תוקף  31/12/2026\n\nהדר יוסף 14, תל אביב-יפו\n\nטלפון: 03-644-3020",
+    "discount_link": "https://adif.org.il/benefit/1788",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/f3b67ecf8047243444c5bbe837d73d13.jpg",
+    "provider_link": "https://medamas.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "08.06.25",
-    "usage_limit": 1,
+    "valid_until": "27.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Culture and Leisure",
     "discount_id": "23",
-    "title": "50 ש\"ח הנחה על הופעה | מוש בן ארי בפארק אריאל שרון",
-    "price": "50 ש\"ח",
+    "title": "מבשלים חוויה",
+    "price": "267 ₪",
     "discount_type": "price",
-    "description": "מוש בן ארי מארח את רד בנד במופע שקיעה !\n12.7 | מוצ\"ש | 19:00\nקו רקיע עונת המופעים 2025 בפארק אריאל שרון\nבלעדי לחברי מועדון!\n\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר Ticketmaster  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.",
-    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד מועדון מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות  *הכניסה למופע תתאפשר בכפוף להנחיות משרד הבריאות ובהתאם לתנאי התו הירוק * חובה להגיע למופע עם אישור התו הירוק בצירוף תעודה מזהה מדיניות ביטולים: לפי מדיניות בית העסק * מייל שירות לקוחות: info@tmisrael.co.il, טלפון: 03-5007000, 9964 * , *תוקף: בהתאם לכתוב בגוף ההטבה\n\nטלפון: 03-5007000, *9964 דואר אלקטרוני: info@tmisrael.co.il",
-    "discount_link": "https://adif.org.il/product/4106",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/d8de2fa6968ef3882c83368efea11792.png",
-    "provider_link": "https://kavrakia.com/",
+    "description": "267 ₪ בלבד במקום 355 ₪ לסנדת בישול ב “מבשלים חוויה \"\nהצטרפו לאחת מסדנאות הבישול , עם חוויה קולינרית פעילה, מתכונים מקוריים, קבלת פנים מפנקת, ושתייה חופשית לאורך כל הסדנה.\n*שימו לב השובר תקף לכל הסדנאות באתר - תוכלו לבקר באתר ולבחור את הסדנא הרצויה*\nלינק לאתר >>\nאופן מימוש ההטבה:\nרוכשים אצלנו באתר שובר, מקבלים קוד קופון לנייד, מזינים את הקוד באתר לאחר שבחרתם סדנה ומבשלים חוויה :)",
+    "terms_and_conditions": "למשלמים בכרטיס אשראי max מועדון צרכנות עדיף בלבד השירותים והמוצרים באחריות בית העסק בלבד מועדון  מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות/להפסיק את המבצע בכל עת וללא הודעה מוקדמת *תוקף: 31.12.26",
+    "discount_link": "https://adif.org.il/product/4108",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/95754084b0fb99d5f730522d619b0d4e.png",
+    "provider_link": "https://www.mevashlim.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "14.06.25",
-    "usage_limit": 1,
+    "valid_until": "19.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Culture and Leisure",
     "discount_id": "24",
-    "title": "50 ש\"ח הנחה על הופעה | מרינה מקסימיליאן בפארק אריאל שרון",
+    "title": "50 ש\"ח הנחה על הופעה | עילי בוטנר והילדים החדשים",
     "price": "50 ש\"ח",
     "discount_type": "price",
-    "description": "מארינה מקסימליאן במופע בחודש האהבה !\n13.8 | רביעי | 21:00\nקו רקיע עונת המופעים 2025 בפארק אריאל שרון\nבלעדי לחברי מועדון!\n\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר Ticketmaster  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.",
+    "description": "עילי בוטנר והילדים החדשים במופע שווה!\n17.7 | חמישי | 19:00\nקו רקיע עונת המופעים 2025 בפארק אריאל שרון\nבלעדי לחברי מועדון!\n\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר Ticketmaster  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.",
     "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד מועדון מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות  *הכניסה למופע תתאפשר בכפוף להנחיות משרד הבריאות ובהתאם לתנאי התו הירוק * חובה להגיע למופע עם אישור התו הירוק בצירוף תעודה מזהה מדיניות ביטולים: לפי מדיניות בית העסק * מייל שירות לקוחות: info@tmisrael.co.il, טלפון: 03-5007000, 9964 * , *תוקף: בהתאם לכתוב בגוף ההטבה\n\nטלפון: 03-5007000, *9964 דואר אלקטרוני: info@tmisrael.co.il",
-    "discount_link": "https://adif.org.il/product/4105",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/081fe68fa4c0ac1c05a3c8c4f8c0fc7f.png",
+    "discount_link": "https://adif.org.il/product/4107",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/fe2272c9032675d109b2f3874bf5e729.jpg",
     "provider_link": "https://kavrakia.com/",
     "coupon_code": "N/A",
-    "valid_until": "07.06.25",
-    "usage_limit": 1,
+    "valid_until": "24.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Culture and Leisure",
     "discount_id": "25",
+    "title": "50 ש\"ח הנחה על הופעה | מוש בן ארי בפארק אריאל שרון",
+    "price": "50 ש\"ח",
+    "discount_type": "price",
+    "description": "מוש בן ארי מארח את רד בנד במופע שקיעה !\n12.7 | מוצ\"ש | 19:00\nקו רקיע עונת המופעים 2025 בפארק אריאל שרון\nבלעדי לחברי מועדון!\n\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר Ticketmaster  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.",
+    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד מועדון מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות  *הכניסה למופע תתאפשר בכפוף להנחיות משרד הבריאות ובהתאם לתנאי התו הירוק * חובה להגיע למופע עם אישור התו הירוק בצירוף תעודה מזהה מדיניות ביטולים: לפי מדיניות בית העסק * מייל שירות לקוחות: info@tmisrael.co.il, טלפון: 03-5007000, 9964 * , *תוקף: בהתאם לכתוב בגוף ההטבה\n\nטלפון: 03-5007000, *9964 דואר אלקטרוני: info@tmisrael.co.il",
+    "discount_link": "https://adif.org.il/product/4106",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/3bdf48fd6d4abda572346a5bf58174aa.jpg",
+    "provider_link": "https://kavrakia.com/",
+    "coupon_code": "N/A",
+    "valid_until": "01.08.25",
+    "usage_limit": "1",
+    "location": "Israel"
+  },
+  {
+    "club_name": "adif",
+    "category": "Culture and Leisure",
+    "discount_id": "26",
+    "title": "50 ש\"ח הנחה על הופעה | מרינה מקסימיליאן בפארק אריאל שרון",
+    "price": "50 ש\"ח",
+    "discount_type": "price",
+    "description": "מארינה מקסימליאן במופע בחודש האהבה !\n13.8 | רביעי | 21:00\nקו רקיע עונת המופעים 2025 בפארק אריאל שרון\nבלעדי לחברי מועדון!\n\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר Ticketmaster  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.",
+    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד מועדון מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות  *הכניסה למופע תתאפשר בכפוף להנחיות משרד הבריאות ובהתאם לתנאי התו הירוק * חובה להגיע למופע עם אישור התו הירוק בצירוף תעודה מזהה מדיניות ביטולים: לפי מדיניות בית העסק * מייל שירות לקוחות: info@tmisrael.co.il, טלפון: 03-5007000, 9964 * , *תוקף: בהתאם לכתוב בגוף ההטבה\n\nטלפון: 03-5007000, *9964 דואר אלקטרוני: info@tmisrael.co.il",
+    "discount_link": "https://adif.org.il/product/4105",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/fc1c927ba5de029a8ee50b91637587a9.jpg",
+    "provider_link": "https://kavrakia.com/",
+    "coupon_code": "N/A",
+    "valid_until": "08.08.25",
+    "usage_limit": "1",
+    "location": "Israel"
+  },
+  {
+    "club_name": "adif",
+    "category": "Culture and Leisure",
+    "discount_id": "27",
     "title": "תמיר בוסקילה | 20 ש\"ח הנחה על מופע סטנדאפ",
     "price": "20 ₪",
     "discount_type": "price",
@@ -420,14 +454,14 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/aae55c6ce42b26c60a45a562f3f91a00.jpg",
     "provider_link": "https://tamir.mevalim.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "19.06.25",
-    "usage_limit": 1,
+    "valid_until": "19.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Culture and Leisure",
-    "discount_id": "26",
+    "discount_id": "28",
     "title": "HOT CINEMA",
     "price": "23 ₪",
     "discount_type": "price",
@@ -437,48 +471,31 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/174dea54c52146ab33cafd1ad3d94b1d.png",
     "provider_link": "https://www.hotcinema.co.il/____________",
     "coupon_code": "N/A",
-    "valid_until": "13.06.25",
-    "usage_limit": 1,
-    "location": "Israel"
-  },
-  {
-    "club_name": "adif",
-    "category": "Culture and Leisure",
-    "discount_id": "27",
-    "title": "50 ש\"ח הנחה על כרטיס | שלמה ארצי בבאר שבע",
-    "price": "50 ש\"ח",
-    "discount_type": "price",
-    "description": "שלמה ארצי בהופעה באמפי באר שבע ב17.6בשעה 20:30 \nבלעדי לחברי מועדון!\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.",
-    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד מועדון מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות  *הכניסה למופע תתאפשר בכפוף להנחיות משרד הבריאות ובהתאם לתנאי התו הירוק * חובה להגיע למופע עם אישור התו הירוק בצירוף תעודה מזהה מדיניות ביטולים: לפי מדיניות בית העסק * מייל שירות לקוחות: info@tmisrael.co.il, טלפון: 03-5007000, 9964 * , *תוקף: בהתאם לכתוב בגוף ההטבה\n\nטלפון: 03-5007000, *9964 דואר אלקטרוני: info@tmisrael.co.il",
-    "discount_link": "https://adif.org.il/product/4096",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/969f58f4c157c6a74d9e0e5f31f00485.jpg",
-    "provider_link": "https://www.ticketmaster.co.il/performance/MBP15/001/ALL/iw",
-    "coupon_code": "N/A",
-    "valid_until": "13.06.25",
-    "usage_limit": 1,
-    "location": "Israel"
-  },
-  {
-    "club_name": "adif",
-    "category": "Culture and Leisure",
-    "discount_id": "28",
-    "title": "50 ש\"ח הנחה על הופעות | הטרמינל בחיפה",
-    "price": "50 ש\"ח",
-    "discount_type": "price",
-    "description": "הטבה משתלמת להופעות בטרמינל בחיפה \nבלעדי לחברי מועדון!\n\n50 ש\"ח הנחה בהזנת קוד קופון לכרטיס\nלינק לאתר >>\nאופן מימוש ההטבה: מורידים את הקוד לטלפון, נכנסים לאתר  מזינים את הקוד ומקבלים 50 ש\"ח הנחה על כרטיס לכל הופעה שתבחרו.\n****ההטבה לא תקפה למופעים: בלאגן בחיפה ומימונה****",
-    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * ו/או עד גמר המלאי * השירותים והמוצרים באחריות בתי העסק בלבד מועדון מועדון צרכנות עדיף  ו/או כל אחד מבתי העסק רשאים לשנות להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * ללא כפל מבצעים והנחות  *הכניסה למופע תתאפשר בכפוף להנחיות משרד הבריאות ובהתאם לתנאי התו הירוק * חובה להגיע למופע עם אישור התו הירוק בצירוף תעודה מזהה מדיניות ביטולים: לפי מדיניות בית העסק * מייל שירות לקוחות: info@tmisrael.co.il, טלפון: 03-5007000, 9964 * , *תוקף: בהתאם לכתוב בגוף ההטבה\n\nטלפון: 03-5007000, *9964 דואר אלקטרוני: info@tmisrael.co.il",
-    "discount_link": "https://adif.org.il/product/4095",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/5afe2459ec3a8fea2a9d2f8f4c906b75.webp",
-    "provider_link": "https://discover.ticketmaster.co.il/event/terminal/",
-    "coupon_code": "N/A",
-    "valid_until": "04.07.25",
-    "usage_limit": 1,
+    "valid_until": "07.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
     "club_name": "adif",
     "category": "Culture and Leisure",
     "discount_id": "29",
+    "title": "N/A",
+    "price": "N/A",
+    "discount_type": "N/A",
+    "description": "N/A",
+    "terms_and_conditions": "N/A",
+    "discount_link": "https://adif.org.il/product/4096",
+    "image_link": "N/A",
+    "provider_link": "N/A",
+    "coupon_code": "N/A",
+    "valid_until": "11.07.25",
+    "usage_limit": "1",
+    "location": "Israel"
+  },
+  {
+    "club_name": "adif",
+    "category": "Culture and Leisure",
+    "discount_id": "30",
     "title": "50 ש\"ח הנחה על הופעות | קו רקיע 2025",
     "price": "50 ש\"ח",
     "discount_type": "price",
@@ -488,25 +505,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/fa308f55e43f9ab4f7c51ec07e4702f1.jpg",
     "provider_link": "https://kavrakia.com/",
     "coupon_code": "N/A",
-    "valid_until": "05.06.25",
-    "usage_limit": 1,
-    "location": "Israel"
-  },
-  {
-    "club_name": "adif",
-    "category": "Culture and Leisure",
-    "discount_id": "30",
-    "title": "מלון לייטהאוס מקולקציית מלונות בראון",
-    "price": "5% הנחה",
-    "discount_type": "percentage",
-    "description": "חברי המועדון שלנו נהנים מ-5% הנחה במלון בראון לייטהאוס תל אביב!\nהמלון, מבית מלונות בראון, ממוקם בפינת רחוב בן יהודה ואלנבי, במרחק הליכה מהאטרקציות המרכזיות ובקרבה לחוף הים. מתאים לאנשי עסקים ולנופשים שמחפשים חווית אירוח אורבנית עם נופים מרהיבים. כולל ספא, חדר כושר, דק שיזוף צופה לים ועוד.\nמימוש ההטבה :\nהנחה במעמד חיוב בבית העסק",
-    "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד * השירותים והמוצרים באחריות בית העסק בלבד * מועדון מועדון צרכנות עדיף ו/או כל אחד מבתי העסק רשאים לשנות/להפסיק את המבצע בכל עת וללא הודעה מוקדמת * התמונות להמחשה בלבד * המלונות פועלים ע\"פ הנחיות התו הירוק * ההנחה היא במעמד החיוב ותופיע לאחר ביצוע התשלום בדפי החיוב * ביטולים: לפי מדיניות בית העסק * תוקף: 31.12.2025\n\nבניין מגדלור, בן יהודה 1\nתל אביב 6380101\nישראל\n\nטלפון: 03-7660500\n\nאימייל: lighthouse@brownhotels.co",
-    "discount_link": "https://adif.org.il/benefit/1752",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/7879a81903c6b3ecdfa1bf16c16f5f2c.jpg",
-    "provider_link": "N/A",
-    "coupon_code": "N/A",
-    "valid_until": "28.06.25",
-    "usage_limit": 1,
+    "valid_until": "19.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -522,8 +522,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/e57f571fe76ea75136841111b5b8135e.png",
     "provider_link": "https://bmanuka.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "11.06.25",
-    "usage_limit": 1,
+    "valid_until": "16.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -539,8 +539,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/778893f87c704c0e10ab59104bb9a7be.jpeg",
     "provider_link": "https://www.lalumierecandle.com/",
     "coupon_code": "N/A",
-    "valid_until": "14.06.25",
-    "usage_limit": 1,
+    "valid_until": "11.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -556,8 +556,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/01980e03dad90d6e4375acc9d733dc1e.jpg",
     "provider_link": "https://www.decorado.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "14.06.25",
-    "usage_limit": 1,
+    "valid_until": "22.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -573,8 +573,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/7b4cf783305477bdc0ec7654caa267c8.jpg",
     "provider_link": "https://www.justmusic.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "04.06.25",
-    "usage_limit": 1,
+    "valid_until": "15.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -590,8 +590,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/5163b16ed6dbdca3d3874039033e3854.jpg",
     "provider_link": "https://tinyurl.com/2b3qsbv6",
     "coupon_code": "N/A",
-    "valid_until": "17.06.25",
-    "usage_limit": 1,
+    "valid_until": "27.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -607,8 +607,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/b3ee4b89a6ce44da072ab80ba0cb6e69.webp",
     "provider_link": "https://cottonclub.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "11.06.25",
-    "usage_limit": 1,
+    "valid_until": "20.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -624,8 +624,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/20e708eada03f1ec6e24f20115afb31c.jpg",
     "provider_link": "https://www.the-importer.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "02.07.25",
-    "usage_limit": 1,
+    "valid_until": "07.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -641,8 +641,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/d9779d72e43be757f63fe13e0a6c5733.png",
     "provider_link": "https://careline.co.il/",
     "coupon_code": "N/A",
-    "valid_until": "12.06.25",
-    "usage_limit": 1,
+    "valid_until": "18.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -658,8 +658,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/c69a61657ec6701ffdda5aa2263901f8.jpg",
     "provider_link": "https://www.gov.il/he/service/bicycle-and-scooter-registration",
     "coupon_code": "N/A",
-    "valid_until": "19.06.25",
-    "usage_limit": 1,
+    "valid_until": "19.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -667,16 +667,16 @@
     "category": "Lifestyle",
     "discount_id": "40",
     "title": "SUMMER BOX",
-    "price": "189 ₪",
+    "price": "169 ₪",
     "discount_type": "price",
-    "description": "אוהבים ים? נהנים לשכב בשמש? דאגנו לכם לקיץ בטוח עם מארז ההגנה מהשמש המושלם מבית ד\"ר פישר!\nד\"ר פישר אולטרסול, מותג הגנה משמש מס' 1 בישראל, בעל מומחיות של למעלה מ- 35 שנה במחקר הפוטוביולוגי, ממשיך לחדש ולהוביל את תחום הגנה משמש. סדרת הגנה משמש המתקדמת, המקיפה והמגוונת ביותר בישראל, המעניקה הגנה גבוהה ורחבה UVA& UVB) מפני השמש ומסייעת בהגנה מפני קרינת IR.",
+    "description": "אוהבים ים? דאגנו לכם לקיץ בטוח עם מארז ההגנה מהשמש המושלם מבית ד\"ר פישר!\nהטבה מסובסדת ב -169 ש\"ח במקום 279 ש\"ח\nד\"ר פישר אולטרסול, מותג הגנה משמש מס' 1 בישראל, בעל מומחיות של למעלה מ- 35 שנה במחקר הפוטוביולוגי, ממשיך לחדש ולהוביל את תחום הגנה משמש. סדרת הגנה משמש המתקדמת, המקיפה והמגוונת ביותר בישראל, המעניקה הגנה גבוהה ורחבה UVA& UVB) מפני השמש ומסייעת בהגנה מפני קרינת IR.\nמשלוח חינם!",
     "terms_and_conditions": "משלוחים חינם\nעד 7 ימי עסקים\n\nמשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד *השירותים והמוצרים באחריות בתי העסק בלבד *מועדון מועדון צרכנות עדיף ו/או כל אחד מבתי העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת התמונות להמחשה ייתכנו שינויים בתכולת המארז תוך שמירה על שוויו הכספי ותמהיל המוצרים בו. מחירי המארזים צפויים להתעדכן מעת לעת וזה כתוצאה משינוי תמהיל או התייקרות תשומות חומרי הגלם – בתאום מלא מולכם *תוקף: 31.12.2025\n\nמוקד שירות הלקוחות: * בנושאים כללים: טלפון- 1-800-618-888 ,מייל- drfischer@dr-fischer.com. *רכישות באתר: טלפון - 0523679110, מייל- adi.levi@dr-fischer.com",
     "discount_link": "https://adif.org.il/product/3764",
-    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/29ff690c4a97ee57479ede1feb407866.jpg",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/800c467a63db2bde2dc4557a7f42a6b3.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "09.06.25",
-    "usage_limit": 1,
+    "valid_until": "11.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -692,8 +692,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/53c3a17c6406c1e09023d2b16f3d560f.jpg",
     "provider_link": "https://www.lytrade.co.il/page/adif",
     "coupon_code": "N/A",
-    "valid_until": "16.06.25",
-    "usage_limit": 1,
+    "valid_until": "18.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -709,8 +709,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/dd9ceb295938703f368422edb475be31.jpeg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "02.07.25",
-    "usage_limit": 1,
+    "valid_until": "16.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -726,8 +726,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/38ea259b347e40e85118daf218ab03ac.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "06.06.25",
-    "usage_limit": 1,
+    "valid_until": "12.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -735,7 +735,7 @@
     "category": "Electronics",
     "discount_id": "44",
     "title": "טלוויזיה חכמה ”4K 58 דגם ST58UHD מבית SCHNEIDER",
-    "price": "1,189 ₪",
+    "price": "1,550 ₪",
     "discount_type": "price",
     "description": "טלוויזיה חכמה 4K\n58 אינצ' במחיר משתלם של 1189 ש\"ח במקום 1450 ש\"ח\nמסך LED 58 אינץ' ברזולוציית UHD 4K (3840*2160). זיכרון RAM 1.5GB ו- ROM 4GB. מערכת הפעלה VIDAA 5. בהירות ±250 nit. תמיכה באפליקציות כמו Prime, YouTube, Netflix ועוד. כולל ממיר דיגיטלי עידן פלוס ושלט רחוק עם לחצנים מהירים. סאונד עם 2 רמקולים של 8W כל אחד ופורמט אודיו DOLBY. חיבורים: 3 HDMI (כולל ARC), 2 USB, AV IN, יציאה לאוזניות, אופטי, RJ45 (LAN), אנטנה חיצונית. תומך ב-Wi-Fi ו-Bluetooth 5.1. מידות עם סטנד: 805x209x1287 מ\"מ, ללא סטנד: 752x90x1287 מ\"מ. משקל: 12.5 ק\"ג. ברקוד: 7290110.",
     "terms_and_conditions": "למשלמים בכרטיס אשראי מועדון צרכנות עדיף בלבד | השירותים והמוצרים באחריות בית העסק בלבד מועדון מועדון צרכנות עדיף ו/או בית העסק רשאים לשנות / להפסיק את המבצע בכל עת וללא הודעה מוקדמת | התמונות להמחשה בלבד | לא כולל כפל מבצעים | תוקף: 30.12.2025 | איסוף עצמי ניתן לבצע מאשדוד מהמחסנים או מחנות ניופאן פרו ברחוב רוזנסקי 14 בראשון לציון | למען הסר ספק, יובהר כי, משתמש שיבחר לאסוף את המוצרים באיסוף עצמי יהא האחראי הבלעדי לכל נזק שיגרם למוצרים, לרבות שבר, החל ממועד העברת המוצרים לידו ולחזקתו ועליו חלה החובה לבדוק את המוצרים מיד עם קבלתם | מועד אספקת המוצרים הוא עד 7 ימי עסקים אלא אם הוגדר אחרת במוצר הספציפי, לא כולל שישי, שבת, ערבי חג וימי שבתון כאשר תחילת ספירתם היא ביום קבלת אישור העסקה. ניופאן פרו תעשה כמיטב יכולתה להקדים את מועד האספקה ו/או להתאימו לצרכי המשתמש. הזמנה שבוצעה לאחר השעה 16:00 תיחשב, לצורך מועד האספקה, כהזמנה שבוצעה ביום העסקים שלמחרת | הובלה מעל קומה 3 למקרר בתוספת 60ש\"ח לכל קומה נוספת פירוק דלתות 60 ש\"ח לכל דלת | ניופאן Outlet מובילה לכל חלקי הארץ למעט היישובים הבאים: שכונות ערביות במזרח ירושלים וישובים פלסטינים מעבר לקו הירוק , שנה אחריות.\n\nטלפון שירות לקוחות: 1-700-700-983",
@@ -743,8 +743,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/4b621ee0e0c0864ddf031c390822729c.jpg",
     "provider_link": "N/A",
     "coupon_code": "7290110",
-    "valid_until": "27.06.25",
-    "usage_limit": 1,
+    "valid_until": "03.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -760,8 +760,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/ff2b0366d1231b3e0ba66f774944e1e4.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "29.06.25",
-    "usage_limit": 1,
+    "valid_until": "05.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -777,8 +777,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/329cae6d2a78a4d3ea72668a9978e5f8.webp",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "02.07.25",
-    "usage_limit": 1,
+    "valid_until": "22.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -794,8 +794,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/abc08a824a5e048098ed08b272c53a86.webp",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "12.06.25",
-    "usage_limit": 1,
+    "valid_until": "18.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -811,8 +811,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/4ba30ed9cd28485c914fab1a981b3379.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "23.06.25",
-    "usage_limit": 1,
+    "valid_until": "18.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -828,8 +828,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/482b5ddc3ffab7bbb7ffd15354cb1ce2.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "10.06.25",
-    "usage_limit": 1,
+    "valid_until": "05.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -845,8 +845,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/f91800af965d2c737907c7e73cc0057b.webp",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "23.06.25",
-    "usage_limit": 1,
+    "valid_until": "07.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -862,8 +862,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/661678cd72a979ce99ce8702ca0aea4b.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "04.07.25",
-    "usage_limit": 1,
+    "valid_until": "08.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -879,8 +879,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/c91d1252f140c85db73e88f3825af31e.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "16.06.25",
-    "usage_limit": 1,
+    "valid_until": "18.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -896,8 +896,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/cae1dbde0b0ad6169741214ac2b93cd1.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "09.06.25",
-    "usage_limit": 1,
+    "valid_until": "15.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -913,8 +913,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/a3b82e416a2e81a93c515f8196a833b0.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "21.06.25",
-    "usage_limit": 1,
+    "valid_until": "22.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -930,8 +930,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/22e756b81e991ee4f87a0c52c73b56e6.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "27.06.25",
-    "usage_limit": 1,
+    "valid_until": "21.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -947,8 +947,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/e1d8f449b0e4658bcb835ac35674b74e.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "23.06.25",
-    "usage_limit": 1,
+    "valid_until": "17.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -964,8 +964,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/f84fac807d64d7397b64b1592629e78d.png",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "12.06.25",
-    "usage_limit": 1,
+    "valid_until": "07.08.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -981,8 +981,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/0110276114ffccb530fb02a22a6fb6ff.png",
     "provider_link": "https://garbaim.shop/",
     "coupon_code": "N/A",
-    "valid_until": "24.06.25",
-    "usage_limit": 1,
+    "valid_until": "24.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -998,8 +998,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/86142fda37b9f66e6e47dce3f8dcaa99.jpg",
     "provider_link": "https://www.jonahclogs.com/",
     "coupon_code": "N/A",
-    "valid_until": "06.06.25",
-    "usage_limit": 1,
+    "valid_until": "31.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   },
   {
@@ -1015,8 +1015,8 @@
     "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/354835adb77b6b34cc655b196b272e49.jpg",
     "provider_link": "N/A",
     "coupon_code": "N/A",
-    "valid_until": "29.06.25",
-    "usage_limit": 1,
+    "valid_until": "21.07.25",
+    "usage_limit": "1",
     "location": "Israel"
   }
 ]

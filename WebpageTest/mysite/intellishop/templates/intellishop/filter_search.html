@@ -18,7 +18,7 @@
 
     <!-- Filter Sections -->
     <div class="filter-sections">
-        <!-- Most Popular Section -->
+        {% comment %} <!-- Most Popular Section -->
         <div class="filter-section">
             <div class="section-header">
                 <h3>Most Popular</h3>
@@ -29,7 +29,7 @@
                 <div class="filter-item placeholder"></div>
                 <div class="filter-item placeholder"></div>
             </div>
-        </div>
+        </div> {% endcomment %}
 
         <!-- Price Range by fixed amount Section -->
         <div class="filter-section">
@@ -654,6 +654,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 label.classList.remove('selected');
             }
         });
+
+        // Reset range & percentage controls (NEW)
+        if (typeof enableValueFiltersCheckbox !== 'undefined' && enableValueFiltersCheckbox) {
+            enableValueFiltersCheckbox.checked = false;
+            toggleFilterVisibility(enableValueFiltersCheckbox, valuePriceFilterSection);
+        }
+        if (typeof enablePercentageFiltersCheckbox !== 'undefined' && enablePercentageFiltersCheckbox) {
+            enablePercentageFiltersCheckbox.checked = false;
+            toggleFilterVisibility(enablePercentageFiltersCheckbox, percentagePriceFilterSection);
+        }
+        if (typeof priceRangeSlider !== 'undefined' && priceRangeSlider && typeof currentPriceValueSpan !== 'undefined' && currentPriceValueSpan) {
+            priceRangeSlider.value = priceRangeSlider.max;
+            currentPriceValueSpan.textContent = priceRangeSlider.value;
+        }
     });
 
     // Enhanced Apply button functionality (UPDATED)
@@ -1078,6 +1092,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 label.classList.remove('selected');
             }
         });
+
+        // Reset range & percentage controls (NEW)
+        if (typeof enableValueFiltersCheckbox !== 'undefined' && enableValueFiltersCheckbox) {
+            enableValueFiltersCheckbox.checked = false;
+            toggleFilterVisibility(enableValueFiltersCheckbox, valuePriceFilterSection);
+        }
+        if (typeof enablePercentageFiltersCheckbox !== 'undefined' && enablePercentageFiltersCheckbox) {
+            enablePercentageFiltersCheckbox.checked = false;
+            toggleFilterVisibility(enablePercentageFiltersCheckbox, percentagePriceFilterSection);
+        }
+        if (typeof priceRangeSlider !== 'undefined' && priceRangeSlider && typeof currentPriceValueSpan !== 'undefined' && currentPriceValueSpan) {
+            priceRangeSlider.value = priceRangeSlider.max;
+            currentPriceValueSpan.textContent = priceRangeSlider.value;
+        }
     });
 
     const savedFilters = localStorage.getItem('lastUsedFilters');

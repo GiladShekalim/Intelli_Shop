@@ -122,23 +122,58 @@ run_groq_enhancement() {
     # Verify Groq API key first
     verify_groq_api_key || return 1
     
-    # Clear coupons collection before enhancement
-    log "Clearing existing coupons collection before AI enhancement..." 1 "$SCRIPT_NAME"
-    python manage.py clear_coupons
-    
     # Use relative paths based on script location
     local base_dir="$SCRIPT_DIR"
-    local script_path="$base_dir/$PROJECT_DIR/groq_chat.py"
+    local script_path="$base_dir/$PROJECT_DIR/groq_enhancement.py"
     
     if [[ -f "$script_path" ]]; then
-        log "Found groq_chat.py at $script_path" 1 "$SCRIPT_NAME"
+        log "Found groq_enhancement.py at $script_path" 1 "$SCRIPT_NAME"
         # Set PYTHONPATH to include the project directory for imports
         PYTHONPATH="$base_dir/$PROJECT_DIR" python "$script_path"
         return $?
     else
-        log "groq_chat.py not found at $script_path" 0 "$SCRIPT_NAME"
+        log "groq_enhancement.py not found at $script_path, trying groq_chat.py" 1 "$SCRIPT_NAME"
+        script_path="$base_dir/$PROJECT_DIR/groq_chat.py"
+        if [[ -f "$script_path" ]]; then
+            log "Found groq_chat.py at $script_path" 1 "$SCRIPT_NAME"
+            PYTHONPATH="$base_dir/$PROJECT_DIR" python "$script_path"
+            return $?
+        else
+            log "Neither groq_enhancement.py nor groq_chat.py found" 0 "$SCRIPT_NAME"
+            return 1
+        fi
+    fi
+}
+
+# ===== Scraper Integration =====
+run_scraper() {
+    # Runs the standalone scraper located in WebpageTest/scraper
+    log "Running scraper project..." 1 "$SCRIPT_NAME"
+
+    local scraper_dir="$SCRIPT_DIR/scraper"
+
+    if [ ! -d "$scraper_dir" ]; then
+        log "Scraper directory not found at $scraper_dir" 0 "$SCRIPT_NAME"
         return 1
     fi
+
+    pushd "$scraper_dir" > /dev/null
+
+    # Install scraper specific dependencies
+    if [ -f "requirements.txt" ]; then
+        log "Installing scraper dependencies from requirements.txt" 1 "$SCRIPT_NAME"
+        python -m pip install -r requirements.txt
+    else
+        log "Installing scraper core dependencies" 1 "$SCRIPT_NAME"
+        python -m pip install selenium webdriver-manager requests beautifulsoup4
+    fi
+
+    log "Executing scraper main.py" 1 "$SCRIPT_NAME"
+    python main.py
+    local status=$?
+
+    popd > /dev/null
+    return $status
 }
 
 # Set up trap for cleanup on script exit
@@ -165,6 +200,13 @@ else
     # Install Django and MongoDB dependencies
     log "Installing Django and MongoDB dependencies" 1 "$SCRIPT_NAME"
     python -m pip install django pymongo[srv] dnspython
+fi
+
+# If option 3 (scraping only) was requested, run the scraper and exit
+if [ "$1" = "3" ]; then
+    log "Running scraper as requested (option 3)" 1 "$SCRIPT_NAME"
+    run_scraper
+    exit $?
 fi
 
 # Set up MongoDB configuration

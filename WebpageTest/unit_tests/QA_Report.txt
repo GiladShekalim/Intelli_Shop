@@ -1,0 +1,68 @@
+IntelliShop Automated QA Test Report
+=============================================
+Generated on: 2025-07-29 15:44:46 UTC
+
+Test File : mysite/intellishop/management/commands/test_ai_filter_helper.py
+Test Name : test_percentage_bucket_selection
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : AI
+
+Test File : mysite/intellishop/management/commands/test_ai_filter_helper.py
+Test Name : test_ai_filter_extraction
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : AI
+
+Test File : mysite/intellishop/management/commands/test_mongodb.py
+Test Name : CouponModelTestCase::test_coupon_validation
+Outcome   : FAILED
+Duration  : 0.00s
+Type      : unit
+
+Test File : mysite/intellishop/management/commands/test_mongodb.py
+Test Name : CouponModelTestCase::test_csv_import
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : unit
+
+Test File : mysite/intellishop/management/commands/test_mongodb.py
+Test Name : CouponModelTestCase::test_get_by_code
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : unit
+
+Test File : mysite/intellishop/management/commands/test_mongodb.py
+Test Name : CouponModelTestCase::test_legacy_mapping
+Outcome   : FAILED
+Duration  : 0.00s
+Type      : unit
+
+Test File : mysite/intellishop/management/commands/test_percentage_filters.py
+Test Name : test_percentage_detection
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : unit
+
+Test File : mysite/intellishop/management/commands/test_percentage_filters.py
+Test Name : test_ai_percentage_extraction
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : unit
+
+Test File : mysite/intellishop/management/commands/test_percentage_filters.py
+Test Name : test_ui_simulation
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : unit
+
+Test File : mysite/test_home_functionality.py
+Test Name : test_home_functionality
+Outcome   : PASSED
+Duration  : 0.00s
+Type      : unit
+
+
+Overall Summary
+---------------
+Total Tests : 10
