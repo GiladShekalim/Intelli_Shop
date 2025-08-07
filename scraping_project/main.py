@@ -39,7 +39,18 @@ def main():
     }
     output_file = output_file_map.get(SCRAPE_TARGET, "output/discounts.json")
 
-    # Save the results
+    # ✅ Validate output structure before saving
+    assert isinstance(all_discounts, list), "[!] Output is not a list!"
+
+    for i, discount in enumerate(all_discounts):
+        if not isinstance(discount, dict):
+            print(f"[!] Warning: Discount #{i} is not a dictionary – skipping")
+            continue
+        for key in ["title", "price", "discount_link"]:
+            if key not in discount:
+                print(f"[!] Warning: Missing '{key}' in discount #{i}")
+
+    # Save to file only if passed validation
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(all_discounts, f, ensure_ascii=False, indent=2)
 

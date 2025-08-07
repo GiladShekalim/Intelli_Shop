@@ -13,6 +13,13 @@ def scrape_hot(driver):
     all_discounts = []
     #extract_discounts_for_category.counter = 1
     
+    first_category_url = CATEGORIES_HOT[0]["url"]
+    if not is_scraping_allowed(first_category_url):
+        print("❌ Scraping not allowed on HOT according to robots.txt")
+        return []
+
+    print("✅ Scraping allowed on HOT (robots.txt check passed)")
+
     for category in CATEGORIES_HOT:
         discounts = extract_discounts_for_category(driver, category["url"], category["name"])
         all_discounts.extend(discounts)

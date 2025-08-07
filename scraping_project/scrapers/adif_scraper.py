@@ -13,6 +13,13 @@ def scrape_adif(driver):
     all_discounts = []
     #extract_discounts_for_category.counter = 1
 
+    first_category_url = CATEGORIES_ADIF[0]["url"]
+    if not is_scraping_allowed(first_category_url):
+        print("❌ Scraping not allowed on ADIF according to robots.txt")
+        return []
+
+    print("✅ Scraping allowed on ADIF (robots.txt check passed)")
+
     for category in CATEGORIES_ADIF:
         discounts = extract_discounts_for_category(driver, category["url"], category["name"])
         all_discounts.extend(discounts)

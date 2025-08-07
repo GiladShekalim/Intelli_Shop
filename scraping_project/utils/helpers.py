@@ -3,6 +3,8 @@ import re
 import random
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
+import urllib.robotparser
+
 
 def extract_valid_until(text):
     """
@@ -88,13 +90,13 @@ def extract_price_fallback(description, terms):
 
     return "N/A"
 
-# def extract_provider_link_from_text(text):
-#     """
-#     Extracts the first URL from the description or any raw text.
-#     Returns 'N/A' if no URL is found.
-#     """
-#     pattern = r"(https?://[^\s]+|www\.[^\s]+)"
-#     match = re.search(pattern, text)
-#     if match:
-#         return match.group(0).strip()
-#     return "N/A"
+
+def is_scraping_allowed(url, user_agent="*"):
+    rp = urllib.robotparser.RobotFileParser()
+    base_url = "/".join(url.split("/")[:3])  # https://www.hot.co.il
+    rp.set_url(f"{base_url}/robots.txt")
+    try:
+        rp.read()
+        return rp.can_fetch(user_agent, url)
+    except:
+        return True  # If robots.txt not reachable – allow by default
