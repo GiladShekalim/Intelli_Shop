@@ -256,7 +256,6 @@
                             <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
                             {% if request.session.user_id %}
                                 {% if user.is_admin or user.username == 'admin' %}
-                                <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
                                 <li><a class="dropdown-item" href="{% url 'mfa_verification' %}">Dashboard</a></li>
                                 {% endif %}
                             {% endif %}
