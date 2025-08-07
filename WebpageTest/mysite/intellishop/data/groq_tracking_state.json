@@ -1,0 +1,23 @@
+{
+  "processed_discounts": [
+    "89"
+  ],
+  "failed_discounts": [
+    "93",
+    "90",
+    "91",
+    "94",
+    "92",
+    "95",
+    "96",
+    "97"
+  ],
+  "model_429_count": {
+    "llama3-70b-8192": 3,
+    "llama3-8b-8192": 0,
+    "llama-3.1-8b-instant": 3,
+    "llama-3.3-70b-versatile": 3,
+    "gemma2-9b-it": 0
+  },
+  "timestamp": "2025-08-07T17:46:36.340552"
+}

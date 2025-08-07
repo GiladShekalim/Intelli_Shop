@@ -1,0 +1,26 @@
+[
+  {
+    "discount_id": "89",
+    "title": "אבא חטוב",
+    "price": 1450,
+    "discount_type": "fixed_amount",
+    "description": "תארו לעצמכם לקום בבוקר עם אנרגיה, גוף חטוב וחוזק פנימי. עם תוכנית \"אבא חטוב\", זה אפשרי. אנחנו לא רק מלמדים איך לרזות, אלא נותנים לכם כלים לשנות את אורח החיים ולהפוך אותו לבריא וטבעי. תיהנו מארוחות טעימות, תשלוטו בתיאבון ותראו ירידה במספרים על המשקל. עם ליווי מקצועי וקהילה תומכת, הצלחה שלכם מובטחת. הצטרפו אלינו והתחילו את הדרך לגרסה הטובה ביותר של עצמכם!",
+    "image_link": "https://uniq-club-shop.s3.eu-west-1.amazonaws.com/images/5163b16ed6dbdca3d3874039033e3854.jpg",
+    "discount_link": "https://adif.org.il/product/3915",
+    "terms_and_conditions": "רוכשים את התכנית הרלוונטית (אבא חטוב/אמא חטובה)  \nבתום הרכישה יתקבל  קוד קופון במייל\nלצורך השלמת ההרשמה יש הזין את הקוד באתר אבא חטוב >בעמוד הרכישה של תוכנית הרצוייה",
+    "club_name": [
+      "adif"
+    ],
+    "valid_until": "04.09.25",
+    "usage_limit": 1,
+    "coupon_code": "",
+    "provider_link": "https://tinyurl.com/2b3qsbv6",
+    "category": [
+      "lifestyle"
+    ],
+    "consumer_statuses": [
+      "Fitness"
+    ],
+    "favorites": []
+  }
+]
