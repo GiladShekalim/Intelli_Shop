@@ -1,91 +1,177 @@
 # IntelliShop
 
-IntelliShop is a web application that provides an intuitive e-commerce platform. Built with Django and MongoDB, it offers the foundation for online shopping experiences with AI-enhanced data personalization.
+IntelliShop is a web-based application that aggregates, enhances, stores, and serves discount/coupon data in one convinent platform for consumers. It integrates a Selenium scraping pipeline, an AI enhancement stage using the Groq API, MongoDB-backed models and queries, and a web UI for authentication, personalization, search/filtering, and favorites.
 
-## Quick Start Guide
+## 🟦 Quick start
 
-### Setting Up Environment Variables
+### 1) Environment
 
-Before running the application, you need to set up your environment variables:
+Create a `.env` file at the repository root:
 
-1. Create a `.env` file in the project root directory with the following template:
-   ```
-   # MongoDB Configuration
-   MONGODB_URI=mongodb+srv://username:password@yourcluster.mongodb.net/?retryWrites=true&w=majority
-   MONGODB_NAME=YourDatabaseName
+```
+# MongoDB
+MONGODB_URI=mongodb+srv://username:password@yourcluster.mongodb.net/?retryWrites=true&w=majority
+MONGODB_NAME=IntelliDB
 
-   # Django Settings
-   SECRET_KEY=your-secret-key-here
-   DEBUG=True
-   
-   # Groq API (for AI enhancement)
-   GROQ_API_KEY=<your_api_key_here>
-   ```
+# Django
+SECRET_KEY=your-secret-key-here
+DEBUG=True
 
-2. Replace the placeholder values with your actual MongoDB credentials and desired settings.
-
-### Running the Application
-
-The application includes an interactive setup menu that guides you through different initialization options:
-
-```bash
-git clone https://github.com/yourusername/intellishop.git
-cd intellishop
+# Groq API
+GROQ_API_KEY=<your_api_key_here>
 ```
 
-### 2. Environment Setup
-
-Follow the "Setting Up Environment Variables" section above to create your `.env` file.
-
-### 3. Run the Setup Script
-
-Run the interactive setup menu and select your preferred installation option:
+### 2) Run the setup menu
 
 ```bash
-./intelliShop.sh
+./WebpageTest/intelliShop.sh
 ```
 
-This will display a menu with the following options:
-1. **Setup only** - Basic application setup
-2. **Setup -> data validation and insert** -> Setup and populate with sample data
-3. **Setup -> AI enhancement -> data validation and insert** -> Setup with AI-enhanced product data
+Menu options:
+- 1. Setup and start server
+- 2. Data validation and insert → Setup and start server
+- 3. AI enhancement → Data validation and insert → Setup and start server
+- 4. Data scraping
+- 5. Tests (pytest + JSON report → QA_Report.txt)
 
-Access the application at http://localhost:8000 after setup completes.
+Access the application at `http://localhost:8000` after setup completes.
 
-## Features
+## 🟦 Features
 
-- Product catalog with categories
-- MongoDB integration for scalable data storage
-- Responsive design for desktop and mobile devices
-- User authentication and account management
-- AI-powered discount data enhancement
-- JSON-formatted product enhancements
-- Field extraction and categorization
+- Personalized top-10 recommendations (favorites-weighted ranking)
+- AI-powered enhancement and filter generation
+- Multi-source scraping (HOT, Adif) to centralized data dir
+- Import with schema validation and legacy mapping
+- Search/filter scenarios: text-only, parameters-only, combined
+- Favorites management
 
-## Technologies Used
+## 🟦 Technologies
 
-- **Backend**: Django, Python 3
-- **Database**: MongoDB
-- **Frontend**: HTML, CSS, JavaScript
-- **AI Integration**: Groq Chat API
-- **Deployment**: WSL (Windows Subsystem for Linux)
+- Backend: Django (Python 3)
+- Database: MongoDB (primary), SQLite (Django sessions/admin)
+- Frontend: Django templates, Bootstrap 5
+- AI: Groq API (`groq` client)
+- Scraping: Selenium, webdriver-manager
+- Tooling: jsonschema, python-dateutil, flake8/black, pytest
 
-## Prerequisites
+## 🟦 System Architecture
 
-- Python 3.8 or higher
-- Access to a MongoDB database (Atlas URI)
-- Groq API key (for AI enhancement features)
+Subsystems and purposes:
 
-## AI Enhancement Features
+- Web application (Django): HTTP routing, views, templates, static assets, sessions/auth, personalization
+- Data layer (MongoDB + SQLite for sessions/admin): schema validation, import/export, filtered queries
+- Scraper (Selenium): multi-source scraping to JSON files
+- AI enhancement (Groq): schema-constrained enrichment and normalization with fail and request handeling
+- Validation: imports enhanced JSON into MongoDB with logging
+- Orchestration: setup scripts, environment management, test discovery and QA report generation
 
-The application includes AI-powered enhancement for discount data using the Groq Chat API:
+## 🟦 Simplified Directory tree
 
-- Support for Hebrew text in discount objects
-- Comprehensive error handling with retries
-- Detailed processing summary
-- Automatic environment setup
+```
+WebpageTest/
+  mysite/                      # Django project
+    mysite/                    # Settings, URLs, WSGI/ASGI
+    intellishop/               # App: views, models, utils, templates, static, commands, data
+  scraper/                     # Standalone Selenium scraper
+  unit_tests/                  # Test discovery + runner, QA artifacts
+  build.sh, intelliShop.sh     # Orchestration & menu scripts
+```
 
-The enhancement process:
-- Reads discount objects from data directory
-- Processes each object through Groq's API
-- Saves enhanced objects to data directory
+## 🟦 Main workflows
+
+1) Scrape → Enhance → Import → Serve
+- Scrape raw discounts to `WebpageTest/mysite/intellishop/data/*.json`
+- Enhance with Groq to conform to a strict JSON schema and enrich fields
+- Import enhanced data into MongoDB with validation and version control
+- Serve through Django views: login, personalized top-10, search/filter, favorites
+
+2) Personalization
+- Results are ranked using favorites-based category/status weighting and capped to top-10
+
+3) Search and filtering
+- Three scenarios: text-only, parameters-only (statuses, interests, price/percentage), and combined
+
+## 🟦 Subsystems and navigation
+
+### Web application (Django)
+- **App URLs:** [WebpageTest/mysite/intellishop/urls.py](WebpageTest/mysite/intellishop/urls.py)
+  - Purpose: endpoints for home, auth, search/filter, favorites, AI helper
+- **Views (main flows):** [WebpageTest/mysite/intellishop/views.py](WebpageTest/mysite/intellishop/views.py)
+  - Purpose: login/register, personalized home (favorites-weighted top-10), search/filter, favorites CRUD
+
+### Data layer (MongoDB)
+- **Models and schema:** [WebpageTest/mysite/intellishop/models/mongodb_models.py](WebpageTest/mysite/intellishop/models/mongodb_models.py)
+  - Purpose: `User`, `Coupon` schema, import helpers, and query APIs
+  - **Main algorithms:**
+    - `Coupon.get_filtered_coupons` (3 scenarios)
+    - `Coupon._build_parameter_query` (status/category/price/percentage logic)
+
+### Scraper (Selenium)
+- **Entrypoint:** [WebpageTest/scraper/main.py](WebpageTest/scraper/main.py)
+  - Purpose: orchestrate scraping sources, write JSON into app data dir
+- **HOT scraper:** [WebpageTest/scraper/scrapers/hot_scraper.py](WebpageTest/scraper/scrapers/hot_scraper.py)
+  - Purpose: extract discount items; detect external link vs. phone-only
+- **Adif scraper:** [WebpageTest/scraper/scrapers/adif_scraper.py](WebpageTest/scraper/scrapers/adif_scraper.py)
+  - Purpose: extract discount items from Adif portal
+
+### AI enhancement (Groq)
+- **Core enhancement:** [WebpageTest/mysite/groq_chat.py](WebpageTest/mysite/groq_chat.py)
+  - Purpose: schema-bound enhancement; rate limiting and deduplication
+- **Filter helper:** [WebpageTest/mysite/intellishop/utils/groq_helper.py](WebpageTest/mysite/intellishop/utils/groq_helper.py)
+  - Purpose: derive filter parameters (statuses/interests/price/percentage bucket) from natural language
+
+### Ingestion and validation
+- **Database updater:** [WebpageTest/mysite/update_database.py](WebpageTest/mysite/update_database.py)
+  - Purpose: scan data dir for `enhanced_*.json` and import via model API with logging
+
+### Orchestration and tooling
+- **Interactive menu:** [WebpageTest/intelliShop.sh](WebpageTest/intelliShop.sh)
+  - Purpose: guided selections (setup, AI, scraping, tests)
+- **Test runner + QA report:** [WebpageTest/unit_tests/Run_Test_scripts.py](WebpageTest/unit_tests/Run_Test_scripts.py)
+  - Purpose: run pytest, produce JSON report and `QA_Report.txt`
+
+## 🟦 Data schema (Coupon, key fields)
+
+- `discount_id` (string), `title` (string), `description` (string)
+- `price` (integer), `discount_type` (fixed_amount | percentage | buy_one_get_one | Cost)
+- `image_link`, `discount_link`, `provider_link`, `terms_and_conditions`
+- `club_name` (array[string])
+- `category` (array[string]), `consumer_statuses` (array[string])
+- `valid_until` (string), `usage_limit` (integer|null)
+
+## 🟦 Endpoints
+
+- User dashboard - `GET /home/`
+- Authentication flows - `POST /login/`, `POST /register/`, `POST /logout/`
+- Favorites - `GET /favorites/`, `POST /add_favorite/`, `POST /remove_favorite/`, `GET /check_favorite/<discount_id>/`
+- Listing, filtering, search - `GET /show_all_discounts/`, `POST /filtered_discounts/`, `POST /search_discounts/`
+- Generate filters from natural language - `POST /ai_filter_helper/`
+
+## 🟦 Collaborators
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/GiladShekalim">
+        <img src="https://github.com/GiladShekalim.png?size=120" width="120" height="120" alt="Gilad Shekalim" />
+        <br />
+        <sub><b>Gilad Shekalim</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/OrenGolov">
+        <img src="https://github.com/OrenGolov.png?size=120" width="120" height="120" alt="Oren Golovchik" />
+        <br />
+        <sub><b>Oren Golovchik</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ArielArviv">
+        <img src="https://github.com/ArielArviv.png?size=120" width="120" height="120" alt="Ariel Arviv" />
+        <br />
+        <sub><b>Ariel Arviv</b></sub>
+      </a>
+    </td>
+  </tr>
+  </table>
+
