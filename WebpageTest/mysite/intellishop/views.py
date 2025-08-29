@@ -300,7 +300,10 @@ def mfa_verification(request):
     error = None
     if request.method == 'POST':
         mfa_password = request.POST.get('mfa_password')
-        admin_mfa_password = "admin123"  # Only this password is valid
+        admin_mfa_password = os.environ.get('ADMIN_MFA_PASSWORD')
+        if not admin_mfa_password:
+            error = 'MFA configuration error. Please contact administrator.'
+            return render(request, 'intellishop/mfa_verification.html', {'error': error})
         if mfa_password == admin_mfa_password:
             request.session['mfa_verified'] = True
             return redirect('dashboard')
